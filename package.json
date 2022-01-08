@@ -1,0 +1,23 @@
+{
+  "name": "poker-chips",
+  "version": "1.0.0",
+  "description": "play poker with friends without chips or cash",
+  "main": "servers.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "go": "nodemon index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/djtbdanner/poker-chips"
+  },
+  "author": "Dave Danner",
+  "license": "none",
+  "dependencies": {
+    "socket.io": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
