@@ -1,11 +1,15 @@
 let firstScreen = true;
 function drawScreen(table) {
     const id = `table-div`;
-    // alert(table.players[0].name);
     destroyById(`initial-screen`);
     destroyById(id);
     let html = ``;
     html += `    <div class="pokerTableDiv"></div>`;
+    const myTurnPlayer = table.players.find(player => player.turn);
+    let disabled = `disabled`;
+    if (myTurnPlayer && (myTurnPlayer.id === document.getElementById(`player-id`).value)){
+        disabled = ``;
+    }
     // html += `    <div class="playerDiv playerTopLeft">playerTopLeft</div>`;
     // html += `    <div class="playerDiv playerTopRight">playerTopRight</div>`;
     // html += `    <div class="playerDiv playerRightTop">playerRightTop</div>`;
@@ -19,25 +23,25 @@ function drawScreen(table) {
         for (let i = 0; i < table.players.length; i++) {
             const player = table.players[i];
             let divClass = `playerDiv`;
+
+            if (player.dealer){
+                divClass =  `playerDivDealer`;
+            }
             if (player.turn){
                 divClass =  `playerDivTurn`;
             }
             html += `<div class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}</div>`;
         }
     }
-    // html += `    <div class="playerDiv playerCurrent">${table.players[0].name}</div>`;
     html += `    <div class="playerDiv playerPot">pot</div>`;
     html += `    <div class="footer">`;
     html += `        <table>`;
     html += `            <tr>`;
     html += `                <td colspan="5" width="100%">`;
     html += `                    <textarea id="history-text" rows = "3"  readonly>`;
-    html += `dave danner was here today and this is really long message that should not find an end to the faon in some paca or another\r\n`;
-    html += `text\r\n`;
-    html += `dave danner\r\n`;
-    html += `text\r\n`;
-    html += `dave danner\r\n`;
-    html += `text\r\n`;
+    table.messages.forEach((message) =>{
+        html += `&#8226; ${message}\r\n`;
+    });
     html += `                      </textarea>`;
     html += `                </td>`;
     html += `            </tr>`;
@@ -75,22 +79,22 @@ function drawScreen(table) {
     html += `                    Options`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="fold-button" disabled value="&nbsp;&#10008;&nbsp;" \>`;
+    html += `                    <input type="button" id="fold-button" ${disabled} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
     html += `                    <br>`;
     html += `                    Fold`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="check-button" disabled value="&nbsp;&#10004;&nbsp;" \>`;
+    html += `                    <input type="button" id="check-button" ${disabled} value="&nbsp;&#10004;&nbsp;" onClick="playerAction('CHECK', 0);" \>`;
     html += `                    <br>`;
     html += `                    Check`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="call-button" disabled value="&nbsp;&phone;&nbsp;" \>`;
+    html += `                    <input type="button" id="call-button" ${disabled} value="&nbsp;&phone;&nbsp;"  onClick="playerAction('CALL', 0);" \>`;
     html += `                    <br>`;
     html += `                    Call`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="raise-button" disabled value="&nbsp;&#9757;&nbsp;" \>`;
+    html += `                    <input type="button" id="raise-button" ${disabled} value="&nbsp;&#9757;&nbsp;"  onClick="playerAction('RAISE', 0);" \>`;
     html += `                    <br>`;
     html += `                    Raise`;
     html += `                </td>`;
@@ -98,21 +102,21 @@ function drawScreen(table) {
     html += `        </table>`;
     html += `    </div>`;
     createAndAppendDiv(html, id, true);
+    scrollText();
+}
+function scrollText(){
+    var textarea = document.getElementById('history-text');
+    textarea.scrollTop = textarea.scrollHeight;
 }
 
 function getPlayerLocationStyle(table, i) {
     const count = table.players.length;
-    // console.log(document.getElementById(`player-id`).value);
     const indexOfThisPlayer = table.players.findIndex((player) => player.id === document.getElementById(`player-id`).value);
-    console.log(i);
     i = i - indexOfThisPlayer;
     console.log(`is gr:` + i);
     if (i < 0) {
          i = (i + count);
      }
-    console.log("after:" + i);
-    console.log(`indexthisplayer ${indexOfThisPlayer}`);
-
     let loc;
     if (count <= 2) {
         if (i === 0) {

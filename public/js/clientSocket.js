@@ -1,5 +1,4 @@
 let socket = io.connect(window.location.href);
-const tableNameField = document.getElementById('selected-table-name');
 async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
     const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
     console.log(JSON.stringify(table));
@@ -7,19 +6,13 @@ async function startPokerGame(tableName, playerName, playerCount, startChipCount
         drawScreen(JSON.parse(table));
         console.log(JSON.stringify(table));
     }
-  //  tableNameField.value= tableName;
 }
 
-async function joinPokerGame(tableName, playerName) {
-
-        const table = await asyncEmit(`join-poker-game`, { tableName, playerName });
-        console.log(JSON.stringify(table));
+async function joinPokerGame(tableId, playerName) {
+        const table = await asyncEmit(`join-poker-game`, { tableId, playerName });
         if (table) {
             drawScreen(JSON.parse(table));
-            console.log(JSON.stringify(table));
         }
-
- //   tableNameField.value= tableName;
 }
 
 socket.on(`poker-table-change`, (data) => {
@@ -30,26 +23,25 @@ socket.on(`poker-table-change`, (data) => {
     }
 });
 
-
 socket.on(`set-player-id`, (data) => {
-    // player id will be necessary to determine who is this player
     document.getElementById(`player-id`).value = data.playerId;
 });
 
+socket.on(`set-table-id`, (data) => {
+    document.getElementById(`table-id`).value = data.tableId;
+});
 
 
-// socket.on('score-change', (data) => {
-//     const scoreData = JSON.parse(data.scores);
-//     drawScreen(JSON.parse(scoreData), false, data.roomName );
-// });
+socket.on(`table-modal-message`, (data) => {
+    modalMessage(data);
+});
 
-// function scoreChange(room, scores, isOwner) {
-//     socket.emit(`score-change`, { room, scores: JSON.stringify(scores), isOwner:isOwner });
-// }
+function playerAction(action, chips) {
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    socket.emit(`poker-action`, { tableId, playerId, action, chips });
 
-// socket.on('room-change', () => {
-//     processRoomAdded();
-// });
+}
 
 // socket.on('message-room', (message) => {
 //     modalMessage(message);
@@ -59,8 +51,8 @@ socket.on(`set-player-id`, (data) => {
 //     socket.emit(`message-room`, { roomName, message });
 // }
 
-async function getAvailableRooms() {
-    const result = await asyncEmit('get-rooms');
+async function getAvailableTables() {
+    const result = await asyncEmit('get-tables');
     return JSON.parse(result);
 }
 
@@ -68,17 +60,6 @@ socket.on(`backendError`, (data) => {
     alert(data);
 });
 
-// async function joinRoom(roomName) {
-//     const result = await asyncEmit(`join-room`, roomName);
-//     const scores = JSON.parse(result);
-//     drawScreen(scores, false, roomName);
-// }
-
-async function isRoomAvailable(room) {
-    const result = await asyncEmit('is-room-available', room);
-    const isAvailable = result.isAvailable;
-    return isAvailable;
-}
 
 // socket.on('new-text-message', () => {
 //     textMessages();

@@ -52,6 +52,19 @@
     text-align: center;
   } 
 
+  .playerDivDealer{
+    background-color: rgb(214, 214, 214);
+    height:12%;
+    width:22%;
+    border-radius:10px;
+    border-style: ridge;
+    border-color: blue;
+    border-width:2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+  }
+
   .playerTopLeft{
     top:1%;
     left:24%;
@@ -161,6 +174,19 @@
     position: absolute;
     text-align: center;
   } 
+
+  .playerDivDealer{
+    background-color: rgb(214, 214, 214);
+    height:15%;
+    width:10%;
+    border-radius:10px;
+    border-style: ridge;
+    border-color: blue;
+    border-width:2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+  }
 
   .playerTopLeft{
     top:1%;left:10%;

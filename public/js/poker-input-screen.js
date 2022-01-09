@@ -24,7 +24,7 @@ async function buildEntryScreens() {
 // }
 
 async function buildInitialScreen() {
-    const tables = await getAvailableRooms();
+    const tables = await getAvailableTables();
     let tableList = ``;
     if (tables) {
         tableList = buildRoomList(tables);
@@ -51,7 +51,7 @@ async function buildInitialScreen() {
     html += `<tr><td style="text-align:right;">`;
     html += `# Players: `;
     html += `</td><td>`;
-    html += `<input type="number" maxlength="3" class="stInput" id="player-count" value = "2" min="2" max="9" />`;
+    html += `<input type="number" maxlength="3" class="stInput" id="player-count" value = "9" min="2" max="9" />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `Initial # chips: `;
@@ -109,9 +109,9 @@ function startGame(){
 //     addPlayerOrTeam(0);
 // }
 
-function buildRoomList(availableRooms) {
+function buildRoomList(tables) {
 
-    if (availableRooms && availableRooms.length > 0) {
+    if (tables && tables.length > 0) {
         let html = ``;
         html += `<tr><td colspan = "2" style = "text-align:center;">`;
         html += `<p>Or, join a game. Enter name and select game.</p>`;
@@ -126,10 +126,10 @@ function buildRoomList(availableRooms) {
         html += `Table:`;
         html += `</td>`;
         html += `<td>`;
-        html += `<select class="stInput" onChange="joinTable(this.value)">`;
+        html += `<select class="stInput" id="select-table" onChange="joinTable(this.value)">`;
         html += `<option>-select game-</option>`;
-        availableRooms.forEach(roomName => {
-            html += `<option><value = "${roomName}">${roomName}</option>`;
+        tables.forEach(table => {
+            html += `<option value = "${table.id}">${table.name}</option>`;
         });
         html += `</select>`;
         html += `</td></tr>`;
@@ -138,13 +138,14 @@ function buildRoomList(availableRooms) {
     return ``;
 }
 
-function joinTable(tableName){
+function joinTable(tableId){
     const playerName = document.getElementById(`joining-player-name`).value;
-    if (!playerName){
-        alert (`need player name`); // TODO - elegantly handle this
+    if (!playerName || !tableId){
+        alert (`need player name/must select table`); // TODO - elegantly handle this
+        const playerName = document.getElementById(`select-table`).selectedIndex =0;
         return;
     }
-    joinPokerGame(tableName,playerName);
+    joinPokerGame(tableId,playerName);
 
     // destroyById('initial-screen');
     // drawScreen();
@@ -318,13 +319,13 @@ async function checkTableName() {
    // const gameMessageSpan = document.getElementById(`game-msg-span`);
     //gameMessageSpan.innerHTML = `&nbsp;`;
     if (tableName && tableName.length > 0) {
-        const available = await isRoomAvailable(tableName);
-        if (available) {
+       // const available = await isRoomAvailable(tableName);
+      //  if (available) {
             startTableButton.disabled = false;
-        } else {
+      //  } else {
        //     gameMessageSpan.innerHTML = `The name "${gameName}" in use.`
-            startTableButton.disabled = true;
-        }
+      //      startTableButton.disabled = true;
+      //  }
 
     } else {
         startTableButton.disabled = true;
