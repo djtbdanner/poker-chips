@@ -1,5 +1,5 @@
 const crypto = require("crypto");
-const players = [];
+const PlayStatus = require('./PlayStatus');
 
 class Table {
     constructor(name, playerCount, startChipCount) {
@@ -8,8 +8,8 @@ class Table {
         this.playerCount = playerCount;
         this.startChipCount = startChipCount;
         this.players = [];
-        this.pot = 0;
         this.messages = [];
+        this.playStatus = new PlayStatus();
     }
 
     addPlayer(player) {
@@ -18,7 +18,6 @@ class Table {
     }
 
     addMessage(text) {
-        // TODO -- check for player already here
         this.messages.push(text);
     }
 

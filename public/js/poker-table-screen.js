@@ -6,40 +6,53 @@ function drawScreen(table) {
     let html = ``;
     html += `    <div class="pokerTableDiv"></div>`;
     const myTurnPlayer = table.players.find(player => player.turn);
-    let disabled = `disabled`;
-    if (myTurnPlayer && (myTurnPlayer.id === document.getElementById(`player-id`).value)){
-        disabled = ``;
+    const thisPlayerId = document.getElementById(`player-id`).value;
+    const thisPlayer = table.players.find(player => player.id === thisPlayerId);
+    const playStatus = table.playStatus;
+    let disabledFold = `disabled`;
+    let disabledCheck = `disabled`;
+    let disabledCall = `disabled`;
+    let disabledRaise = `disabled`;
+    let callAmount = ``;
+    if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
+        disabledFold = ``;
+        disabledRaise = ``;
+        if (playStatus && playStatus.callAmount && playStatus.callAmount > 0) {
+            disabledCall = ``;
+            callAmount = playStatus.callAmount;
+        } else {
+            disabledCheck = ``;
+        }
     }
-    // html += `    <div class="playerDiv playerTopLeft">playerTopLeft</div>`;
-    // html += `    <div class="playerDiv playerTopRight">playerTopRight</div>`;
-    // html += `    <div class="playerDiv playerRightTop">playerRightTop</div>`;
-    // html += `    <div class="playerDiv playerRightCenter">playerRightCenter</div>`;
-    // html += `    <div class="playerDiv playerRightBottom">playerRightBottom</div>`;
-    // html += `    <div class="playerDiv playerLeftTop">playerLeftTop</div>`;
-    // html += `    <div class="playerDiv playerLeftCenter">playerLeftCenter</div>`;
-    // html += `    <div class="playerDiv playerLeftBottom">playerLeftBottom</div>`;
-    // html += `    <div class="playerDivTurn playerCurrent">you</div>`;
     if (table.players.length > 0) {
         for (let i = 0; i < table.players.length; i++) {
             const player = table.players[i];
             let divClass = `playerDiv`;
-
-            if (player.dealer){
-                divClass =  `playerDivDealer`;
+            if (player.dealer) {
+                divClass = `playerDivDealer`;
             }
-            if (player.turn){
-                divClass =  `playerDivTurn`;
+            if (player.turn) {
+                divClass = `playerDivTurn`;
             }
-            html += `<div class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}</div>`;
+            if (player.folded) {
+                divClass = `playerFoldedDiv`;
+            }
+            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chips}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
+            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
+                html += `<input type = "button" class="voteButton" value="${player.name} wins" onClick = "choseRoundWinner('${player.id}')" ></div>`;
+            } else {
+                html += `</div>`;
+            }
         }
     }
-    html += `    <div class="playerDiv playerPot">pot</div>`;
+
+    html += `    <div class="playerDiv playerPot">pot<br>${playStatus.pot}</div>`;
     html += `    <div class="footer">`;
     html += `        <table>`;
     html += `            <tr>`;
     html += `                <td colspan="5" width="100%">`;
-    html += `                    <textarea id="history-text" rows = "3"  readonly>`;
-    table.messages.forEach((message) =>{
+    html += `                    <textarea id="history-text" rows = "4"  readonly>`;
+    table.messages.forEach((message) => {
         html += `&#8226; ${message}\r\n`;
     });
     html += `                      </textarea>`;
@@ -49,7 +62,7 @@ function drawScreen(table) {
     html += `        <table>`;
     html += `            <tr>`;
     html += `                <td class="even5td">`;
-    html += `                    <div id="total-chip-count">270</div>`;
+    html += `                    <div id="total-chip-count">${thisPlayer.chips}</div>`;
     html += `                    <br>`;
     html += `                    Total Chips`;
     html += `                </td>`;
@@ -79,22 +92,22 @@ function drawScreen(table) {
     html += `                    Options`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="fold-button" ${disabled} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
+    html += `                    <input type="button" id="fold-button" ${disabledFold} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
     html += `                    <br>`;
     html += `                    Fold`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="check-button" ${disabled} value="&nbsp;&#10004;&nbsp;" onClick="playerAction('CHECK', 0);" \>`;
+    html += `                    <input type="button" id="check-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;" onClick="playerAction('CHECK', 0);" \>`;
     html += `                    <br>`;
     html += `                    Check`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="call-button" ${disabled} value="&nbsp;&phone;&nbsp;"  onClick="playerAction('CALL', 0);" \>`;
+    html += `                    <input type="button" id="call-button" ${disabledCall} value="&nbsp;&phone;&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `                    <br>`;
-    html += `                    Call`;
+    html += `                    Call ${callAmount}`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="raise-button" ${disabled} value="&nbsp;&#9757;&nbsp;"  onClick="playerAction('RAISE', 0);" \>`;
+    html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="playerAction('RAISE', ${callAmount}+5);" \>`;
     html += `                    <br>`;
     html += `                    Raise`;
     html += `                </td>`;
@@ -104,7 +117,7 @@ function drawScreen(table) {
     createAndAppendDiv(html, id, true);
     scrollText();
 }
-function scrollText(){
+function scrollText() {
     var textarea = document.getElementById('history-text');
     textarea.scrollTop = textarea.scrollHeight;
 }
@@ -115,8 +128,8 @@ function getPlayerLocationStyle(table, i) {
     i = i - indexOfThisPlayer;
     console.log(`is gr:` + i);
     if (i < 0) {
-         i = (i + count);
-     }
+        i = (i + count);
+    }
     let loc;
     if (count <= 2) {
         if (i === 0) {

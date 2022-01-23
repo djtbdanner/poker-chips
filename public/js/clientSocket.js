@@ -31,6 +31,13 @@ socket.on(`set-table-id`, (data) => {
     document.getElementById(`table-id`).value = data.tableId;
 });
 
+socket.on(`poker-div-blink`, (data) => {
+    const element = document.getElementById(data.elementId);
+    if (element){
+        element.classList.add("blink");
+    }
+});
+
 
 socket.on(`table-modal-message`, (data) => {
     modalMessage(data);
@@ -40,8 +47,14 @@ function playerAction(action, chips) {
     const playerId = document.getElementById(`player-id`).value;
     const tableId = document.getElementById(`table-id`).value;
     socket.emit(`poker-action`, { tableId, playerId, action, chips });
-
 }
+
+function choseRoundWinner(winningPlayerId) {
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    socket.emit(`poker-win-round`, {winningPlayerId, playerId, tableId});
+}
+
 
 // socket.on('message-room', (message) => {
 //     modalMessage(message);

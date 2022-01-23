@@ -41,12 +41,13 @@ async function buildInitialScreen() {
     html += `<tr><td style="text-align:right;">`;
     html += `Table: `;
     html += `</td><td>`;
-    html += `<input type="text" maxlength="20" class="stInput" id="table-name" placeholder="Table Name" onKeyUp="checkTableName()" autofocus />`;
+    //--TODO-- remove the values
+    html += `<input type="text" maxlength="20" class="stInput" id="table-name" value = "t" placeholder="Table Name" onKeyUp="checkTableName()" autofocus />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `Your Name: `;
     html += `</td><td>`;
-    html += `<input type="text" maxlength="20" class="stInput" id="player-name" placeholder="Your Name" />`;
+    html += `<input type="text" maxlength="20" class="stInput" id="player-name" value = "t" placeholder="Your Name" />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `# Players: `;
@@ -120,7 +121,8 @@ function buildRoomList(tables) {
         html += `Name:`;
         html += `</td>`;
         html += `<td>`;
-        html += `<input type="text" maxlength="20" class="stInput" id="joining-player-name" placeholder="Player Name"/>`;
+        //--TODO-- remove the values
+        html += `<input type="text" maxlength="20" class="stInput" id="joining-player-name" value="s" placeholder="Player Name"/>`;
         html += `</td></tr>`;
         html += `<tr><td style="text-align:right;">`;
         html += `Table:`;
