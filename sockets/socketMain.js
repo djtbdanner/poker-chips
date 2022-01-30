@@ -171,7 +171,16 @@ io.sockets.on('connect', (socket) => {
         }
     });
 
-
+    socket.on(`poker-get-current-table`, (data) => {
+        try {
+            const playerId = data.playerId;
+            const tableId = data.tableId;
+            const table = tables.get(tableId);
+            socket.emit(`poker-get-current-table`, JSON.stringify(table));
+        } catch (error) {
+            handleError(socket, error, data);
+        }
+    });
 
     // socket.on('is-room-available', (data) => {
     //     try { 

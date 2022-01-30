@@ -1,6 +1,7 @@
 let firstScreen = true;
 function drawScreen(table) {
     const id = `table-div`;
+    destroyById(`bet-input`);
     destroyById(`initial-screen`);
     destroyById(id);
     let html = ``;
@@ -62,9 +63,9 @@ function drawScreen(table) {
     html += `        <table>`;
     html += `            <tr>`;
     html += `                <td class="even5td">`;
-    html += `                    <div id="total-chip-count">${thisPlayer.chips}</div>`;
-    html += `                    <br>`;
     html += `                    Total Chips`;
+    html += `                    <br>`;
+    html += `                    <div id="total-chip-count">${thisPlayer.chips}</div>`;   
     html += `                </td>`;
     html += `                <td class="even5td">`;
     html += `                    <img src="images/chip-black.png"></img>`;
@@ -107,7 +108,7 @@ function drawScreen(table) {
     html += `                    Call ${callAmount}`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="playerAction('RAISE', ${callAmount}+5);" \>`;
+    html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;
     html += `                    <br>`;
     html += `                    Raise`;
     html += `                </td>`;

@@ -55,6 +55,14 @@ function choseRoundWinner(winningPlayerId) {
     socket.emit(`poker-win-round`, {winningPlayerId, playerId, tableId});
 }
 
+async function getCurrentTable() {
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    const table = await asyncEmit(`poker-get-current-table`, { tableId, playerId });
+    if (table) {
+        drawScreen(JSON.parse(table));
+    }
+}
 
 // socket.on('message-room', (message) => {
 //     modalMessage(message);

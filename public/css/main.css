@@ -2,8 +2,17 @@
 @media screen and (orientation: portrait) {
   html,
   body {
-    font-size: 2vh;
+    font-size: 3vh;
   }
+  .smallitalic {
+    font-size: 1.5vh;
+    font-style: italic;
+    color:rgb(100, 100, 100);
+  }
+  /* h5{
+    font-size: 3vh;
+    font-weight: bold;
+  } */
   .menuDiv{
     background-color:rgb(194, 192, 192);  
     color:black;
@@ -141,6 +150,7 @@
   .smallitalic {
     font-size: 2vh;
     font-style: italic;
+    color:rgb(100, 100, 100);
   }
   .menuDiv{
     background-color:rgb(194, 192, 192); 
@@ -258,6 +268,17 @@
   }
 }
 
+.additionalInputDiv{
+  background-color:white;
+  width:85%;
+  height:90%;
+  left:8%;
+  top:8%;
+  position:absolute;
+  background-image:url('/images/wood-pattern.png');
+  border-radius:10px;
+}
+
 @keyframes rotate {
   to {
     --angle: 360deg;
@@ -273,14 +294,14 @@ table{
   padding:0;
   margin:0;
   width:100%;
-  /* border: solid rgba(45, 250, 0, 0.5); */
+  /* border: solid rgba(0, 0, 0, 0.5); */
 }
 .even5td{
   width: 20%;
   padding:0;
   margin:0;
   text-align: center;
-  /* border: solid rgba(0, 0, 0, 0.5); */
+  /* border: solid rgba(0, 0, 0, 0.3); */
 }
 
 img{
@@ -388,32 +409,34 @@ textarea{
 }
 
 .slider {
-  -webkit-appearance: none;
-  height: .001px;
-  background: black;
+  -webkit-appearance: slider-vertical;
+  height: 45vh;
+  width:5vw; 
+  margin:0px;
+  padding: 0px; 
+  /* background-color: silver;
+  color: silver; */
 }
 
 .slider::-webkit-slider-thumb {
   -webkit-appearance: none;
   appearance: none;
-  width: 1vw;
+  width: 2vh;
   height: 5vw;
   background: white;
-  cursor: pointer;
 }
 
 .slider::-moz-range-thumb {
-  width: 1vw;
-  height: 5vw;
+  width: 5vw;
+  height: 2vh;
   background: white;
-  cursor: pointer;
 }
 
-input[type=range]{
+/* input[type=range]{
   -webkit-transform: rotate(270deg);
   -moz-transform: rotate(270deg);
    transform: rotate(270deg);
-}
+} */
 
 .modal {
   width: 100%;
