@@ -14,10 +14,10 @@ function drawScreen(table) {
     let disabledCheck = `disabled`;
     let disabledCall = `disabled`;
     let disabledRaise = `disabled`;
-    blackChipCount = thisPlayer.chips.filter(c => c.color === `black`).length;
+    playerBlackChipCount = thisPlayer.chips.filter(c => c.color === `black`).length;
     playerGreenChipCount = thisPlayer.chips.filter(c => c.color === `green`).length;
     playerRedChipCount = thisPlayer.chips.filter(c => c.color === `red`).length;
-    grayChipCount = thisPlayer.chips.filter(c => c.color === `gray`).length;
+    playerGrayChipCount = thisPlayer.chips.filter(c => c.color === `gray`).length;
     totalChips = thisPlayer.chipTotal;
     callAmount = ``;
     if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
@@ -74,7 +74,7 @@ function drawScreen(table) {
     html += `                </td>`;
     html += `                <td class="even5td">`;
     html += `                    <img src="images/chip-black.png"></img>`;
-    html += `                    <div id="black-chip-count">${blackChipCount}</div>`;
+    html += `                    <div id="black-chip-count">${playerBlackChipCount}</div>`;
     html += `                </td>`;
     html += `                    <td class="even5td">`;
     html += `                    <img src="images/chip-green.png"></img>`;
@@ -86,14 +86,14 @@ function drawScreen(table) {
     html += `                </td>`;
     html += `                 <td class="even5td">`;
     html += `                    <img src="images/chip-gray.png"></img>`;
-    html += `                    <div id="gray-chip-count">${grayChipCount}</div>`;
+    html += `                    <div id="gray-chip-count">${playerGrayChipCount}</div>`;
     html += `                </td>`;
     html += `            </tr>`;
     html += `        </table>`;
     html += `        <table>`;
     html += `            <tr>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="options-button" value="..." \>`;
+    html += `                    <input type="button" id="options-button" value="..." onclick = "buildMenu()" \>`;
     html += `                    <br>`;
     html += `                    Options`;
     html += `                </td>`;

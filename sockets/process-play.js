@@ -1,3 +1,5 @@
+const Chip = require('./classes/Chip');
+
 exports.setNextPlayerTurn = (currentPlayer, table) => {
     const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
     currentPlayer.turn = false;
@@ -14,7 +16,7 @@ exports.setNextPlayerTurn = (currentPlayer, table) => {
 }
 
 
-exports.calculateCurrentCallAmount = (currentPlayer, table, bet) => {
+exports.calculateCurrentCallAmount = (table) => {
 
     table.playStatus.callAmount = 0;
     const bettingPlayer = table.players.find(player => player.turn);
@@ -73,14 +75,14 @@ exports.updatePlayersAfterBetting = (currentPlayer, table, bet) => {
     const nextPlayer = table.players[nextPlayerIndex];
     nextPlayer.turn = true;
     nextPlayer.firstBettor = true;
+    table.addMessage(`Betting round complete.`);
     table.addMessage(`${nextDealer.name} is dealer with ${nextPlayer.name} betting.`);
 
-    const playersNotFolded = table.players.filter(player => !player.folded);
-    if (playersNotFolded.length < 2) {
-        return true;
-    }
+    // const playersNotFolded = table.players.filter(player => !player.folded);
+    // if (playersNotFolded.length < 2) {
+    //     return true;
+    // }
 }
-
 
 exports.processWinner = (winningPlayer, table, socket) => {
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; });
@@ -94,3 +96,84 @@ exports.processWinner = (winningPlayer, table, socket) => {
         socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
     }, 500);
 } 
+
+exports.calculateChips = (chips, player, table) => {
+    let betBlackCount = 0;
+    let betGreenCount = 0;
+    let betRedCount = 0;
+    let betGrayCount = 0;
+    let totalChips = 0;
+
+    if (Array.isArray(chips)) {
+        betBlackCount = chips.find((c) => c.color === "black").count;
+        betGreenCount = chips.find((c) => c.color === "green").count;
+        betRedCount = chips.find((c) => c.color === "red").count;
+        betGrayCount = chips.find((c) => c.color === "gray").count;
+        totalChips = betBlackCount * 100 + betGreenCount * 25 + betRedCount * 5 + betGrayCount * 1;
+    } else {
+        totalChips = chips;
+        let amount = totalChips;
+        while (amount > 0) {
+            if (amount >= 100) {
+                betBlackCount = betBlackCount + 1;
+                amount -= 100;
+            } else if (amount >= 25) {
+                betGreenCount = betGreenCount + 1;
+                amount -= 25;
+            } else if (amount >= 5) {
+                betRedCount = betRedCount + 1;
+                amount -= 5;
+            } else {
+                betGrayCount = betGrayCount + 1;
+                amount -= 1;
+            }
+        }
+    }
+
+    let playerBlackChipCount = player.chips.filter(c => c.color === `black`).length;
+    let playerGreenChipCount = player.chips.filter(c => c.color === `green`).length;
+    let playerRedChipCount = player.chips.filter(c => c.color === `red`).length;
+    let playerGrayChipCount = player.chips.filter(c => c.color === `gray`).length;
+    playerBlackChipCount = playerBlackChipCount - betBlackCount;
+    playerGreenChipCount = playerGreenChipCount - betGreenCount;
+    playerRedChipCount = playerRedChipCount - betRedCount;
+    playerGrayChipCount = playerGrayChipCount - betGrayCount;
+
+    while (betBlackCount > 0) {
+        table.playStatus.chips.push(Chip.Black);
+        betBlackCount -= 1;
+    }
+    while (betGreenCount > 0) {
+        table.playStatus.chips.push(Chip.Green);
+        betGreenCount -= 1;
+    }
+    while (betRedCount > 0) {
+        table.playStatus.chips.push(Chip.Red);
+        betRedCount -= 1;
+    }
+    while (betGrayCount > 0) {
+        table.playStatus.chips.push(Chip.Gray);
+        betGrayCount -= 1;
+    }
+
+    player.chips = [];
+    while (playerBlackChipCount > 0) {
+        player.chips.push(Chip.Black);
+        playerBlackChipCount -= 1;
+    }
+    while (playerGreenChipCount > 0) {
+        player.chips.push(Chip.Green);
+        playerGreenChipCount -= 1;
+    }
+    while (playerRedChipCount > 0) {
+        player.chips.push(Chip.Red);
+        playerRedChipCount -= 1;
+    }
+    while (playerGrayChipCount > 0) {
+        player.chips.push(Chip.Gray);
+        playerGrayChipCount -= 1;
+    }
+    table.playStatus.pot = table.playStatus.pot + totalChips;
+    player.potRaisedBy = player.potRaisedBy + totalChips;
+    return totalChips;
+}

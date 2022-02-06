@@ -113,36 +113,31 @@ io.sockets.on('connect', (socket) => {
 
             const table = tables.get(tableId);
             const player = table.players.find(player => player.id === playerId);
-            let  totalChips = 0;
-            table.addMessage(`${player.name} ${action} with ${totalChips} chips.`);
-
+            let totalChips = 0;
             if (action === "RAISE") {
-                totalChips = calculateChips(chips, player, table);
-                table.playStatus.pot = table.playStatus.pot + totalChips;
+                totalChips = PlayProcessor.calculateChips(chips, player, table);
                 const raisedByAmount = totalChips - table.playStatus.callAmount;
                 table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
-                player.potRaisedBy = player.potRaisedBy + totalChips;
                 table.playStatus.playerLastRaised = player;
             } else if (action === "CALL") {
-                totalChips = calculateChips(chips, player, table);
-                table.playStatus.pot = table.playStatus.pot + totalChips;
-                player.potRaisedBy = player.potRaisedBy + totalChips;
+                totalChips = PlayProcessor.calculateChips(chips, player, table);
             } else if (action === "FOLD") {
                 player.folded = true;
             } else if (action === "CHECK") {
             }
+            table.addMessage(`${player.name} ${action} with ${totalChips} chips.`);
             table.setChipTotalsForPlayers();
             if (PlayProcessor.isBetRoundOver(player, table, socket)) {
                 PlayProcessor.updatePlayersAfterBetting(player, table, totalChips);
             } else {
                 PlayProcessor.setNextPlayerTurn(player, table);
-                PlayProcessor.calculateCurrentCallAmount(player, table, totalChips);
+                PlayProcessor.calculateCurrentCallAmount(table);
             }
             socket.broadcast.to(tableId).emit(`poker-table-change`, JSON.stringify(table));
             socket.emit(`poker-table-change`, JSON.stringify(table));
         } catch (error) {
             handleError(socket, error, data);
-        } 
+        }
     });
 
     socket.on(`poker-win-round`, (data) => {
@@ -264,83 +259,6 @@ io.of("/").adapter.on("delete-room", (room) => {
     tables.delete(room);
 });
 
-function calculateChips(chips, player, table) {
-    let betBlackCount = 0;
-    let betGreenCount = 0;
-    let betRedCount = 0;
-    let betGrayCount = 0;
-    let totalChips = 0;
-
-    if (Array.isArray(chips)) {
-        betBlackCount = chips.find((c) => c.color === "black").count;
-        betGreenCount = chips.find((c) => c.color === "green").count;
-        betRedCount = chips.find((c) => c.color === "red").count;
-        betGrayCount = chips.find((c) => c.color === "gray").count;
-        totalChips = betBlackCount * 100 + betGreenCount * 25 + betRedCount * 5 + betGrayCount * 1;
-    } else {
-        totalChips = chips;
-        let amount = totalChips;
-        while (amount > 0) {
-            if (amount > 100) {
-                betBlackCount = betBlackCount + 1;
-                amount -= 100;
-            } else if (amount > 25) {
-                betGreenCount = betGreenCount + 1;
-                amount -= 25;
-            } else if (amount > 5) {
-                betRedCount = betRedCount + 1;
-                amount -= 5;
-            } else {
-                betGrayCount = betGrayCount + 1;
-                amount -= 1;
-            }
-        }
-    }
-    while (betBlackCount > 0) {
-        table.playStatus.chips.push(Chip.Black);
-        betBlackCount -= 1;
-    }
-    while (betGreenCount > 0) {
-        table.playStatus.chips.push(Chip.Green);
-        betGreenCount -= 1;
-    }
-    while (betRedCount > 0) {
-        table.playStatus.chips.push(Chip.Red);
-        betRedCount -= 1;
-    }
-    while (betGrayCount > 0) {
-        table.playStatus.chips.push(Chip.Gray);
-        betGrayCount -= 1;
-    }
-
-    let playerBlackChipCount = player.chips.filter(c => c.color === `black`).length;
-    let playerGreenChipCount = player.chips.filter(c => c.color === `green`).length;
-    let playerRedChipCount = player.chips.filter(c => c.color === `red`).length;
-    let playerGrayChipCount = player.chips.filter(c => c.color === `gray`).length;
-    playerBlackChipCount = playerBlackChipCount - betBlackCount;
-    playerGreenChipCount = playerGreenChipCount - betGreenCount;
-    playerRedChipCount = playerRedChipCount - betRedCount;
-    playerGrayChipCount = playerGrayChipCount - betGrayCount;
-    player.chips = [];
-    while (playerBlackChipCount > 0) {
-        player.chips.push(Chip.Black);
-        playerBlackChipCount -= 1;
-    }
-    while (playerGreenChipCount > 0) {
-        player.chips.push(Chip.Green);
-        playerGreenChipCount -= 1;
-    }
-    while (playerRedChipCount > 0) {
-        player.chips.push(Chip.Red);
-        playerRedChipCount -= 1;
-    }
-    while (playerGrayChipCount > 0) {
-        player.chips.push(Chip.Gray);
-        playerGrayChipCount -= 1;
-    }
-    return totalChips;
-}
-
 function handleError(socket, error, data) {
     try {
         console.log(`ERROR: ${error} - DATA: ${JSON.stringify(data)} - STACK: ${error.stack}`);
@@ -353,7 +271,7 @@ function handleError(socket, error, data) {
         // dont' shut down if error handling error
         console.log(e);
     }
-} 
+}
 
 // test data
 function testTable() {
