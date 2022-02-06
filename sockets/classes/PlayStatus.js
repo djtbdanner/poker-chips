@@ -7,6 +7,7 @@ class PlayStatus {
         this.selectWinner = false;
         this.pot = 0;
         this.totalRaiseThisRound = 0;
+        this.chips = [];
     }
 
     reset() {
@@ -18,6 +19,7 @@ class PlayStatus {
         this.selectWinner = false;
         this.pot = 0;
         this.totalRaiseThisRound = 0;
+        this.chips = [];
     }
 }
 module.exports = PlayStatus

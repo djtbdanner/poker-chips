@@ -27,5 +27,17 @@ class Table {
         }
         return true;
     }
+
+    setChipTotalsForPlayers(){
+        this.players.forEach((p)=>{
+            p.chipTotal = 0;
+
+        });
+        this.players.forEach((p)=>{
+            p.chips.forEach((c) => {
+                p.chipTotal += c.value;
+            });
+        });
+    }
 }
 module.exports = Table 

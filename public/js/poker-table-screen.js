@@ -14,7 +14,12 @@ function drawScreen(table) {
     let disabledCheck = `disabled`;
     let disabledCall = `disabled`;
     let disabledRaise = `disabled`;
-    let callAmount = ``;
+    blackChipCount = thisPlayer.chips.filter(c => c.color === `black`).length;
+    playerGreenChipCount = thisPlayer.chips.filter(c => c.color === `green`).length;
+    playerRedChipCount = thisPlayer.chips.filter(c => c.color === `red`).length;
+    grayChipCount = thisPlayer.chips.filter(c => c.color === `gray`).length;
+    totalChips = thisPlayer.chipTotal;
+    callAmount = ``;
     if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
         disabledFold = ``;
         disabledRaise = ``;
@@ -38,7 +43,7 @@ function drawScreen(table) {
             if (player.folded) {
                 divClass = `playerFoldedDiv`;
             }
-            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chips}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
+            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
                 html += `<input type = "button" class="voteButton" value="${player.name} wins" onClick = "choseRoundWinner('${player.id}')" ></div>`;
             } else {
@@ -65,23 +70,23 @@ function drawScreen(table) {
     html += `                <td class="even5td">`;
     html += `                    Total Chips`;
     html += `                    <br>`;
-    html += `                    <div id="total-chip-count">${thisPlayer.chips}</div>`;   
+    html += `                    <div id="total-chip-count">${thisPlayer.chipTotal}</div>`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
     html += `                    <img src="images/chip-black.png"></img>`;
-    html += `                    <div id="black-chip-count">0</div>`;
+    html += `                    <div id="black-chip-count">${blackChipCount}</div>`;
     html += `                </td>`;
     html += `                    <td class="even5td">`;
     html += `                    <img src="images/chip-green.png"></img>`;
-    html += `                    <div id="green-chip-count">10</div>`;
+    html += `                    <div id="green-chip-count">${playerGreenChipCount}</div>`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
     html += `                    <img src="images/chip-red.png"></img>`;
-    html += `                    <div id="red-chip-count">3</div>`;
+    html += `                    <div id="red-chip-count">${playerRedChipCount}</div>`;
     html += `                </td>`;
     html += `                 <td class="even5td">`;
     html += `                    <img src="images/chip-gray.png"></img>`;
-    html += `                    <div id="gray-chip-count">5</div>`;
+    html += `                    <div id="gray-chip-count">${grayChipCount}</div>`;
     html += `                </td>`;
     html += `            </tr>`;
     html += `        </table>`;

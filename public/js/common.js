@@ -1,3 +1,13 @@
+/// global - all screens
+let blackChipCount = 0;
+let playerGreenChipCount = 0;
+let playerRedChipCount = 0;
+let grayChipCount = 0;
+let totalChips = 0;
+let currentBetAmount = 0;
+let callAmount = 0;
+////
+
 async function buildMenu() {
     const isOwner = document.getElementById(`room-owner`).value === "true";
     destroyById(`menu`);
@@ -28,7 +38,7 @@ async function buildMenu() {
 
 function createAndAppendDiv(html, id, isFullScreen) {
     let div = document.getElementById(id);
-    if (div){
+    if (div) {
         destroyNode(div);
         div = undefined;
     }
@@ -46,12 +56,12 @@ function createAndAppendDiv(html, id, isFullScreen) {
 
 function clearAllDivs() {
     let divs = document.body.getElementsByTagName(`div`);
-    for(i=0; i<divs.length;i++){
+    for (i = 0; i < divs.length; i++) {
         destroyNode(divs[i]);
     }
 
     divs = document.getElementsByTagName(`div`);
-    for(i=0; i<divs.length;i++){
+    for (i = 0; i < divs.length; i++) {
         destroyNode(divs[i]);
     }
 }

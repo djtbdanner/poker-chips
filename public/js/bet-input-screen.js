@@ -1,11 +1,21 @@
+
+const chipColors = ["black", "green", "red", "gray"];
 const id = "bet-input";
+
+// let blackChipCount = 5;
+// let greenChipCount = 10;
+// let redChipCount = 3;
+// let grayChipCount = 5;
+// let totalChips = 770;
+// let currentBetAmount = 5;
+
 function drawBetScreen() {
     destroyById(`table-div`);
     const html = getBetScreenHTML();
-    createAndAppendDiv(html, id , true);
+    createAndAppendDiv(html, id, true);
 }
 
-function getBetScreenHTML(id ) {
+function getBetScreenHTML(id) {
     destroyById(id);
     let html = ``;
     html += `<div id = "${id}" class="additionalInputDiv">`;
@@ -20,21 +30,21 @@ function getBetScreenHTML(id ) {
     html += `            <!-- The colors only work in Firefox unless a lot of work into getting them vertical by rotating and that presents own issue`;
     html += `            the orient vertical here is only for Firefox -->`;
     html += `            <td class="even5td" style="height:25vh;">`;
-    html += `                <input type="range" min="0" max="5" value="0" class="slider" style="background:#000000;"`;
+    html += `                <input type="range" min="0" max="${blackChipCount}" value="0" class="slider" style="background:#000000;"`;
     html += `                    id="black-range" oninput="processSliderInput(this)" orient="vertical">`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="10" value="0" class="slider" style="background:#2d6621;"`;
+    html += `                <input type="range" min="0" max="${playerGreenChipCount}" value="0" class="slider" style="background:#2d6621;"`;
     html += `                    id="green-range" oninput="processSliderInput(this)" orient="vertical">`;
     html += `            </td>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="3" value="0" class="slider" id="red-range" style="background:#b72820;"`;
+    html += `                <input type="range" min="0" max="${playerRedChipCount}" value="0" class="slider" id="red-range" style="background:#b72820;"`;
     html += `                    oninput="processSliderInput(this)" orient="vertical">`;
     html += `            </td>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="5" value="0" class="slider" style="background:#6e7070;" id="gray-range"`;
+    html += `                <input type="range" min="0" max="${grayChipCount}" value="0" class="slider" style="background:#6e7070;" id="gray-range"`;
     html += `                    oninput="processSliderInput(this)" orient="vertical">`;
     html += `            </td>`;
     html += `            </td>`;
@@ -42,22 +52,22 @@ function getBetScreenHTML(id ) {
     html += `        <tr>`;
     html += `            <td class="even5td">`;
     html += `                Total Chips<br>`;
-    html += `                <span id="totalChips">770</span>`;
+    html += `                <span id="totalChips">${totalChips}</span>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <img src="images/chip-black.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="black-chipcount">5</span>`;
+    html += `                    id="black-chipcount">${blackChipCount}</span>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <img src="images/chip-green.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="green-chipcount">10</span>`;
+    html += `                    id="green-chipcount">${playerGreenChipCount}</span>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
-    html += `                <img src="images/chip-red.png" style="width:7vw;height:7vw;"></img><br><span id="red-chipcount">3</span>`;
+    html += `                <img src="images/chip-red.png" style="width:7vw;height:7vw;"></img><br><span id="red-chipcount">${playerRedChipCount}</span>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <img src="images/chip-gray.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="gray-chipcount">5</span>`;
+    html += `                    id="gray-chipcount">${grayChipCount}</span>`;
     html += `            </td>`;
     html += `        </tr>`;
     html += `        <tr>`;
@@ -98,7 +108,7 @@ function getBetScreenHTML(id ) {
     html += `            <td class="even5td">`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
-    html += `                <input type="button" id="bet-bet" value="RAISE" disabled onClick="playerAction('RAISE', calcTotalBet());">`;
+    html += `                <input type="button" id="bet-bet" value="RAISE" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
     html += `            </td>`;
     html += `        </tr>`;
     html += `    </table>`;
@@ -107,16 +117,7 @@ function getBetScreenHTML(id ) {
 }
 
 ////////////////
-
-const chipColors = ["black", "green", "red", "gray"];
-const blackChipCount = 5;
-const greenChipCount = 10;
-const redChipCount = 3;
-const grayChipCount = 5;
-const totalChips = 770;
-const currentBetAmount = 5;
-
-function cancelBetScreen (){
+function cancelBetScreen() {
     getCurrentTable();
 }
 
@@ -131,11 +132,11 @@ function chipsChange(chipColor, chipBet) {
     let originalChipCount = blackChipCount;
 
     if (chipColor === `green`) {
-        originalChipCount = greenChipCount;
+        originalChipCount = playerGreenChipCount;
         chipMultiplier = 25;
     }
     if (chipColor === `red`) {
-        originalChipCount = redChipCount;
+        originalChipCount = playerRedChipCount;
         chipMultiplier = 5;
     }
     if (chipColor === `gray`) {
@@ -149,9 +150,9 @@ function chipsChange(chipColor, chipBet) {
     const totalBet = calcTotalBet();
     document.getElementById(`totalBet`).innerHTML = totalBet;
     document.getElementById(`totalChips`).innerHTML = totalChips - totalBet;
-    if (totalBet >= currentBetAmount){
+    if (totalBet >= currentBetAmount) {
         document.getElementById(`bet-bet`).disabled = false;
-    }else{
+    } else {
         document.getElementById(`bet-bet`).disabled = true;
     }
 }
@@ -179,6 +180,28 @@ function calcTotalBet() {
     return total;
 }
 
+function buildChipsForBet() {
+
+    let blackbet = document.getElementById("black-bet").value;
+    let greenbet = document.getElementById("green-bet").value;
+    let redbet = document.getElementById("red-bet").value;
+    let graybet = document.getElementById("gray-bet").value;
+    if (blackbet === "" || !blackbet || isNaN(blackbet)) {
+        blackbet = 0;
+    }
+    if (greenbet === "" || !greenbet && isNaN(greenbet)) {
+        greenbet = 0;
+    }
+    if (redbet === "" || !redbet && !isNaN(redbet)) {
+        redbet = 0;
+    }
+    if (graybet === "" || !graybet && !isNaN(graybet)) {
+        graybet = 0;
+    }
+    const chips = `[{"color":"black", "count":${blackbet}},{"color":"green","count":${greenbet}},{"color":"red","count":${redbet}},{"color":"gray","count":${graybet}}]`
+    return chips;
+}
+
 function resetBet() {
     document.getElementById("black-bet").value = "";
     document.getElementById("green-bet").value = "";
@@ -191,8 +214,8 @@ function resetBet() {
     document.getElementById("gray-betval").innerHTML = 0;
 
     document.getElementById("black-chipcount").innerHTML = blackChipCount;
-    document.getElementById("green-chipcount").innerHTML = greenChipCount;
-    document.getElementById("red-chipcount").innerHTML = redChipCount;
+    document.getElementById("green-chipcount").innerHTML = playerGreenChipCount;
+    document.getElementById("red-chipcount").innerHTML = playerRedChipCount;
     document.getElementById("gray-chipcount").innerHTML = grayChipCount;
 
     document.getElementById("black-range").value = 0;
@@ -207,7 +230,7 @@ function resetBet() {
 function onChangeBet(element) {
     const id = element.id;
     const chipColor = id.split("-")[0];
-    if (!chipColor || !chipColors.includes(chipColor)){
+    if (!chipColor || !chipColors.includes(chipColor)) {
         console.log("chip color not known");
         return;
     }
@@ -222,27 +245,26 @@ function onChangeBet(element) {
         val = 0;
     }
 
-
-    if (chipColor === "black" && val > blackChipCount){
+    if (chipColor === "black" && val > blackChipCount) {
         console.log("black chip bet more than have");
         element.value = "";
         val = 0;
     }
-    if (chipColor === "green" && val > greenChipCount){
+    if (chipColor === "green" && val > playerGreenChipCount) {
         console.log("green chip bet more than have");
         element.value = "";
         val = 0;
     }
-    if (chipColor === "red" && val > redChipCount){
+    if (chipColor === "red" && val > playerRedChipCount) {
         console.log("red chip bet more than have");
         element.value = "";
         val = 0;
     }
-    if (chipColor === "gray" && val > grayChipCount){
+    if (chipColor === "gray" && val > grayChipCount) {
         console.log("gray chip bet more than have");
         element.value = "";
         val = 0;
     }
-    document.getElementById(chipColor+"-range").value = val;
+    document.getElementById(chipColor + "-range").value = val;
     chipsChange(chipColor, val);
 }

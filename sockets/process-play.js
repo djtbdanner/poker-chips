@@ -85,15 +85,12 @@ exports.updatePlayersAfterBetting = (currentPlayer, table, bet) => {
 exports.processWinner = (winningPlayer, table, socket) => {
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; });
     table.addMessage(`${winningPlayer.name} WINS the pot of ${table.playStatus.pot} chips!!`);
-    winningPlayer.chips = winningPlayer.chips + table.playStatus.pot;
+    winningPlayer.chips.push(...table.playStatus.chips);
     table.playStatus.reset();
+    table.setChipTotalsForPlayers();
     // give the process a second to update the pages, then flash (no harm if not done)
     setTimeout(() => {
         socket.broadcast.to(table.id).emit(`poker-div-blink`, { elementId: winningPlayer.id });
         socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
     }, 500);
-
-
-}
-
-
+} 

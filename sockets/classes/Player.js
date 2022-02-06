@@ -3,7 +3,7 @@ class Player {
     constructor(name) {
         this.name = name;
         this.id = crypto.randomBytes(16).toString("hex");
-        this.chips = 0;
+      //  this.chips = 0;
         this.turn = false;
         this.dealer = false;
         this.folded = false;
@@ -12,6 +12,8 @@ class Player {
         this.hasVoted = false;
         this.winVoteCount = 0;
         this.potRaisedBy = 0;
+        this.chips = [];
+        this.chipTotal = 0;
     }
 }
 module.exports = Player

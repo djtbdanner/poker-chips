@@ -38,7 +38,6 @@ socket.on(`poker-div-blink`, (data) => {
     }
 });
 
-
 socket.on(`table-modal-message`, (data) => {
     modalMessage(data);
 });
