@@ -1,3 +1,7 @@
+:root {
+  --default-input-bgcolor:rgb(235, 200, 155);
+}
+
 /* Vertical - like the phone */
 @media screen and (orientation: portrait) {
   html,
@@ -339,7 +343,7 @@ body {
 input{
   padding: 10%; 
   margin: 5px; 
-  background: rgb(235, 200, 155);
+  background: var(--default-input-bgcolor);
   border-radius: 5px;
   font-weight: bold;
 }
@@ -356,12 +360,28 @@ input{
   padding: 2%; 
   margin-left: 1%; 
   width:98%;
-  background: rgb(235, 200, 155);
+  background: var(--default-input-bgcolor);
   border-radius: 5px;
   font-weight: bold;
   position:absolute;
   bottom:0;
   left:0;
+}
+
+.stInput{
+  padding: 1%; 
+  margin: 5px; 
+  background:  white;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+.stInputDefaultcolor{
+  padding: 1%; 
+  margin: 5px; 
+  background:   var(--default-input-bgcolor);
+  border-radius: 5px;
+  font-weight: bold;
 }
 
 input:disabled,
@@ -381,14 +401,6 @@ textarea{
   border-style: ridge;
   border-color: rgb(0, 0, 0);
   border-width:2%;
-}
-
-.stInput{
-  padding: 1%; 
-  margin: 5px; 
-  background: white;
-  border-radius: 5px;
-  font-weight: bold;
 }
 
 @keyframes blinking {
@@ -449,18 +461,25 @@ textarea{
   background: white;
 }
 
-.modal {
+.modalOuterDiv {
   width: 100%;
   height: 100%;
   position: absolute;
-  left: 0px;
-  top: 0px; 
-  /* margin-left: -175px;
-  margin-top: -175px; */
-  background-color: var(--default-background-color) ; 
-  /* border:3px solid var(--default-border-color); */
-  /* border-radius: 3px; */
-  /* box-shadow: var(--default-shadow); */
+  left: 0%;
+  top: 0%; 
+  background-color:rgba(0, 0, 0, 0.5); 
+}
+
+.modalInnerDiv {
+  width: 50%;
+  height: 50%;
+  position: absolute;
+  left: 25%;
+  top: 25%; 
+  background-color:rgba(254,254,254,  1); 
+  border:3px ridge black; 
+  border-radius: 15px; 
+  box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
 }
 
 .menu {

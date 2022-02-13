@@ -15,6 +15,31 @@ async function joinPokerGame(tableId, playerName) {
         }
 }
 
+
+function pokerChipDenominationChange(fromChipColor, toChipColor){
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, fromChipColor, toChipColor});
+}
+
+function pokerChipDenominationQuit(){
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, playerDone:true});
+}
+
+function removePlayer(){
+    const playerId = document.getElementById(`player-id`).value;
+    const tableId = document.getElementById(`table-id`).value;
+    socket.emit(`poker-remove-player`, {playerId, tableId});
+    destroyById(`table-div`);
+    destroyById(`bet-input`);
+    destroyById(`initial-screen`);
+    destroyById(`chip-change`);
+}
+
+
+
 socket.on(`poker-table-change`, (data) => {
     const table = JSON.parse(data);
     if (table) {
@@ -38,7 +63,7 @@ socket.on(`poker-div-blink`, (data) => {
     }
 });
 
-socket.on(`table-modal-message`, (data) => {
+socket.on(`poker-table-modal-message`, (data) => {
     modalMessage(data);
 });
 

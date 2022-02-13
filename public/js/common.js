@@ -54,7 +54,7 @@ async function buildMenu() {
     html += `<hr>`;
     html += `<a class ="menuItem">Sit out/Return </a></br>`;
     html += `<hr>`;
-    html += `<a class ="menuItem">Leave table</a></br>`;
+    html += `<a class ="menuItem" onclick = "removePlayer()">Leave table</a></br>`;
     html += `<hr>`;
     html += `<a class ="menuItem">Close...</a></br>`;
     html += `</div>`;
@@ -69,174 +69,6 @@ async function buildMenu() {
     menu.style.left = `${optionsLeft}px`;
 
 }
-
-function buildChangeChipsHtml() {
-    const id = `chip-change`
-    destroyById(id);
-    let html = ``;
-    html += `    <div id = "${id}" class = "menu">`;
-    html += `            <hr>`;
-    html += `        <table>`;
-    html += `            <tr>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-black.png" class = "imgreduced"></img>`;
-    html += `                    <br>`;
-    html += `                    <div id="chip-change-black-one">${playerBlackChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="100-25" class="stInput" value="100&#8658;25&nbsp;" onclick = "resetChips('black','green')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-green.png"  class = "imgreduced"></img> <br>`;
-    html += `                     <div id="chip-change-green-one">${playerGreenChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="25-5" class="stInput" value="25&#8658;5&nbsp;" onclick = "resetChips('green','red')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-red.png"  class = "imgreduced"></img> <br>`;
-    html += `                     <div id="chip-change-red-one">${playerRedChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="5-1" class="stInput" value="5&nbsp;&#8658;&nbsp;1&nbsp;" onclick = "resetChips('red','gray')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-gray.png"  class = "imgreduced"></img> <br>`;
-    html += `                     <div id="chip-change-gray-one">${playerGrayChipCount}</div>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `            <tr>`;
-    html += `                <td class="tdSlim" colspan=7>`;
-    html += `                   <hr>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `            <tr>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-gray.png"  class = "imgreduced"></img> <br>`;
-    html += `<div id="chip-change-gray-two">${playerGrayChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="1-5" class="stInput" value="1&nbsp;&#8658;&nbsp;5&nbsp;" onclick = "resetChips('gray','red')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-red.png"  class = "imgreduced"></img> <br>`;
-    html += `                     <div id="chip-change-red-two">${playerRedChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="5-25" class="stInput" value="5&nbsp;&#8658;&nbsp;25&nbsp;" onclick = "resetChips('red','green')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-green.png"  class = "imgreduced"></img> <br>`;
-    html += `                    <div id="chip-change-green-two">${playerGreenChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <input type="button" id="25-100" class="stInput" value="25&nbsp;&#8658;&nbsp;100&nbsp;" onclick = "resetChips('green','black')"></input>`;
-    html += `                </td>`;
-    html += `                <td class="tdSlim">`;
-    html += `                    <img src="images/chip-black.png"  class = "imgreduced"></img> <br>`;
-    html += `                    <div id="chip-change-black-two">${playerBlackChipCount}</div>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `            <tr>`;
-    html += `                <td class="tdSlim" colspan=7>`;
-    html += `                   <hr>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `            <tr>`;
-    html += `                <td class="tdSlim" colspan=7>`;
-    html += `                    <input type="button" id="1-5" value="DONE" class="stInput" onClick="destroyById('${id}')"></input>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `        </table>`;
-    html += `    </div>`;
-    createAndAppendDiv(html, 'default', false);
-    let optionsButton = document.getElementById('options-button');
-    let optionsTextRectangle = optionsButton.getBoundingClientRect();
-    let optionsLeft = parseInt(optionsTextRectangle.left, 10);
-    let optionsBotton = parseInt(optionsTextRectangle.bottom, 10);
-    let div = document.getElementById(id);
-    let heightOfOptions = parseInt((optionsTextRectangle.top - optionsTextRectangle.bottom), 10);
-    let heightOfDiv = div.offsetHeight;
-    div.style.top = `${optionsBotton - heightOfDiv}px`;
-    div.style.left = `${optionsLeft}px`;
-}
-
-function resetChips(fromColor, toColor) {
-    if (fromColor === `black` && toColor === `green`) {
-        if (playerBlackChipCount < 1){
-            alert ('no black chips');
-            return;
-        }
-        playerBlackChipCount = playerBlackChipCount -1;
-        playerGreenChipCount = playerGreenChipCount + 4;
-    } else if ((fromColor === `green` && toColor === `red`)) {
-        if (playerGreenChipCount < 1){
-            alert ('no green chips');
-            return;
-        }
-        playerGreenChipCount = playerGreenChipCount -1;
-        playerRedChipCount = playerRedChipCount + 5;
-    } else if ((fromColor === `red` && toColor === `gray`)) {
-        if (playerRedChipCount < 1){
-            alert ('no red chips');
-            return;
-        }
-        playerRedChipCount = playerRedChipCount -1;
-        playerGrayChipCount = playerGrayChipCount + 5;
-    } else if ((fromColor === `gray` && toColor === `red`)) {
-        if (playerGrayChipCount < 5){
-            alert ('not enough gray chips');
-            return;
-        }
-        playerGrayChipCount = playerGrayChipCount -5;
-        playerRedChipCount = playerRedChipCount + 1;
-    } else if ((fromColor === `red` && toColor === `green`)) {
-        if (playerRedChipCount < 5){
-            alert ('not enough red chips');
-            return;
-        }
-        playerRedChipCount = playerRedChipCount -5;
-        playerGreenChipCount = playerGreenChipCount + 1;
-    } else if ((fromColor === `green` && toColor === `black`)) {
-        if (playerGreenChipCount < 4){
-            alert ('not enough green chips');
-            return;
-        }
-        playerGreenChipCount = playerGreenChipCount -4;
-        playerBlackChipCount = playerBlackChipCount + 1;
-    } else {
-        alert(`invalid chip exchange`);
-        return;
-    }
-    setChipcountDisplay();
-
-}
-
-function setChipcountDisplay(){
-
-    document.getElementById(`chip-change-black-two`).innerHTML = playerBlackChipCount;
-    document.getElementById(`chip-change-green-two`).innerHTML = playerGreenChipCount;
-    document.getElementById(`chip-change-red-two`).innerHTML = playerRedChipCount;
-    document.getElementById(`chip-change-gray-two`).innerHTML = playerGrayChipCount;
-    document.getElementById(`chip-change-black-one`).innerHTML = playerBlackChipCount;
-    document.getElementById(`chip-change-green-one`).innerHTML = playerGreenChipCount;
-    document.getElementById(`chip-change-red-one`).innerHTML = playerRedChipCount;
-    document.getElementById(`chip-change-gray-one`).innerHTML = playerGrayChipCount;
-
-
-}
-
-// function clearAllDivs() {
-//     let divs = document.body.getElementsByTagName(`div`);
-//     for (i = 0; i < divs.length; i++) {
-//         destroyNode(divs[i]);
-//     }
-
-//     divs = document.getElementsByTagName(`div`);
-//     for (i = 0; i < divs.length; i++) {
-//         destroyNode(divs[i]);
-//     }
-// }
 
 function closeFullscreen() {
     if (document.exitFullscreen) {
@@ -288,21 +120,24 @@ function openFullScreen() {
 //     createAndAppendDiv(html, 'default', false);
 // }
 
-// async function modalMessage(message) {
-//     //destroyById('modal-message');
-//     let html = ``;
-//     html += `<div id="modal-message" class="modal" style="background-color: rgba(139, 139, 139, 0.9);" onClick="destroyById('modal-message')">`;
-//     html += `<table cellpadding="0" cellspacing="0" width="100%" border="0">`;
-//     html += `<tr><td colspan="2" style = "text-align:center;">`;
-//     html += `<p>${message}</p>`;
-//     html += `</td></tr>`;
-//     html += `<tr><td style = "text-align:center;">`;
-//     html += `<input type="button" value="OK" onClick="destroyById('modal-message')" />`;
-//     html += `</td></tr>`;
-//     html += `</table>`;
-//     html += `</div>`;
-//     createAndAppendDiv(html, 'default', false);
-// }
+async function modalMessage(message) {
+    const id = `modal-message`;
+    destroyById(id);
+    let html = ``;
+    html += `<div id="modal-message" class="modalOuterDiv" onClick="destroyById('${id}')">`;
+    html += `<div id="modal-message-inner" class="modalInnerDiv" onClick="destroyById('${id}')">`;
+    html += `<table cellpadding="0" cellspacing="0" width="100%" border="0">`;
+    html += `<tr><td colspan="2" style = "text-align:center;">`;
+    html += `<p>${message}</p>`;
+    html += `</td></tr>`;
+    html += `<tr><td style = "text-align:center;">`;
+    html += `<input type="button" value="-&nbsp;OK&nbsp;-" class = "stInputDefaultcolor" onClick="destroyById('modal-message')" />`;
+    html += `</td></tr>`;
+    html += `</table>`;
+    html += `</div>`;
+    html += `</div>`;
+    createAndAppendDiv(html, id, false);
+}
 
 // async function textMessages() {
 //     destroyById('text-message');

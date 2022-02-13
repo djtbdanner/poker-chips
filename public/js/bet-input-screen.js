@@ -49,7 +49,7 @@ function getBetScreenHTML(id) {
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <img src="images/chip-black.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="black-chipcount">${blackChipCount}</span>`;
+    html += `                    id="black-chipcount">${playerBlackChipCount}</span>`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <img src="images/chip-green.png" style="width:7vw;height:7vw;"></img><br><span`;
@@ -133,7 +133,7 @@ function chipsChange(chipColor, chipBet) {
         chipMultiplier = 5;
     }
     if (chipColor === `gray`) {
-        originalChipCount = grayChipCount;
+        originalChipCount = playerGrayChipCount;
         chipMultiplier = 1;
     }
     const valueOfTheseChips = chipBet * chipMultiplier;

@@ -3,6 +3,7 @@ function drawScreen(table) {
     const id = `table-div`;
     destroyById(`bet-input`);
     destroyById(`initial-screen`);
+    destroyById(`chip-change`);
     destroyById(id);
     let html = ``;
     html += `    <div class="pokerTableDiv"></div>`;
@@ -122,6 +123,9 @@ function drawScreen(table) {
     html += `    </div>`;
     createAndAppendDiv(html, id, true);
     scrollText();
+    if (thisPlayer.showChipExchangeDiv){
+        buildChangeChipsHtml();
+    }
 }
 function scrollText() {
     var textarea = document.getElementById('history-text');

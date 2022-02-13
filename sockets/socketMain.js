@@ -5,6 +5,7 @@ const Player = require('./classes/Player');
 const PlayProcessor = require('./process-play');
 const PlayStatus = require('./classes/PlayStatus');
 const Chip = require('./classes/Chip');
+const Test = require(`./test/process-play.test`)
 // maybe a  database :)
 let tables = new Map();
 let joinerIndex = 1;//--TODO-- delete this
@@ -12,7 +13,7 @@ io.sockets.on('connect', (socket) => {
     console.log("initial connection ");
     socket.on('join-poker-game', (data) => {
         try {
-            const table = testTable();
+            const table = Test.testTable();
             socket.emit(`set-table-id`, { tableId: table.id });
             socket.emit(`set-player-id`, { playerId: table.players[joinerIndex].id });
             table.players[joinerIndex].socketId = socket.id;
@@ -55,7 +56,7 @@ io.sockets.on('connect', (socket) => {
 
     socket.on('start-poker-game', (data) => {
         try {
-            const table = testTable();
+            const table = Test.testTable();
             socket.emit(`set-table-id`, { tableId: table.id });
             socket.emit(`set-player-id`, { playerId: table.players[0].id });
             table.players[0].socketId = socket.id;
@@ -87,7 +88,7 @@ io.sockets.on('connect', (socket) => {
     socket.on(`get-tables`, () => {
         try {
             // - remove this
-            const table = testTable();
+            const table = Test.testTable();
             tables.set(table.id, table);
             //
             const arr = Array.from(tables.values());
@@ -125,10 +126,9 @@ io.sockets.on('connect', (socket) => {
                 player.folded = true;
             } else if (action === "CHECK") {
             }
-            table.addMessage(`${player.name} ${action} with ${totalChips} chips.`);
-            table.setChipTotalsForPlayers();
+            table.addMessage(`${player.name} ${action.toLowerCase()}s with ${totalChips} chips.`);
             if (PlayProcessor.isBetRoundOver(player, table, socket)) {
-                PlayProcessor.updatePlayersAfterBetting(player, table, totalChips);
+                PlayProcessor.updatePlayersAfterBetting(table);
             } else {
                 PlayProcessor.setNextPlayerTurn(player, table);
                 PlayProcessor.calculateCurrentCallAmount(table);
@@ -175,6 +175,51 @@ io.sockets.on('connect', (socket) => {
             const tableId = data.tableId;
             const table = tables.get(tableId);
             socket.emit(`poker-get-current-table`, JSON.stringify(table));
+        } catch (error) {
+            handleError(socket, error, data);
+        }
+    });
+
+    socket.on(`poker-player-chip-denomination-change`, (data) => {
+        try {
+            const playerId = data.playerId;
+            const tableId = data.tableId;
+            const table = tables.get(tableId);
+            const fromChipColor = data.fromChipColor;
+            const toChipColor = data.toChipColor;
+            const playerDone = data.playerDone;
+            const player = table.players.find(player => player.id === playerId);
+
+            if (!fromChipColor || !toChipColor || playerDone) {
+                player.showChipExchangeDiv = false;
+                socket.emit(`poker-table-change`, JSON.stringify(table));
+                return;
+            }
+            player.showChipExchangeDiv = true;
+            const modalMsg = PlayProcessor.exchangeChipsPlayer(table, player, fromChipColor, toChipColor);
+            if (modalMsg){
+                socket.emit(`poker-table-modal-message`, modalMsg);
+                return;
+            }
+            socket.emit(`poker-table-change`, JSON.stringify(table));
+
+        } catch (error) {
+            handleError(socket, error, `NA`);
+        }
+    });
+
+    socket.on(`poker-remove-player`, (data) => {
+        try {
+            const playerId = data.playerId;
+            const tableId = data.tableId;
+            const table = tables.get(tableId);
+            const player = table.players.find(player => player.id === playerId);
+            table.players = table.players.filter((p) => { return p.id !== playerId; });
+    
+            console.log(`${player.name}, ${player.id} - has chosen to leave the game.`);
+            table.addMessage(`${player.name} has chosen to leave the game.`);
+            socket.leave(tableId);
+            socket.broadcast.to(tableId).emit(`poker-table-change`, JSON.stringify(table));
         } catch (error) {
             handleError(socket, error, data);
         }
@@ -272,119 +317,4 @@ function handleError(socket, error, data) {
         console.log(e);
     }
 }
-
-// test data
-function testTable() {
-    const chips = `"chips": [{
-        "color": "black",
-        "value": 100
-    }, {
-        "color": "green",
-        "value": 25
-    }, {
-        "color": "green",
-        "value": 25
-    }, {
-        "color": "red",
-        "value": 5
-    }, {
-        "color": "red",
-        "value": 5
-    }, {
-        "color": "red",
-        "value": 5
-    }, {
-        "color": "red",
-        "value": 5
-    }, {
-        "color": "gray",
-        "value": 1
-    }, {
-        "color": "gray",
-        "value": 1
-    }, {
-        "color": "gray",
-        "value": 1
-    }, {
-        "color": "gray",
-        "value": 1
-    }, {
-        "color": "gray",
-        "value": 1
-    }
-]`;
-
-    const testTable = JSON.parse(
-        `{
-            "name": "GameOfThrones",
-            "id": "bf9bea20aabe911aae94c764a9569cc3",
-            "playerCount": 4,
-            "startChipCount": 100,
-            "players": [
-              {
-                "name": "Dave",
-                "id": "6670aa87f33fa093ba0e97a500d48b82",
-                ${chips},
-                "turn": false,
-                "firstBettor": false,               
-                "dealer": true,
-                "folded": false,
-                "hasVoted": false,
-                "winVoteCount":0,
-                "potRaisedBy":0
-              },
-              {
-                "name": "Tom",
-                "id": "ef5199ff18153c7527a1543e3f0a8e4c",
-                ${chips},
-                "turn": true,
-                "firstBettor": true,
-                "dealer": false,
-                "folded": false,
-                "hasVoted": false,
-                "winVoteCount":0,
-                "potRaisedBy":0
-              },
-              {
-                "name": "Marty",
-                "id": "ef5199ff18ji2j9427a1543e3f0a8e4c",
-                ${chips},
-                "turn": false,
-                "dealer": false,
-                "firstBettor": false,               
-                "folded": false,
-                "hasVoted": false,
-                "winVoteCount":0,
-                "potRaisedBy":0
-              },
-              {
-                "name": "Stan",
-                "id": "abcdfa12318ji2j9427a1543e3f0a8e4c",
-                ${chips},
-                "turn": false,
-                "dealer": false,
-                "firstBettor": false,               
-                "folded": false,
-                "hasVoted": false,
-                "winVoteCount":0,
-                "potRaisedBy":0
-              }
-            ],
-            "pot": 0,
-            "messages": [
-              "TEST TABLE."
-            ]
-          }`
-
-    );
-    const table = new Table(testTable.name, testTable.playerCount, testTable.startChipCount);
-    table.id = testTable.id;
-    table.players = testTable.players;
-    table.pot = testTable.pot;
-    table.messages = testTable.messages;
-    table.playStatus = new PlayStatus();
-    table.setChipTotalsForPlayers();
-    return table;
-}
-
 module.exports = io;

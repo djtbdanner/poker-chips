@@ -63,7 +63,9 @@ async function buildInitialScreen() {
     // html += `<span id = "game-msg-span">&nbsp</span>`;
     // html += `</td></tr>`;
     html += `<tr><td colspan="2" style = "text-align:center;">`;
-    html += `<br><input type="submit" id="start-table-button" class="stInput" disabled="true" value="Start Game" formaction="javascript:startGame();" />`;
+    // --TODO-- disabled to true
+    // html += `<br><input type="submit" id="start-table-button" class="stInput" disabled value="Start Game" formaction="javascript:startGame();" />`;
+    html += `<br><input type="submit" id="start-table-button" class="stInput" value="Start Game" formaction="javascript:startGame();" />`;
     html += `</td></tr>`;
     html += tableList;
     html += `</table>`;

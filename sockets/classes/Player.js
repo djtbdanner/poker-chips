@@ -14,6 +14,7 @@ class Player {
         this.potRaisedBy = 0;
         this.chips = [];
         this.chipTotal = 0;
+        this.showChipExchangeDiv = false;
     }
 }
 module.exports = Player
