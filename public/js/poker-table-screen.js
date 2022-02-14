@@ -15,18 +15,24 @@ function drawScreen(table) {
     let disabledCheck = `disabled`;
     let disabledCall = `disabled`;
     let disabledRaise = `disabled`;
+    // these are global
     playerBlackChipCount = thisPlayer.chips.filter(c => c.color === `black`).length;
     playerGreenChipCount = thisPlayer.chips.filter(c => c.color === `green`).length;
     playerRedChipCount = thisPlayer.chips.filter(c => c.color === `red`).length;
     playerGrayChipCount = thisPlayer.chips.filter(c => c.color === `gray`).length;
     totalChips = thisPlayer.chipTotal;
-    callAmount = ``;
+    // these are global
+    let callAmount = ``;
+
     if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
         disabledFold = ``;
-        disabledRaise = ``;
-        if (playStatus && playStatus.callAmount && playStatus.callAmount > 0) {
+        if (thisPlayer.chipTotal > playStatus.callAmount ){
+            disabledRaise = ``;
+        }
+        // if (playStatus && playStatus.callAmount && playStatus.callAmount > 0) {
+        if (playStatus.callAmount  > 0) {
             disabledCall = ``;
-            callAmount = playStatus.callAmount;
+            callAmount = playStatus.callAmount<=thisPlayer.chipTotal?playStatus.callAmount:thisPlayer.chipTotal;
         } else {
             disabledCheck = ``;
         }
@@ -43,6 +49,9 @@ function drawScreen(table) {
             }
             if (player.folded) {
                 divClass = `playerFoldedDiv`;
+            }
+            if (player.allIn) {
+                divClass = `playerAllinDiv`;
             }
             html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
@@ -109,9 +118,15 @@ function drawScreen(table) {
     html += `                    Check`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="call-button" ${disabledCall} value="&nbsp;&phone;&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
+    let icon = `&phone;`;
+    let text = `Call`;
+    if (thisPlayer.chipTotal <= playStatus.callAmount){
+        icon= `$$`
+        text = `!All In!`
+    }                                
+    html += `                    <input type="button" id="call-button" ${disabledCall} value="&nbsp;${icon}&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `                    <br>`;
-    html += `                    Call ${callAmount}`;
+    html += `                    ${text} ${callAmount}`;
     html += `                </td>`;
     html += `                <td class="even5td">`;
     html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;

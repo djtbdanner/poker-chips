@@ -95,6 +95,20 @@
     text-align: center;
   }
 
+  .playerAllinDiv{
+    background-color:greenyellow;
+    height:12%;
+    width:22%;
+    border-radius:10px;
+    border-style: ridge;
+    border-color: rgb(46, 44, 33);
+    border-width:2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    opacity:.5;
+  }
+
   .playerTopLeft{
     top:1%;
     left:24%;
@@ -236,6 +250,20 @@
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
+  }
+
+  .playerAllinDiv{
+    background-color:greenyellow;
+    height:15%;
+    width:10%;
+    border-radius:10px;
+    border-style: ridge;
+    border-color: rgb(46, 44, 33);
+    border-width:2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    opacity:.5;
   }
 
   .playerTopLeft{

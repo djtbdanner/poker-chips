@@ -1,6 +1,15 @@
 const Chip = require('./classes/Chip');
 
-exports.setNextPlayerTurn = (currentPlayer, table) => {
+exports.getNextActivePlayer = (currentPlayer, table) => {
+
+    const activePlayers = table.players.filter((p) =>{
+        return !p.folded && p.getChipTotal() > 0;
+    });
+    if (activePlayers.length < 2){
+        console.log ("Less than 2 active players - returning the current player in getNextActive player");
+        return currentPlayer;
+    }
+
     const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
     currentPlayer.turn = false;
     let nextPlayer = playerIndex + 1;
@@ -8,10 +17,10 @@ exports.setNextPlayerTurn = (currentPlayer, table) => {
         nextPlayer = 0;
     }
     const player = table.players[nextPlayer];
-    if (player.folded) {
-        this.setNextPlayerTurn(player, table)
+    if (player.folded || player.chipTotal <= 0) {
+        return this.getNextActivePlayer(player, table)
     } else {
-        player.turn = true;
+        return player;
     }
 }
 
@@ -57,21 +66,15 @@ exports.isBetRoundOver = (currentPlayer, table, socket) => {
 }
 
 exports.updatePlayersAfterBetting = (table) => {
+    
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
     currentDealer.dealer = false;
-    let nextDealerIndex = dealerIndex + 1;
-    if (nextDealerIndex >= table.players.length) {
-        nextDealerIndex = 0;
-    }
-    const nextDealer = table.players[nextDealerIndex];
+    const nextDealer = this.getNextActivePlayer(currentDealer, table);
     nextDealer.dealer = true;
+
     table.players.forEach((p) => { p.turn = false; p.firstBettor = false; });
-    let nextPlayerIndex = nextDealerIndex + 1;
-    if (nextPlayerIndex >= table.players.length) {
-        nextPlayerIndex = 0;
-    }
-    const nextPlayer = table.players[nextPlayerIndex];
+    const nextPlayer = this.getNextActivePlayer(nextDealer, table);
     nextPlayer.turn = true;
     nextPlayer.firstBettor = true;
     table.addMessage(`Betting round complete.`);
@@ -79,7 +82,7 @@ exports.updatePlayersAfterBetting = (table) => {
 }
 
 exports.processWinner = (winningPlayer, table, socket) => {
-    table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; });
+    table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
     table.addMessage(`${winningPlayer.name} WINS the pot of ${table.playStatus.pot} chips!!`);
     winningPlayer.chips.push(...table.playStatus.chips);
     table.playStatus.reset();
@@ -171,7 +174,7 @@ exports.pullChipsByChipCount = (table, player, chips) => {
     let betGrayCount = chips.find((c) => c.color === "gray").count;
     let totalChips = betBlackCount * 100 + betGreenCount * 25 + betRedCount * 5 + betGrayCount * 1;
     // hope that the client side does not allow this.
-    if (player.chipTotal < totalChips) {
+    if (player.getChipTotal() < totalChips) {
         throw new Error(`Player ${player.name} does not have enough chips for a ${totalChips} call or bet.`);
     }
     playerBlackChipCount = playerBlackChipCount - betBlackCount;
@@ -211,7 +214,7 @@ exports.pullChipsToAmount = (table, player, totalBet) => {
                 isStillFindingChips = true;
             } else {
                 let tempAmt = 100;
-                while (tempAmt > 0) {
+                while (tempAmt > 0 && (playerGreenChipCount >= 1 || playerRedChipCount >= 1 || playerGrayChipCount >= 1)) {
                     if (playerGreenChipCount >= 1) {
                         betGreenCount += 1;
                         playerGreenChipCount -= 1;
@@ -242,7 +245,7 @@ exports.pullChipsToAmount = (table, player, totalBet) => {
                 amount -= 25;
             } else {
                 let tempAmt = 25;
-                while (tempAmt > 0) {
+                while (tempAmt > 0 &&  (playerRedChipCount >= 1 || playerGrayChipCount >= 1)) {
                     if (playerRedChipCount >= 1) {
                         betRedCount += 1;
                         playerRedChipCount -= 1;

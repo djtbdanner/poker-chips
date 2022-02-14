@@ -65,7 +65,8 @@ exports.testTable = () => {
                 "hasVoted": false,
                 "winVoteCount":0,
                 "potRaisedBy":0,
-                "showChipExchangeDiv":false
+                "showChipExchangeDiv":false,
+                "allIn":false
               },
               {
                 "name": "Tom",
@@ -78,7 +79,8 @@ exports.testTable = () => {
                 "hasVoted": false,
                 "winVoteCount":0,
                 "potRaisedBy":0,
-                "showChipExchangeDiv":false
+                "showChipExchangeDiv":false,
+                "allIn":false
               },
               {
                 "name": "Marty",
@@ -91,7 +93,8 @@ exports.testTable = () => {
                 "hasVoted": false,
                 "winVoteCount":0,
                 "potRaisedBy":0,
-                "showChipExchangeDiv":false
+                "showChipExchangeDiv":false,
+                "allIn":false
               },
               {
                 "name": "Stan",
@@ -104,7 +107,8 @@ exports.testTable = () => {
                 "hasVoted": false,
                 "winVoteCount":0,
                 "potRaisedBy":0,
-                "showChipExchangeDiv":false
+                "showChipExchangeDiv":false,
+                "allIn":false
               }
             ],
             "pot": 0,
@@ -114,9 +118,17 @@ exports.testTable = () => {
           }`
 
     );
+
+    /// turn the created object into the real deals here.
     const table = new Table(testTable.name, testTable.playerCount, testTable.startChipCount);
     table.id = testTable.id;
-    table.players = testTable.players;
+    //table.players = testTable.players;
+    testTable.players.forEach((p) =>{
+        const player = new Player(p.name);
+        Object.assign(player, p);
+        player.getChipTotal();
+        table.players.push(player);
+    })      
     table.pot = testTable.pot;
     table.messages = testTable.messages;
     table.playStatus = new PlayStatus();
@@ -131,9 +143,9 @@ function testChipCalculator() {
     const table = Me.testTable();
     let player = table.players[0];
     PlayProcessor.setPlayerChips(table, player, 0, 0, 0, 256);
-    compareValues(player.chipTotal, 256)
+    compareValues(player.getChipTotal(), 256)
     PlayProcessor.calculateChips(26, player, table);
-    compareValues(player.chipTotal, 230)
+    compareValues(player.getChipTotal(), 230)
     compareValues(table.playStatus.pot, 26);
     compareValues(player.chips.filter((c) => c.color === "black").length, 0);
     compareValues(player.chips.filter((c) => c.color === "green").length, 0);
@@ -148,9 +160,9 @@ function testChipCalculator() {
 
     player = table.players[1];
     PlayProcessor.setPlayerChips(table, player, 2, 2, 1, 1);
-    compareValues(player.chipTotal, 256)
+    compareValues(player.getChipTotal(), 256)
     PlayProcessor.calculateChips(26, player, table);
-    compareValues(player.chipTotal, 230)
+    compareValues(player.getChipTotal(), 230)
     compareValues(table.playStatus.pot, 52);
     compareValues(player.chips.filter((c) => c.color === "black").length, 2);
     compareValues(player.chips.filter((c) => c.color === "green").length, 1);
@@ -165,10 +177,10 @@ function testChipCalculator() {
 
     player = table.players[2];
     PlayProcessor.setPlayerChips(table, player, 2, 0, 1, 51);
-    compareValues(player.chipTotal, 256);
+    compareValues(player.getChipTotal(), 256);
 
     PlayProcessor.calculateChips(26, player, table);
-    compareValues(player.chipTotal, 230)
+    compareValues(player.getChipTotal(), 230)
     compareValues(table.playStatus.pot, 78);
     compareValues(player.chips.filter((c) => c.color === "black").length, 2);
     compareValues(player.chips.filter((c) => c.color === "green").length, 0);
@@ -185,7 +197,7 @@ function testChipCalculator() {
     PlayProcessor.setPlayerChips(table, player, 2, 2, 2, 5);
     compareValues(player.chipTotal, 265)
     PlayProcessor.calculateChips(126, player, table);
-    compareValues(player.chipTotal, 139)
+    compareValues(player.getChipTotal(), 139)
     compareValues(table.playStatus.pot, 204);
     compareValues(player.chips.filter((c) => c.color === "black").length, 1);
     compareValues(player.chips.filter((c) => c.color === "green").length, 1);
@@ -202,7 +214,7 @@ function testChipCalculator() {
     let chips = [];
     chips.push({ color: "black", count: 0 }, { color: "green", count: 0 }, { color: "red", count: 0 }, { color: "gray", count: 100 });
     PlayProcessor.calculateChips(chips, player, table);
-    compareValues(player.chipTotal, 130)
+    compareValues(player.getChipTotal(), 130)
     compareValues(table.playStatus.pot, 304);
     compareValues(player.chips.filter((c) => c.color === "black").length, 0);
     compareValues(player.chips.filter((c) => c.color === "green").length, 0);
@@ -216,15 +228,15 @@ function testChipCalculator() {
 }
 
 function testInvalidChipRequest() {
-    
+
     const testName = `Testing player has plenty of chips, but bet amount does not work out'`;
     logTestMessage(`running ${testName}`);
     const table = Me.testTable();
     player = table.players[0];
     PlayProcessor.setPlayerChips(table, player, 2, 10, 0, 0);
-    compareValues(player.chipTotal, 450);
+    compareValues(player.getChipTotal(), 450);
     PlayProcessor.calculateChips(7, player, table);
-    compareValues(player.chipTotal, 443);
+    compareValues(player.getChipTotal(), 443);
     compareValues(player.chips.filter((c) => c.color === "black").length, 1);
     compareValues(player.chips.filter((c) => c.color === "green").length, 13);
     compareValues(player.chips.filter((c) => c.color === "red").length, 3);
@@ -233,9 +245,9 @@ function testInvalidChipRequest() {
 
     player = table.players[1];
     PlayProcessor.setPlayerChips(table, player, 1, 0, 0, 0);
-    compareValues(player.chipTotal, 100);
+    compareValues(player.getChipTotal(), 100);
     PlayProcessor.calculateChips(1, player, table);
-    compareValues(player.chipTotal, 99);
+    compareValues(player.getChipTotal(), 99);
     compareValues(player.chips.filter((c) => c.color === "black").length, 0);
     compareValues(player.chips.filter((c) => c.color === "green").length, 3);
     compareValues(player.chips.filter((c) => c.color === "red").length, 4);
@@ -244,9 +256,9 @@ function testInvalidChipRequest() {
 
     player = table.players[2];
     PlayProcessor.setPlayerChips(table, player, 0, 2, 0, 0);
-    compareValues(player.chipTotal, 50);
+    compareValues(player.getChipTotal(), 50);
     PlayProcessor.calculateChips(1, player, table);
-    compareValues(player.chipTotal, 49);
+    compareValues(player.getChipTotal(), 49);
     compareValues(player.chips.filter((c) => c.color === "black").length, 0);
     compareValues(player.chips.filter((c) => c.color === "green").length, 1);
     compareValues(player.chips.filter((c) => c.color === "red").length, 4);
@@ -255,8 +267,66 @@ function testInvalidChipRequest() {
 }
 
 
+function testInvalidChipRequestLoop() {
+    for (i = 1; i < 1001; i++) {
+        const testName = `Testing player has plenty of chips, but bet amount does not work out'`;
+        logTestMessage(`running ${testName}`);
+        const table = Me.testTable();
+        player = table.players[0];
+        PlayProcessor.setPlayerChips(table, player, 10, 0, 0, 0);
+        compareValues(player.getChipTotal(), 1000);
+        PlayProcessor.calculateChips(i, player, table);
+        compareValues(player.getChipTotal(), 1000 - i);
+        logTestMessage(`${testName}-- TEST ${i} GOOD -- `);
+    }
+}
+
+
+function getNextActivePlayerTest() {
+
+    const testName = `Next Active Player test`;
+    logTestMessage(`running ${testName}`);
+    const table = Me.testTable();
+    /// depends upon test data Dave, Tom, Marty, Stan
+    let playerDave = table.players[0];
+    let playerTom = table.players[1];
+    let playerMarty = table.players[2];
+    let playerStan = table.players[3];
+    compareValues(playerDave.name, `Dave`);
+    compareValues(playerTom.name, `Tom`);
+    compareValues(playerMarty.name, `Marty`);
+    compareValues(playerStan.name, `Stan`);
+    // compareValues(PlayProcessor.getNextActivePlayer(playerDave, table).name, `Tom`);
+    // compareValues(PlayProcessor.getNextActivePlayer(playerTom, table).name, `Marty`);
+    // compareValues(PlayProcessor.getNextActivePlayer(playerMarty, table).name, `Stan`);
+    // compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Dave`);
+
+    PlayProcessor.setPlayerChips(table, playerDave, 0, 0, 0, 0);
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Tom`);
+    PlayProcessor.setPlayerChips(table, playerTom, 0, 0, 0, 0);
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Marty`);
+    PlayProcessor.setPlayerChips(table, playerMarty, 0, 0, 0, 0);
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Stan`);
+    PlayProcessor.setPlayerChips(table, playerStan, 0, 0, 0, 0);
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Stan`);
+
+    PlayProcessor.setPlayerChips(table, playerStan, 0, 0, 3, 0);
+    PlayProcessor.setPlayerChips(table, playerDave, 1, 0, 3, 0);
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Dave`);
+
+    playerDave.folded = true;
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Stan`);
+
+    playerDave.folded = false;
+    compareValues(PlayProcessor.getNextActivePlayer(playerStan, table).name, `Dave`);
+
+    logTestMessage(`Success ${testName}`);
+}
+
 testChipCalculator();
 testInvalidChipRequest();
+testInvalidChipRequestLoop();
+getNextActivePlayerTest()
 
 function compareValues(actual, expected) {
     if (expected !== actual) {
@@ -264,7 +334,7 @@ function compareValues(actual, expected) {
     }
 }
 
-function logTestMessage(msg){
+function logTestMessage(msg) {
     console.log(`----------------------`);
     console.log(msg);
     console.log(`----------------------`);

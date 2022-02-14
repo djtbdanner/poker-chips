@@ -13,7 +13,10 @@ io.sockets.on('connect', (socket) => {
     console.log("initial connection ");
     socket.on('join-poker-game', (data) => {
         try {
-            const table = Test.testTable();
+            // const table = Test.testTable();
+            const [firstKey] = tables.keys();
+            console.log(firstKey); // 
+            const table = tables.get(firstKey);
             socket.emit(`set-table-id`, { tableId: table.id });
             socket.emit(`set-player-id`, { playerId: table.players[joinerIndex].id });
             table.players[joinerIndex].socketId = socket.id;
@@ -115,22 +118,29 @@ io.sockets.on('connect', (socket) => {
             const table = tables.get(tableId);
             const player = table.players.find(player => player.id === playerId);
             let totalChips = 0;
+            const initialCallAmount = table.playStatus.callAmount;
             if (action === "RAISE") {
                 totalChips = PlayProcessor.calculateChips(chips, player, table);
                 const raisedByAmount = totalChips - table.playStatus.callAmount;
                 table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
                 table.playStatus.playerLastRaised = player;
+                if (player.getChipTotal() === 0) {
+                    player.allIn = true;
+                }
             } else if (action === "CALL") {
                 totalChips = PlayProcessor.calculateChips(chips, player, table);
+                if (player.getChipTotal() === 0) {
+                    player.allIn = true;
+                }
             } else if (action === "FOLD") {
                 player.folded = true;
             } else if (action === "CHECK") {
             }
-            table.addMessage(`${player.name} ${action.toLowerCase()}s with ${totalChips} chips.`);
+            table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""} with ${totalChips} chips.`);
             if (PlayProcessor.isBetRoundOver(player, table, socket)) {
-                PlayProcessor.updatePlayersAfterBetting(table);
+               // PlayProcessor.updatePlayersAfterBetting(table);
             } else {
-                PlayProcessor.setNextPlayerTurn(player, table);
+                PlayProcessor.getNextActivePlayer(player, table).turn = true;
                 PlayProcessor.calculateCurrentCallAmount(table);
             }
             socket.broadcast.to(tableId).emit(`poker-table-change`, JSON.stringify(table));
@@ -154,6 +164,14 @@ io.sockets.on('connect', (socket) => {
             table.addMessage(`${votingPlayer.name} voted ${winningPlayer.name} winner.`);
             if (winningPlayer.winVoteCount >= 2) {
                 PlayProcessor.processWinner(winningPlayer, table, socket);
+                PlayProcessor.updatePlayersAfterBetting(table);
+                const brokePlayers = table.players.filter((p) => {
+                    console.log(p.getChipTotal());
+                    return p.getChipTotal() <= 0;
+                });
+                brokePlayers.forEach((bp) => {
+                    removePlayer(bp, table);
+                });
             } else {
                 const playersNotVoted = table.players.find(player => !player.hasVoted);
                 if (!playersNotVoted || playersNotVoted.length === 0) {
@@ -197,7 +215,7 @@ io.sockets.on('connect', (socket) => {
             }
             player.showChipExchangeDiv = true;
             const modalMsg = PlayProcessor.exchangeChipsPlayer(table, player, fromChipColor, toChipColor);
-            if (modalMsg){
+            if (modalMsg) {
                 socket.emit(`poker-table-modal-message`, modalMsg);
                 return;
             }
@@ -214,16 +232,14 @@ io.sockets.on('connect', (socket) => {
             const tableId = data.tableId;
             const table = tables.get(tableId);
             const player = table.players.find(player => player.id === playerId);
-            table.players = table.players.filter((p) => { return p.id !== playerId; });
-    
-            console.log(`${player.name}, ${player.id} - has chosen to leave the game.`);
-            table.addMessage(`${player.name} has chosen to leave the game.`);
-            socket.leave(tableId);
-            socket.broadcast.to(tableId).emit(`poker-table-change`, JSON.stringify(table));
+            removePlayer(player, table);
+
         } catch (error) {
             handleError(socket, error, data);
         }
     });
+
+
 
     // socket.on('is-room-available', (data) => {
     //     try { 
@@ -303,6 +319,17 @@ io.of("/").adapter.on("delete-room", (room) => {
     }
     tables.delete(room);
 });
+ 
+
+function removePlayer(player, table){
+    table.players = table.players.filter((p) => { return p.id !== player.id; });
+
+    console.log(`${player.name}, ${player.id} left the game.`);
+    table.addMessage(`${player.name} left the game.`);
+    socket = io.sockets.sockets.get(player.socketId);
+    socket.leave(table.id);
+    //socket.broadcast.to(table.id).emit(`poker-table-change`, JSON.stringify(table));
+}
 
 function handleError(socket, error, data) {
     try {
