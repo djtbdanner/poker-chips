@@ -18,12 +18,21 @@ exports.testTable = () => {
         "color": "green",
         "value": 25
     }, {
+        "color": "green",
+        "value": 25
+    }, {
+        "color": "green",
+        "value": 25
+    },{
         "color": "red",
         "value": 5
     }, {
         "color": "red",
         "value": 5
     }, { 
+        "color": "red",
+        "value": 5
+    }, {
         "color": "red",
         "value": 5
     }, {
@@ -325,7 +334,7 @@ function getNextActivePlayerTest() {
 
 testChipCalculator();
 testInvalidChipRequest();
-testInvalidChipRequestLoop();
+// testInvalidChipRequestLoop();
 getNextActivePlayerTest()
 
 function compareValues(actual, expected) {
