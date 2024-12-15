@@ -5,7 +5,7 @@ const Player = require('./classes/Player');
 const PlayProcessor = require('./process-play');
 const PlayStatus = require('./classes/PlayStatus');
 const Chip = require('./classes/Chip');
-const Test = require(`./test/process-play.test`)
+// const Test = require(`./test/process-play.test`)
 // maybe a  database :)
 let tables = new Map();
 let joinerIndex = 1;//--TODO-- delete this
@@ -14,44 +14,45 @@ io.sockets.on('connect', (socket) => {
     socket.on('join-poker-game', (data) => {
         try {
             // const table = Test.testTable();
-            const [firstKey] = tables.keys();
-            console.log(firstKey); // 
-            const table = tables.get(firstKey);
-            socket.emit(`set-table-id`, { tableId: table.id });
-            socket.emit(`set-player-id`, { playerId: table.players[joinerIndex].id });
-            table.players[joinerIndex].socketId = socket.id;
-            joinerIndex = joinerIndex + 1;
-            socket.join(table.id);
-            socket.broadcast.to(table.id).emit(`poker-table-change`, JSON.stringify(table));
-            socket.emit(`join-poker-game`, JSON.stringify(table));
+            // const [firstKey] = tables.keys();
+            // console.log(firstKey); // 
+            // const table = tables.get(firstKey);
+            // socket.emit(`set-table-id`, { tableId: table.id });
+            // socket.emit(`set-player-id`, { playerId: table.players[joinerIndex].id });
+            // table.players[joinerIndex].socketId = socket.id;
+            // joinerIndex = joinerIndex + 1;
+            // socket.join(table.id);
+            // socket.broadcast.to(table.id).emit(`poker-table-change`, JSON.stringify(table));
+            // socket.emit(`join-poker-game`, JSON.stringify(table));
 
 
-            // const tableId = data.tableId;
-            // const playerName = data.playerName;
-            // const player = new Player(playerName);
-            // const table = tables.get(tableId);
-            // if (!table) {
-            //     throw new Error(`Could not find room or table: ${tableId}.`);
-            // }
-            // if (table.players.length === table.playerCount) {
-            //     throw new Error(`Table ${table.name} is full - no more players allowed.`);
-            // }
-            // table.addPlayer(player);
-            // if (table.players.length < table.playerCount){
-            //     const count = table.playerCount - table.players.length;
-            //     const morePlayers = `waiting for ${count} more player${count===1?"":"s"}.`
-            //     table.addMessage(`${player.name} joined table ${table.name} ${morePlayers}`);
-            // } else{
-            //     table.addMessage(`${player.name} joined table ${table.name}, filling table.`);
-            //     table.players[0].dealer = true;
-            //     table.players[1].turn = true;
-            //     table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
-            // }
-            // socket.emit('set-player-id', { playerId: player.id });
-            // socket.emit('set-table-id', { tableId: table.id });
-            // socket.emit('join-poker-game', JSON.stringify(table));
-            // socket.join(tableId);
-            // socket.broadcast.to(tableId).emit(`poker-table-change`,  JSON.stringify(table));
+            const tableId = data.tableId;
+            const playerName = data.playerName;
+            const player = new Player(playerName);
+            const table = tables.get(tableId);
+            PlayProcessor.initializePlayerChips(table,player);
+            if (!table) {
+                throw new Error(`Could not find room or table: ${tableId}.`);
+            }
+            if (table.players.length === table.playerCount) {
+                throw new Error(`Table ${table.name} is full - no more players allowed.`);
+            }
+            table.addPlayer(player);
+            if (table.players.length < table.playerCount){
+                const count = table.playerCount - table.players.length;
+                const morePlayers = `waiting for ${count} more player${count===1?"":"s"}.`
+                table.addMessage(`${player.name} joined table ${table.name} ${morePlayers}`);
+            } else{
+                table.addMessage(`${player.name} joined table ${table.name}, filling table.`);
+                table.players[0].dealer = true;
+                table.players[1].turn = true;
+                table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
+            }
+            socket.emit('set-player-id', { playerId: player.id });
+            socket.emit('set-table-id', { tableId: table.id });
+            socket.emit('join-poker-game', JSON.stringify(table));
+            socket.join(tableId);
+            socket.broadcast.to(tableId).emit(`poker-table-change`,  JSON.stringify(table));
         } catch (error) {
             handleError(socket, error, data);
         }
@@ -59,30 +60,31 @@ io.sockets.on('connect', (socket) => {
 
     socket.on('start-poker-game', (data) => {
         try {
-            const table = Test.testTable();
-            socket.emit(`set-table-id`, { tableId: table.id });
-            socket.emit(`set-player-id`, { playerId: table.players[0].id });
-            table.players[0].socketId = socket.id;
-            socket.join(table.id);
-            tables.set(table.id, table);
-            socket.emit(`start-poker-game`, JSON.stringify(table));
-
-
-
-            // const tableName = data.tableName;
-            // const playerName = data.playerName;
-            // const playerCount = data.playerCount;
-            // const startChipCount = data.startChipCount;
-            // const player = new Player(playerName);
-            // const table = new Table(tableName, parseInt(playerCount,10), parseInt(startChipCount, 10));
-            // socket.emit(`set-table-id`, { tableId: table.id});
-            // socket.emit(`set-player-id`, { playerId: player.id });
-            // table.addPlayer(player);
-            // table.addMessage(`${player.name} started ${table.name}, ${table.playerCount} players, each with ${table.startChipCount} chips.`);
-            // tables.set(table.id, table);
-
-            // socket.emit(`start-poker-game`, JSON.stringify(table));
+            // const table = Test.testTable();
+            // socket.emit(`set-table-id`, { tableId: table.id });
+            // socket.emit(`set-player-id`, { playerId: table.players[0].id });
+            // table.players[0].socketId = socket.id;
             // socket.join(table.id);
+            // tables.set(table.id, table);
+            // socket.emit(`start-poker-game`, JSON.stringify(table));
+
+
+
+            const tableName = data.tableName;
+            const playerName = data.playerName;
+            const playerCount = data.playerCount;
+            const startChipCount = data.startChipCount;
+            const player = new Player(playerName);
+            const table = new Table(tableName, parseInt(playerCount,10), parseInt(startChipCount, 10));
+            socket.emit(`set-table-id`, { tableId: table.id});
+            socket.emit(`set-player-id`, { playerId: player.id });
+            table.addPlayer(player);
+            PlayProcessor.initializePlayerChips(table,player);
+            table.addMessage(`${player.name} started ${table.name}, ${table.playerCount} players, each with ${table.startChipCount} chips.`);
+            tables.set(table.id, table);
+
+            socket.emit(`start-poker-game`, JSON.stringify(table));
+            socket.join(table.id);
         } catch (error) {
             handleError(socket, error, data);
         }
@@ -91,8 +93,8 @@ io.sockets.on('connect', (socket) => {
     socket.on(`get-tables`, () => {
         try {
             // - remove this
-            const table = Test.testTable();
-            tables.set(table.id, table);
+            // const table = Test.testTable();
+            // tables.set(table.id, table);
             //
             const arr = Array.from(tables.values());
             const availableTables = arr;//arr.filter((table)=> !table.playersFull());

@@ -2,11 +2,11 @@ const Chip = require('./classes/Chip');
 
 exports.getNextActivePlayer = (currentPlayer, table) => {
 
-    const activePlayers = table.players.filter((p) =>{
+    const activePlayers = table.players.filter((p) => {
         return !p.folded && p.getChipTotal() > 0;
     });
-    if (activePlayers.length < 2){
-        console.log ("Less than 2 active players - returning the current player in getNextActive player");
+    if (activePlayers.length < 2) {
+        console.log("Less than 2 active players - returning the current player in getNextActive player");
         return currentPlayer;
     }
 
@@ -66,7 +66,7 @@ exports.isBetRoundOver = (currentPlayer, table, socket) => {
 }
 
 exports.updatePlayersAfterBetting = (table) => {
-    
+
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
     currentDealer.dealer = false;
@@ -245,7 +245,7 @@ exports.pullChipsToAmount = (table, player, totalBet) => {
                 amount -= 25;
             } else {
                 let tempAmt = 25;
-                while (tempAmt > 0 &&  (playerRedChipCount >= 1 || playerGrayChipCount >= 1)) {
+                while (tempAmt > 0 && (playerRedChipCount >= 1 || playerGrayChipCount >= 1)) {
                     if (playerRedChipCount >= 1) {
                         betRedCount += 1;
                         playerRedChipCount -= 1;
@@ -356,3 +356,90 @@ exports.exchangeChipsPlayer = (table, player, fromChipColor, toChipColor) => {
     this.setPlayerChips(table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     return undefined;/// no error no message caller assumes success
 }
+
+exports.parseChips = (number) => {
+    // Define the chip values in ascending order (starting with the smallest denomination)
+    const chipValues = [
+        { name: 'gray', value: 1 },
+        { name: 'red', value: 5 },
+        { name: 'green', value: 25 },
+        { name: 'black', value: 100 }
+    ];
+
+    // Create an object to store the count of each chip type
+    let chips = {
+        gray: 0,
+        red: 0,
+        green: 0,
+        black: 0
+    };
+
+    // Start by trying to use 4 or 5 of each chip denomination, starting from the smallest
+    for (let i = 0; i < chipValues.length; i++) {
+        let chipValue = chipValues[i].value;
+        let chipName = chipValues[i].name;
+
+        // Calculate how many chips of this denomination can fit into the remaining amount
+        let maxChips = Math.floor(number / chipValue);
+
+        // Aim for 4 or 5 chips of this denomination, but don't exceed the remaining amount
+        let chipsToUse = 0;
+
+        // If it's possible to use 5 chips, try to use that
+        if (maxChips >= 5) {
+            chipsToUse = 5;
+        } else if (maxChips >= 4) {
+            chipsToUse = 4;
+        } else {
+            chipsToUse = maxChips;
+        }
+
+        chips[chipName] = chipsToUse;
+
+        number -= chipsToUse * chipValue;
+
+        if (number <= 0) {
+            break;
+        }
+    }
+
+    // If the total is still not zero, we have some remaining value
+    // We may need to adjust the count to match exactly the input value
+    if (number > 0) {
+        chips.gray += number;
+
+        chips.gray -= 5;
+        if (chips.gray > 5) {
+            let extraRed = Math.floor(chips.gray / 5);
+            chips.red += extraRed;
+            chips.gray -= extraRed * 5;
+        }
+        chips.gray += 5;
+        chips.red -= 5;
+        if (chips.red > 5) {
+            let extraGreen = Math.floor(chips.red / 5);
+            chips.green += extraGreen;
+            chips.red -= extraGreen * 5;
+        }
+        chips.red += 5;
+        chips.green -= 4;
+        if (chips.green > 4) {
+            let extra = Math.floor(chips.green / 4);
+            chips.black += extra;
+            chips.green -= extra * 4;
+        }
+        chips.green += 4;
+
+    }
+    return chips;
+};
+
+exports.initializePlayerChips = (table, player) => {
+    const totalChips = table.startChipCount;
+    if (!totalChips){
+        throw new Error ('need to have some chips to initialize for the player');
+    }
+ 
+    const chips = this.parseChips(totalChips);
+    this.setPlayerChips(table, player, chips['black'], chips['green'], chips['red'], chips['gray']);
+};
