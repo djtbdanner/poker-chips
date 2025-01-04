@@ -6,7 +6,8 @@
   "scripts": {
     "test": "node sockets/test/test-chips.js",
     "start": "node index.js",
-    "go": "nodemon index.js"
+    "go": "nodemon index.js",
+    "socket": "node local/api-gateway-emulator/socket-api-emulator.js"
   },
   "repository": {
     "type": "git",
@@ -14,10 +15,10 @@
   },
   "author": "Dave Danner",
   "license": "none",
-  "dependencies": {
-    "socket.io": "^4.4.1"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "nodemon": "^2.0.15"
+    "@aws-sdk/client-apigatewaymanagementapi": "^3.282.0",
+    "@aws-sdk/client-dynamodb": "^3.284.0",
+    "@aws-sdk/lib-dynamodb": "^3.284.0"
   }
 }

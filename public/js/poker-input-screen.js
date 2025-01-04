@@ -1,27 +1,6 @@
 async function buildEntryScreens() {
-
-    // const storedScores = localStorage.getItem('scores');
-    // const date = localStorage.getItem('scores-date');
-    // const roomName = localStorage.getItem('room-name');
-    // const isOwner = localStorage.getItem(`is-owner`);
-    // if (storedScores && date && roomName) {
-    //     const dateToCompare = new Date(date);
-    //     if (isToday(dateToCompare)) {
-    //         const msg = `You were keeping score for <i><b>${roomName}</b></i> earlier today</br> Would you like to continue with that game?`;
-    //         modalConfirm(msg, `rebuildGameFromLocalStorage()`, `buildInitialScreen()`, `Continue ${roomName}`, `New Game`);
-    //         return;
-    //     }
-    // }
     await buildInitialScreen();
 }
-
-// async function processRoomAdded() {
-//     if (document.getElementById(`initial-screen`)) {
-//         await buildInitialScreen();
-//     } else {
-//         console.log('someone added another game');
-//     }
-// }
 
 async function buildInitialScreen() {
     const tables = await getAvailableTables();
@@ -69,11 +48,24 @@ async function buildInitialScreen() {
     html += `</td></tr>`;
     html += tableList;
     html += `</table>`;
+    //////////////
+    //
+    html += `<input type="text" class="stInput" id="test-data" value = "some data" placeholder="some data" />`;
+    html +=  `<br><input type="button" id="test-button" class="stInput" value="send socket" onclick="javascript:someTest();" />`;
+    //
+    //////////////
     html+=`</form>`;
     html+=`</div>`;
     createAndAppendDiv(html, 'initial-screen', true);
 }
-
+    //////////////
+    //
+    function someTest (){
+        let data = document.getElementById('test-data').value;
+        connectAndSendSocketRequest(data);
+    }
+    //
+    //////////////
 
 function startGame(){
     const playerName = document.getElementById(`player-name`).value;

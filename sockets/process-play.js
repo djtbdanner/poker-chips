@@ -82,6 +82,9 @@ exports.updatePlayersAfterBetting = (table) => {
 }
 
 exports.processWinner = (winningPlayer, table, socket) => {
+    if (table.playStatus.splitPotCount > 0 && winningPlayer.splitPotTotal < table.playStatus.chips){
+        console.log('');
+    }
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
     table.addMessage(`${winningPlayer.name} WINS the pot of ${table.playStatus.pot} chips!!`);
     winningPlayer.chips.push(...table.playStatus.chips);

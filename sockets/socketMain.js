@@ -128,11 +128,15 @@ io.sockets.on('connect', (socket) => {
                 table.playStatus.playerLastRaised = player;
                 if (player.getChipTotal() === 0) {
                     player.allIn = true;
+                    player.splitPotWinAmount = table.playStatus.chips;
+                    table.playStatus.splitPotCount += 1
                 }
             } else if (action === "CALL") {
                 totalChips = PlayProcessor.calculateChips(chips, player, table);
                 if (player.getChipTotal() === 0) {
                     player.allIn = true;
+                    player.splitPotWinAmount = table.playStatus.chips;
+                    table.playStatus.splitPotCount += 1
                 }
             } else if (action === "FOLD") {
                 player.folded = true;
@@ -313,6 +317,7 @@ io.of("/").adapter.on("leave-room", (room, id) => {
         handleError(socket, error, "leaving room");
     }
 });
+
 io.of("/").adapter.on("delete-room", (room) => {
     console.log(`room ${room} was deleted`);
     if (tables.get(room)) {
@@ -322,7 +327,6 @@ io.of("/").adapter.on("delete-room", (room) => {
     tables.delete(room);
 });
  
-
 function removePlayer(player, table){
     table.players = table.players.filter((p) => { return p.id !== player.id; });
 

@@ -1,139 +1,115 @@
-let socket = io.connect(window.location.href);
-async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
-    const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
-    console.log(JSON.stringify(table));
-    if (table) {
-        drawScreen(JSON.parse(table));
-        console.log(JSON.stringify(table));
-    }
-}
+// async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
+//     const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
+//     console.log(JSON.stringify(table));
+//     if (table) {
+//         drawScreen(JSON.parse(table));
+//         console.log(JSON.stringify(table));
+//     }
+// }
 
-async function joinPokerGame(tableId, playerName) {
-        const table = await asyncEmit(`join-poker-game`, { tableId, playerName });
-        if (table) {
-            drawScreen(JSON.parse(table));
-        }
-}
-
-
-function pokerChipDenominationChange(fromChipColor, toChipColor){
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, fromChipColor, toChipColor});
-}
-
-function pokerChipDenominationQuit(){
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, playerDone:true});
-}
-
-function removePlayer(){
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-remove-player`, {playerId, tableId});
-    destroyById(`table-div`);
-    destroyById(`bet-input`);
-    destroyById(`initial-screen`);
-    destroyById(`chip-change`);
-}
+// async function joinPokerGame(tableId, playerName) {
+//         const table = await asyncEmit(`join-poker-game`, { tableId, playerName });
+//         if (table) {
+//             drawScreen(JSON.parse(table));
+//         }
+// }
 
 
+// function pokerChipDenominationChange(fromChipColor, toChipColor){
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, fromChipColor, toChipColor});
+// }
 
-socket.on(`poker-table-change`, (data) => {
-    const table = JSON.parse(data);
-    if (table) {
-        drawScreen(table);
-        console.log(JSON.stringify(table));
-    }
-});
+// function pokerChipDenominationQuit(){
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     socket.emit(`poker-player-chip-denomination-change`, {playerId, tableId, playerDone:true});
+// }
 
-socket.on(`set-player-id`, (data) => {
-    document.getElementById(`player-id`).value = data.playerId;
-});
+// function removePlayer(){
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     socket.emit(`poker-remove-player`, {playerId, tableId});
+//     destroyById(`table-div`);
+//     destroyById(`bet-input`);
+//     destroyById(`initial-screen`);
+//     destroyById(`chip-change`);
+// }
 
-socket.on(`set-table-id`, (data) => {
-    document.getElementById(`table-id`).value = data.tableId;
-});
-
-socket.on(`poker-div-blink`, (data) => {
-    const element = document.getElementById(data.elementId);
-    if (element){
-        element.classList.add("blink");
-    }
-});
-
-socket.on(`poker-table-modal-message`, (data) => {
-    modalMessage(data);
-});
-
-function playerAction(action, chips) {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-action`, { tableId, playerId, action, chips });
-}
-
-function choseRoundWinner(winningPlayerId) {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-win-round`, {winningPlayerId, playerId, tableId});
-}
-
-async function getCurrentTable() {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
-    const table = await asyncEmit(`poker-get-current-table`, { tableId, playerId });
-    if (table) {
-        drawScreen(JSON.parse(table));
-    }
-}
-
-// socket.on('message-room', (message) => {
-//     modalMessage(message);
+// socket.on(`poker-table-change`, (data) => {
+//     const table = JSON.parse(data);
+//     if (table) {
+//         drawScreen(table);
+//         console.log(JSON.stringify(table));
+//     }
 // });
 
-// function sendRoomMessage(roomName, message) {
-//     socket.emit(`message-room`, { roomName, message });
+// socket.on(`set-player-id`, (data) => {
+//     document.getElementById(`player-id`).value = data.playerId;
+// });
+
+// socket.on(`set-table-id`, (data) => {
+//     document.getElementById(`table-id`).value = data.tableId;
+// });
+
+// socket.on(`poker-div-blink`, (data) => {
+//     const element = document.getElementById(data.elementId);
+//     if (element){
+//         element.classList.add("blink");
+//     }
+// });
+
+// socket.on(`poker-table-modal-message`, (data) => {
+//     modalMessage(data);
+// });
+
+// function playerAction(action, chips) {
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     socket.emit(`poker-action`, { tableId, playerId, action, chips });
+// }
+
+// function choseRoundWinner(winningPlayerId) {
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     socket.emit(`poker-win-round`, {winningPlayerId, playerId, tableId});
+// }
+
+// async function getCurrentTable() {
+//     const playerId = document.getElementById(`player-id`).value;
+//     const tableId = document.getElementById(`table-id`).value;
+//     const table = await asyncEmit(`poker-get-current-table`, { tableId, playerId });
+//     if (table) {
+//         drawScreen(JSON.parse(table));
+//     }
 // }
 
 async function getAvailableTables() {
-    const result = await asyncEmit('get-tables');
-    return JSON.parse(result);
+    connectAndSendSocketRequest('{hello:"world"}');
+    // const result = await asyncEmit('get-tables');
+    // return JSON.parse(result);
 }
 
-socket.on(`backendError`, (data) => {
-    alert(data);
-});
-
-
-// socket.on('new-text-message', () => {
-//     textMessages();
+// socket.on(`backendError`, (data) => {
+//     alert(data);
 // });
 
-// async function getMessages(room) {
-//     const result = await asyncEmit('get-text-messages', room);
-//     return result;
+// function asyncEmit(eventName, data) {
+//     return new Promise(function (resolve, reject) {
+//         socket.emit(eventName, data);
+//         socket.on(eventName, result => {
+//             socket.off(eventName);
+//             resolve(result);
+//         });
+//         setTimeout(reject, 10000);
+//     });
 // }
 
-// function sendTextMessage(roomName, message){
-//     socket.emit(`message-text`, { roomName, message });
+// function disconnect() {
+//     socket.disconnect();
 // }
 
-function asyncEmit(eventName, data) {
-    return new Promise(function (resolve, reject) {
-        socket.emit(eventName, data);
-        socket.on(eventName, result => {
-            socket.off(eventName);
-            resolve(result);
-        });
-        setTimeout(reject, 10000);
-    });
-}
-
-function disconnect() {
-    socket.disconnect();
-}
-
-function reconnect() {
-    socket.connect();
-}
+// function reconnect() {
+//     socket.connect();
+// }

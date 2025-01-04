@@ -24,6 +24,13 @@ function drawScreen(table) {
     // these are global
     let callAmount = ``;
 
+    // add name to title
+    if (thisPlayer && thisPlayer.name){
+        document.title = `Poker Chips - ${thisPlayer.name}`;
+    } else {
+        document.title = `Poker Chips`;
+    }
+ 
     if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
         disabledFold = ``;
         if (thisPlayer.chipTotal > playStatus.callAmount ){

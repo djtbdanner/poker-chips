@@ -15,6 +15,7 @@ class Player {
     this.chipTotal = 0;
     this.showChipExchangeDiv = false;
     this.allIn = false;
+    this.splitPotTotal = 0;
   }
 
   getChipTotal() {
