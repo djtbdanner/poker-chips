@@ -19,7 +19,7 @@ const options = {
 const httpsServer = https.createServer(options, async function (req, res) {
     let body = await getRequestBody(req);
     const socketId = decodeURIComponent(req.url.split('/')[2]);
-    console.log(`Lambda responds to socket ${socketId} - \n ${body}`);
+    console.log(`socket-api-emulator: Lambda responds to socket ${socketId} - \n ${body}`);
     const socket = socketConnections.get(socketId);
     if (!socket) {
         res.writeHead(410);// let the lambda know this no longer exists
@@ -148,17 +148,26 @@ function parseWebSocketMessage(data) {
     return messageData.toString('utf8'); // Decode the message to a string
 }
 
-function createWebSocketFrame(message) {
-    const messageBuffer = Buffer.from(message, 'utf8');
-    const length = messageBuffer.length;
-    const frame = Buffer.alloc(2 + length);
+function createWebSocketFrame(data) {
+    const json = typeof data === 'string' ? data : JSON.stringify(data);
+    const jsonByteLength = Buffer.byteLength(json);
+    const lengthByteCount = jsonByteLength < 126 ? 0 : jsonByteLength < 65536 ? 2 : 8;
+    const payloadLength = lengthByteCount === 0 ? jsonByteLength : lengthByteCount === 2 ? 126 : 127;
+    const buffer = Buffer.alloc(2 + lengthByteCount + jsonByteLength);
 
-    frame[0] = 0x81; // FIN flag + text frame opcode
-    frame[1] = length; // Payload length
+    buffer[0] = 0x81; // FIN and opcode for text frame
+    buffer[1] = payloadLength;
 
-    messageBuffer.copy(frame, 2);
+    if (lengthByteCount === 2) {
+        buffer.writeUInt16BE(jsonByteLength, 2);
+    } else if (lengthByteCount === 8) {
+        // Note: JavaScript can only handle up to 53-bit integers
+        buffer.writeUInt32BE(0, 2); // Most significant 32 bits
+        buffer.writeUInt32BE(jsonByteLength, 6); // Least significant 32 bits
+    }
 
-    return frame;
+    buffer.write(json, 2 + lengthByteCount);
+    return buffer;
 }
 
 async function getRequestBody(req) {

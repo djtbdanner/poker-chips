@@ -7,7 +7,6 @@ class Player {
     this.dealer = false;
     this.folded = false;
     this.firstBettor = false;
-    this.socketId = undefined;
     this.hasVoted = false;
     this.winVoteCount = 0;
     this.potRaisedBy = 0;

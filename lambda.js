@@ -5,8 +5,10 @@ const {
     DynamoDBDocument
   } = require("@aws-sdk/lib-dynamodb"),
   {
-    DynamoDB
+    DynamoDB,
+    TagResourceCommand
   } = require("@aws-sdk/client-dynamodb");
+const { lambdaSocketHandler } = require("./sockets/socketEvents");
 const ddb = DynamoDBDocument.from(new DynamoDB({ apiVersion: '2012-08-10', region: 'us-east-1' }));
 
 const TABLE_NAME = 'web-socket-connections';
@@ -32,7 +34,7 @@ exports.handler = async event => {
     console.log('disconnect');
     return;
   }
-
+  
   // try {
   //   connectionData = await ddb.scan({ TableName: TABLE_NAME, ProjectionExpression: 'connectionId' });
   // } catch (e) {
@@ -46,31 +48,7 @@ exports.handler = async event => {
     endpoint
   });
 
-
-  const postData = event.body;
-  await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: postData });
-
-  // const postCalls = connectionData.Items.map(async ({ connectionId }) => {
-  //   try {
-  //     await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: postData });
-  //     console.log(`Lambda socket processing message to  ${connectionId}`);
-  //   } catch (e) {
-  //     if (isMaybeStaleConnection(e)) {
-  //       console.log(`Found stale connection, deleting ${connectionId}`);
-  //       await ddb.delete({ TableName: TABLE_NAME, Key: { connectionId } });
-  //     } else {
-  //       console.log(`Error responding to API Gateway: ${e}, ${e.name}, StatusCode: ${e.statusCode}, Stack: ${e.stack}`);
-  //       throw e;
-  //     }
-  //   }
-  // });
-
-  // try {
-  //   await Promise.all(postCalls);
-  // } catch (e) {
-  //   return { statusCode: 500, body: e.stack };
-  // }
-
+  await lambdaSocketHandler(event.body, apigwManagementApi, connectionId);
   return { statusCode: 200, body: 'Data sent.' };
 };
 

@@ -36,11 +36,11 @@ exports.calculateCurrentCallAmount = (table) => {
     }
 }
 
-exports.isBetRoundOver = (currentPlayer, table, socket) => {
+exports.isBetRoundOver = (currentPlayer, table) => {
 
     const playersNotFolded = table.players.filter(player => !player.folded);
     if (playersNotFolded.length < 2) {
-        this.processWinner(playersNotFolded[0], table, socket);
+        this.processWinner(playersNotFolded[0], table);
         return true;
     }
 
@@ -81,7 +81,7 @@ exports.updatePlayersAfterBetting = (table) => {
     table.addMessage(`${nextDealer.name} is dealer with ${nextPlayer.name} betting.`);
 }
 
-exports.processWinner = (winningPlayer, table, socket) => {
+exports.processWinner = (winningPlayer, table) => {
     if (table.playStatus.splitPotCount > 0 && winningPlayer.splitPotTotal < table.playStatus.chips){
         console.log('');
     }
@@ -91,10 +91,10 @@ exports.processWinner = (winningPlayer, table, socket) => {
     table.playStatus.reset();
     table.setChipTotalsForPlayers();
     // give the process a second to update the pages, then flash (no harm if not done)
-    setTimeout(() => {
-        socket.broadcast.to(table.id).emit(`poker-div-blink`, { elementId: winningPlayer.id });
-        socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
-    }, 500);
+    // setTimeout(() => {
+    //     socket.broadcast.to(table.id).emit(`poker-div-blink`, { elementId: winningPlayer.id });
+    //     socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
+    // }, 500);
 }
 
 exports.calculateChips = (chips, player, table) => {

@@ -48,24 +48,10 @@ async function buildInitialScreen() {
     html += `</td></tr>`;
     html += tableList;
     html += `</table>`;
-    //////////////
-    //
-    html += `<input type="text" class="stInput" id="test-data" value = "some data" placeholder="some data" />`;
-    html +=  `<br><input type="button" id="test-button" class="stInput" value="send socket" onclick="javascript:someTest();" />`;
-    //
-    //////////////
     html+=`</form>`;
     html+=`</div>`;
     createAndAppendDiv(html, 'initial-screen', true);
 }
-    //////////////
-    //
-    function someTest (){
-        let data = document.getElementById('test-data').value;
-        connectAndSendSocketRequest(data);
-    }
-    //
-    //////////////
 
 function startGame(){
     const playerName = document.getElementById(`player-name`).value;
@@ -81,28 +67,6 @@ function startGame(){
     // destroyById('initial-screen');
     // drawScreen();
 }
-// function rebuildGameFromLocalStorage() {
-
-//     const storedScores = localStorage.getItem('scores');
-//     const date = localStorage.getItem('scores-date');
-//     const roomName = localStorage.getItem('room-name');
-//     document.getElementById(`room-name`).value = roomName;
-//     document.getElementById(`room-owner`).value = "true";
-//     document.getElementById(`points-per-tap`).value = localStorage.getItem(`points-per-tap`) || 1;
-//     const scores = JSON.parse(storedScores);
-//     sendRoomMessage(roomName, `Score keeper reconnected to ${roomName}.`);
-//     scoreChange(roomName, scores, true);
-//     drawScreen(scores, true, roomName);
-// }
-
-// function setRoomAddPlayer() {
-
-//     const selectedRoomName = document.getElementById(`game-name`).value;
-//     document.getElementById(`room-name`).value = document.getElementById(`game-name`).value;
-//     document.getElementById(`points-per-tap`).value = document.getElementById(`goal-points`).value;
-//     destroyById('initial-screen');
-//     addPlayerOrTeam(0);
-// }
 
 function buildRoomList(tables) {
 

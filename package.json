@@ -1,24 +1,24 @@
 {
-  "name": "poker-chips",
-  "version": "1.0.0",
-  "description": "play poker with friends without chips or cash",
-  "main": "servers.js",
-  "scripts": {
-    "test": "node sockets/test/test-chips.js",
-    "start": "node index.js",
-    "go": "nodemon index.js",
-    "socket": "node local/api-gateway-emulator/socket-api-emulator.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/djtbdanner/poker-chips"
-  },
-  "author": "Dave Danner",
-  "license": "none",
-  "dependencies": {},
-  "devDependencies": {
-    "@aws-sdk/client-apigatewaymanagementapi": "^3.282.0",
-    "@aws-sdk/client-dynamodb": "^3.284.0",
-    "@aws-sdk/lib-dynamodb": "^3.284.0"
-  }
+    "name": "poker-chips",
+    "version": "1.0.0",
+    "description": "play poker with friends without chips or cash",
+    "main": "local/api-gateway-emulator/socket-api-emulator.js",
+    "scripts": {
+        "test": "node sockets/test/test-chips.js",
+        "start": "node index.js",
+        "go": "nodemon index.js",
+        "socket": "node local/api-gateway-emulator/socket-api-emulator.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/djtbdanner/poker-chips"
+    },
+    "author": "Dave Danner",
+    "license": "none",
+    "dependencies": {},
+    "devDependencies": {
+        "@aws-sdk/client-apigatewaymanagementapi": "^3.282.0",
+        "@aws-sdk/client-dynamodb": "^3.284.0",
+        "@aws-sdk/lib-dynamodb": "^3.284.0"
+    }
 }
