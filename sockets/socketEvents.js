@@ -59,7 +59,7 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         const startChipCount = data.startChipCount;
         const player = new Player(playerName);
         const table = new Table(tableName, parseInt(playerCount, 10), parseInt(startChipCount, 10));
-         let response = { action: 'set-table-id', payload: { tableId: table.id } };
+        let response = { action: 'set-table-id', payload: { tableId: table.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'set-player-id', payload: { playerId: player.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });

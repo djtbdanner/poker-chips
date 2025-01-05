@@ -135,6 +135,7 @@ exports.setPlayerChips = (table, player, playerBlackChipCount, playerGreenChipCo
         player.chips.push(Chip.Gray);
         playerGrayChipCount -= 1;
     }
+    player.getChipTotal();
     table.setChipTotalsForPlayers();
 }
 
@@ -442,7 +443,7 @@ exports.initializePlayerChips = (table, player) => {
     if (!totalChips){
         throw new Error ('need to have some chips to initialize for the player');
     }
- 
-    const chips = this.parseChips(totalChips);
+     const chips = this.parseChips(totalChips);
     this.setPlayerChips(table, player, chips['black'], chips['green'], chips['red'], chips['gray']);
+
 };
