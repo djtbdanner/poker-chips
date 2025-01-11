@@ -84,7 +84,7 @@ socketEventHandlers['get-tables'] = async (apigwManagementApi, connectionId, dat
         }
 
         const arr = Array.from(tables.values());
-        const availableTables = arr;//arr.filter((table)=> !table.playersFull());
+        const availableTables = arr.filter((table)=> !table.playersFull());
         const response = { action: messageId, payload: JSON.stringify(availableTables) };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) })
     } catch (error) {
@@ -163,7 +163,7 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
                 return p.getChipTotal() <= 0;
             });
             brokePlayers.forEach((bp) => {
-                removePlayer(bp, table);
+                removePlayer(bp, table, apigwManagementApi);
             });
         } else {
             const playersNotVoted = table.players.find(player => !player.hasVoted);
@@ -254,6 +254,15 @@ exports.lambdaSocketHandler = async (data, apigwManagementApi, connectionId) => 
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
+}
+
+
+function removePlayer(player, table, apigwManagementApi){
+    table.players = table.players.filter((p) => { return p.id !== player.id; });
+    console.log(`${player.name}, ${player.id} left the game.`);
+    table.addMessage(`${player.name} left the game.`);
+
+    broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
 }
 
 function handleError(apigwManagementApi, connectionId, error, data) {

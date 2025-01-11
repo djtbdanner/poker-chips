@@ -86,7 +86,7 @@ async function getCurrentTable() {
     const tableId = document.getElementById(`table-id`).value;
     const table = await asyncEmit(`poker-get-current-table`, { tableId, playerId });
     if (table) {
-        drawScreen(JSON.parse(table));
+        drawScreen(table);
     }
 }
 

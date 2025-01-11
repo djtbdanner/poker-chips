@@ -90,7 +90,7 @@ function getBetScreenHTML(id) {
     html += `            </td>`;
     html += `        <tr>`;
     html += `            <td class="even5td">`;
-    html += `                <input type="button" id="bet-change" value="Change">`;
+    // html += `                <input type="button" id="bet-change" value="Change">`;
     html += `            </td>`;
     html += `            <td class="even5td">`;
     html += `                <input type="button" id="bet-cancel" value="CANCEL" onClick="cancelBetScreen();">`;

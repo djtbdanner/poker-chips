@@ -5,10 +5,10 @@ exports.getNextActivePlayer = (currentPlayer, table) => {
     const activePlayers = table.players.filter((p) => {
         return !p.folded && p.getChipTotal() > 0;
     });
-    if (activePlayers.length < 2) {
-        console.log("Less than 2 active players - returning the current player in getNextActive player");
-        return currentPlayer;
-    }
+    // if (activePlayers.length < 2) {
+    //     console.log("Less than 2 active players - returning the current player in getNextActive player");
+    //     return currentPlayer;
+    // }
 
     const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
     currentPlayer.turn = false;
