@@ -24,7 +24,6 @@ function pokerChipDenominationChange(fromChipColor, toChipColor){
 function pokerChipDenominationQuit(){
     const playerId = document.getElementById(`player-id`).value;
     const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-player-chip-denomination-change`, );
     const message = { action: `poker-player-chip-denomination-change`, payload: {playerId, tableId, playerDone:true} };
     connectAndSendSocketRequest(message);
 }
@@ -32,7 +31,8 @@ function pokerChipDenominationQuit(){
 function removePlayer() {
     const playerId = document.getElementById(`player-id`).value;
     const tableId = document.getElementById(`table-id`).value;
-    socket.emit(`poker-remove-player`, { playerId, tableId });
+    const message = { action: `poker-remove-player`, payload: { playerId, tableId }};
+    connectAndSendSocketRequest(message);
     destroyById(`table-div`);
     destroyById(`bet-input`);
     destroyById(`initial-screen`);

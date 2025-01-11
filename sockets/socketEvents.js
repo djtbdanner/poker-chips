@@ -184,7 +184,6 @@ socketEventHandlers['poker-get-current-table'] = async (apigwManagementApi, conn
         const tableId = data.tableId;
         const table = tables.get(tableId);
 
-        socket.emit(`messageId`, JSON.stringify(table));
         response = { action: messageId, payload: table };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
     } catch (error) {

@@ -21,22 +21,22 @@ async function buildInitialScreen() {
     html += `Table: `;
     html += `</td><td>`;
     //--TODO-- remove the values
-    html += `<input type="text" maxlength="20" class="stInput" id="table-name" value = "t" placeholder="Table Name" onKeyUp="checkTableName()" autofocus />`;
+    html += `<input type="text" maxlength="20" class="stInput" id="table-name" value = "Test-table" placeholder="Table Name" onKeyUp="checkTableName()" autofocus />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `Your Name: `;
     html += `</td><td>`;
-    html += `<input type="text" maxlength="20" class="stInput" id="player-name" value = "t" placeholder="Your Name" />`;
+    html += `<input type="text" maxlength="20" class="stInput" id="player-name" value = "Dave" placeholder="Your Name" />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `# Players: `;
     html += `</td><td>`;
-    html += `<input type="number" maxlength="3" class="stInput" id="player-count" value = "9" min="2" max="9" />`;
+    html += `<input type="number" maxlength="3" class="stInput" id="player-count" value = "3" min="2" max="9" />`;
     html += `</td></tr>`;
     html += `<tr><td style="text-align:right;">`;
     html += `Initial # chips: `;
     html += `</td><td>`;
-    html += `<input type="number" maxlength="4" class="stInput" id="chip-count" value = "100" min="2" max="9999" />`;
+    html += `<input type="number" maxlength="4" class="stInput" id="chip-count" value = "15" min="2" max="9999" />`;
     html += `</td></tr>`;
     // html += `<tr><td colspan="2" style = "text-align:center;">`;
     // html += `<span id = "game-msg-span">&nbsp</span>`;
@@ -80,7 +80,7 @@ function buildRoomList(tables) {
         html += `</td>`;
         html += `<td>`;
         //--TODO-- remove the values
-        html += `<input type="text" maxlength="20" class="stInput" id="joining-player-name" value="s" placeholder="Player Name"/>`;
+        html += `<input type="text" maxlength="20" class="stInput" id="joining-player-name" value="Sammy" placeholder="Player Name"/>`;
         html += `</td></tr>`;
         html += `<tr><td style="text-align:right;">`;
         html += `Table:`;

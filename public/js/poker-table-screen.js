@@ -26,7 +26,7 @@ function drawScreen(table) {
 
     // add name to title
     if (thisPlayer && thisPlayer.name){
-        document.title = `Poker Chips - ${thisPlayer.name}`;
+        document.title = `Poker Chips - ${thisPlayer.name} ${myTurnPlayer && thisPlayer.id === myTurnPlayer.id ? ` (Your bet)` : ``}`;
     } else {
         document.title = `Poker Chips`;
     }
