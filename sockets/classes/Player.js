@@ -1,8 +1,9 @@
 const crypto = require("crypto");
 class Player {
-  constructor(name) {
+  constructor(name, connectionId) {
     this.name = name;
-    this.id = crypto.randomBytes(16).toString("hex");
+    this.id = connectionId;
+    this.connectionId = connectionId;
     this.turn = false;
     this.dealer = false;
     this.folded = false;
@@ -14,9 +15,18 @@ class Player {
     this.chipTotal = 0;
     this.showChipExchangeDiv = false;
     this.allIn = false;
+    this.totalRoundBet = 0;
     this.splitPotTotal = 0;
   }
 
+  reset() {
+    this.splitPotTotal = 0;
+    this.totalRoundBet = 0;
+    this.allIn = false;
+    this.turn = false; 
+    this.firstBettor = false;
+  }
+  
   getChipTotal() {
     this.chipTotal = 0;
     this.chips.forEach((c) => {

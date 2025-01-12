@@ -28,19 +28,26 @@ function pokerChipDenominationQuit(){
     connectAndSendSocketRequest(message);
 }
 
+socketEventHandlers['poker-remove-player'] = async (data) => {
+    console.log('poker-remove-player:', JSON.stringify(data));
+    const table = JSON.parse(JSON.stringify(data));
+    // destroyById(`table-div`);
+    // destroyById(`bet-input`);
+    // destroyById(`initial-screen`);
+    // destroyById(`chip-change`);
+    alert('bye');
+};
+
+
 function removePlayer() {
     const playerId = document.getElementById(`player-id`).value;
     const tableId = document.getElementById(`table-id`).value;
     const message = { action: `poker-remove-player`, payload: { playerId, tableId }};
-    connectAndSendSocketRequest(message);
-    destroyById(`table-div`);
-    destroyById(`bet-input`);
-    destroyById(`initial-screen`);
-    destroyById(`chip-change`);
+    connectAndSendSocketRequest(message);// backend will call poker-remove-player handler and do the rest
 }
 
 socketEventHandlers['poker-table-change'] = async (data) => {
-    console.log('Received poker-table-change:', JSON.stringify(data));
+    // console.log('Received poker-table-change:', JSON.stringify(data));
     const table = JSON.parse(JSON.stringify(data));
     if (table) {
         drawScreen(table);

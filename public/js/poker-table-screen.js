@@ -158,7 +158,6 @@ function getPlayerLocationStyle(table, i) {
     const count = table.players.length;
     const indexOfThisPlayer = table.players.findIndex((player) => player.id === document.getElementById(`player-id`).value);
     i = i - indexOfThisPlayer;
-    console.log(`is gr:` + i);
     if (i < 0) {
         i = (i + count);
     }

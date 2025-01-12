@@ -19,7 +19,8 @@ const options = {
 const httpsServer = https.createServer(options, async function (req, res) {
     let body = await getRequestBody(req);
     const socketId = decodeURIComponent(req.url.split('/')[2]);
-    console.log(`socket-api-emulator: Lambda responds to socket ${socketId} - \n ${body}`);
+    // console.log(`socket-api-emulator: Lambda responds to socket ${socketId} - \n ${body}`);
+    // console.log(`socket-api-emulator: Lambda responds to socket ${socketId} `);
     const socket = socketConnections.get(socketId);
     if (!socket) {
         res.writeHead(410);// let the lambda know this no longer exists
@@ -56,7 +57,7 @@ socketServer.on('upgrade', (req, socket, head) => {
     ].join('\r\n'));
 
     socketConnections.set(key, socket);
-    console.log(`socket-api-emulator: New client connected: ${key}`);
+    // console.log(`socket-api-emulator: New client connected: ${key}`);
 
     // CONNECTION EVENT
     handler(connectionEvent(key, "$connect", "CONNECT"));
@@ -66,11 +67,11 @@ socketServer.on('upgrade', (req, socket, head) => {
             if (!data || data.length === 0) return; // Ignore empty data
             const message = parseWebSocketMessage(data);
             if (message) {
-                console.log(`socket-api-emulator: Received message from ${key}:`, message);
+                // console.log(`socket-api-emulator: Received message from ${key}:`, message);
                 // MESSAGE EVENT
                 handler(socketEvent(key, message));
             } else {
-                console.log(`socket-api-emulator: Ignored unrecognized or unwanted data from ${key}`);
+                // console.log(`socket-api-emulator: Ignored unrecognized or unwanted data from ${key}`);
             }
         } catch (err) {
             console.error(`socket-api-emulator: Error processing data from ${key}:`, err);
@@ -78,17 +79,17 @@ socketServer.on('upgrade', (req, socket, head) => {
     });
 
     socket.on('end', () => {
-        socketConnections.delete(key);
-        console.log(`socket-api-emulator: Client disconnected: ${key}`);
+        // console.log(`socket-api-emulator: Client disconnected: ${key}`);
         // DISCONNECT EVENT
         handler(connectionEvent(key, "$disconnect", "DISCONNECT"));
+        socketConnections.delete(key);
     });
     
     socket.on('error', () => {
-        socketConnections.delete(key);
-        console.log(`socket-api-emulator: Client disconnected: ${key}`);
-        // DISCONNECT EVENT
+        // console.log(`socket-api-emulator: Client disconnected: ${key}`);
+        // ERROR EVENT
         handler(connectionEvent(key, "$disconnect", "DISCONNECT"));
+        socketConnections.delete(key);
     });
 });
 
@@ -112,7 +113,7 @@ function parseWebSocketMessage(data) {
 
     if (opcode === 0x8) {
         // Close frame
-        console.log("socket-api-emulator: Close frame received, ignoring...");
+        // console.log("socket-api-emulator: Close frame received, ignoring...");
         return null; // Explicitly ignore close frames
     }
 

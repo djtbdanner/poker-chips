@@ -8,48 +8,51 @@ const {
     DynamoDB,
     TagResourceCommand
   } = require("@aws-sdk/client-dynamodb");
-const { lambdaSocketHandler } = require("./sockets/socketEvents");
+const { lambdaSocketHandler, lambdaSocketDisconnectHandler } = require("./sockets/socketEvents");
 const ddb = DynamoDBDocument.from(new DynamoDB({ apiVersion: '2012-08-10', region: 'us-east-1' }));
 
 const TABLE_NAME = 'web-socket-connections';
 
 exports.handler = async event => {
-  let connectionData;
+  try {
 
-  let routeKey = event.requestContext.routeKey||'NA';
-  let connectionId = event.requestContext.connectionId||'NA';
 
-  if (routeKey === 'NA' || connectionId === 'NA'){
-    throw new Error (`You are not looking at the right routeKey or connectionId- event ${JSON.stringify(event)}`)
+    let routeKey = event.requestContext.routeKey || 'NA';
+    let connectionId = event.requestContext.connectionId || 'NA';
+
+    if (routeKey === 'NA' || connectionId === 'NA') {
+      throw new Error(`You are not looking at the right routeKey or connectionId- event ${JSON.stringify(event)}`)
+    }
+
+    /// connection
+    if (routeKey.includes("$connect")) {
+      console.log(`connect - first socket connection ${connectionId}`);
+      return;
+    }
+
+    const endpoint = getEndpoint(event);
+    const apigwManagementApi = new ApiGatewayManagementApi({
+      apiVersion: '2018-11-29',
+      region: 'us-east-1',
+      endpoint
+    });
+
+    /// disconnection
+    if (routeKey.includes("$disconnect")) {
+      console.log(`socket disconnecting - ${connectionId}`);
+      lambdaSocketDisconnectHandler(apigwManagementApi, connectionId);
+      return;
+    }
+
+    await lambdaSocketHandler(event.body, apigwManagementApi, connectionId);
+    return { statusCode: 200, body: 'Data sent.' };
+  } catch(e){
+    console.error(`Error in lambda handler ${e}`);
+    if (isMaybeStaleConnection) {
+      console.log(`Looks like a stale connection ${connectionId}`);
+//      await ddb.delete({ TableName: TABLE_NAME, Key: { connectionId } });
+    }
   }
-
-  /// connection
-  if (routeKey.includes("$connect")){
-    console.log('connect');
-    return;
-  }
-
-  /// disconnection
-  if (routeKey.includes("$disconnect")){
-    console.log('disconnect');
-    return;
-  }
-  
-  // try {
-  //   connectionData = await ddb.scan({ TableName: TABLE_NAME, ProjectionExpression: 'connectionId' });
-  // } catch (e) {
-  //   return { statusCode: 500, body: e.stack };
-  // }
-
-  const endpoint = getEndpoint(event);
-  const apigwManagementApi = new ApiGatewayManagementApi({
-    apiVersion: '2018-11-29',
-    region: 'us-east-1',
-    endpoint
-  });
-
-  await lambdaSocketHandler(event.body, apigwManagementApi, connectionId);
-  return { statusCode: 200, body: 'Data sent.' };
 };
 
 function getEndpoint(event) {

@@ -10,7 +10,6 @@ class Table {
         this.players = [];
         this.messages = [];
         this.playStatus = new PlayStatus();
-        this.socketConnections = [];
     }
 
     addPlayer(player) {

@@ -7,26 +7,34 @@ const Chip = require('./classes/Chip');
 let tables = new Map();
 const socketEventHandlers = {};
 
-function broadcastToTable(table, message, apigwManagementApi) {
-    table.socketConnections.forEach((connectionId) => {
-        apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(message) });
-    });
+async function broadcastToTable(table, message, apigwManagementApi) {
+    try {
+        for (const p of table.players) {
+            // console.log(`Broadcast table, player connection id ${p.connectionId} message:${message}: ${JSON.stringify(apigwManagementApi)}`);
+            await apigwManagementApi.postToConnection({ ConnectionId: p.connectionId, Data: JSON.stringify(message) });
+        }
+    } catch (error) {
+        console.error(`Error in broadcastToTable: ${error}`);
+    }
 }
 
 socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
         const tableId = data.tableId;
         const playerName = data.playerName;
-        const player = new Player(playerName);
+        const player = new Player(playerName, connectionId);
         const table = tables.get(tableId);
-        PlayProcessor.initializePlayerChips(table, player);
+
         if (!table) {
             throw new Error(`Could not find room or table: ${tableId}.`);
         }
         if (table.players.length === table.playerCount) {
             throw new Error(`Table ${table.name} is full - no more players allowed.`);
         }
+
+        PlayProcessor.initializePlayerChips(table, player);
         table.addPlayer(player);
+
         if (table.players.length < table.playerCount) {
             const count = table.playerCount - table.players.length;
             const morePlayers = `waiting for ${count} more player${count === 1 ? "" : "s"}.`
@@ -37,15 +45,15 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
             table.players[1].turn = true;
             table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
         }
+
         let response = { action: 'set-player-id', payload: { playerId: player.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'set-table-id', payload: { tableId: table.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'join-poker-game', payload: table };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
-        table.socketConnections.push(connectionId);
         response = { action: 'poker-table-change', payload: table };
-        broadcastToTable(table, response, apigwManagementApi);
+        await broadcastToTable(table, response, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -57,7 +65,7 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         const playerName = data.playerName;
         const playerCount = data.playerCount;
         const startChipCount = data.startChipCount;
-        const player = new Player(playerName);
+        const player = new Player(playerName, connectionId);
         const table = new Table(tableName, parseInt(playerCount, 10), parseInt(startChipCount, 10));
         let response = { action: 'set-table-id', payload: { tableId: table.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
@@ -69,9 +77,8 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         tables.set(table.id, table);
 
         response = { action: messageId, payload: table };
-        table.socketConnections.push(connectionId);
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
-     } catch (error) {
+    } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
 };
@@ -84,7 +91,7 @@ socketEventHandlers['get-tables'] = async (apigwManagementApi, connectionId, dat
         }
 
         const arr = Array.from(tables.values());
-        const availableTables = arr.filter((table)=> !table.playersFull());
+        const availableTables = arr.filter((table) => !table.playersFull());
         const response = { action: messageId, payload: JSON.stringify(availableTables) };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) })
     } catch (error) {
@@ -108,36 +115,36 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         const table = tables.get(tableId);
         const player = table.players.find(player => player.id === playerId);
         let totalChips = 0;
-        const initialCallAmount = table.playStatus.callAmount;
+        // const initialCallAmount = table.playStatus.callAmount;
         if (action === "RAISE") {
             totalChips = PlayProcessor.calculateChips(chips, player, table);
             const raisedByAmount = totalChips - table.playStatus.callAmount;
             table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
             table.playStatus.playerLastRaised = player;
+            player.totalRoundBet = player.totalRoundBet + totalChips;
             if (player.getChipTotal() === 0) {
                 player.allIn = true;
-                player.splitPotWinAmount = table.playStatus.chips;
-                table.playStatus.splitPotCount += 1
             }
+            PlayProcessor.processSidePots(table, player);
         } else if (action === "CALL") {
             totalChips = PlayProcessor.calculateChips(chips, player, table);
+            player.totalRoundBet = player.totalRoundBet + totalChips;
             if (player.getChipTotal() === 0) {
                 player.allIn = true;
-                player.splitPotWinAmount = table.playStatus.chips;
-                table.playStatus.splitPotCount += 1
             }
+            PlayProcessor.processSidePots(table, player);
         } else if (action === "FOLD") {
             player.folded = true;
         } else if (action === "CHECK") {
         }
         table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""} with ${totalChips} chips.`);
         if (PlayProcessor.isBetRoundOver(player, table)) {
-            // PlayProcessor.updatePlayersAfterBetting(table);
+            // PlayProcessor.processRoundOver(table);
         } else {
             PlayProcessor.getNextActivePlayer(player, table).turn = true;
             PlayProcessor.calculateCurrentCallAmount(table);
         }
-        broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -157,14 +164,15 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
         table.addMessage(`${votingPlayer.name} voted ${winningPlayer.name} winner.`);
         if (winningPlayer.winVoteCount >= 2) {
             PlayProcessor.processWinner(winningPlayer, table);
-            PlayProcessor.updatePlayersAfterBetting(table);
-            const brokePlayers = table.players.filter((p) => {
-                console.log(p.getChipTotal());
-                return p.getChipTotal() <= 0;
-            });
-            brokePlayers.forEach((bp) => {
-                removePlayer(bp, table, apigwManagementApi);
-            });
+            // PlayProcessor.updatePlayersAfterBetting(table);
+            // const brokePlayers = table.players.filter((p) => {
+            //     console.log(p.getChipTotal());
+            //     return p.getChipTotal() <= 0;
+            // });
+            // brokePlayers.forEach((bp) => {
+            //     table.addMessage(`${bp.name} is out of chips 😢.`);
+            //     removePlayer(bp, table, apigwManagementApi, true);
+            // });
         } else {
             const playersNotVoted = table.players.find(player => !player.hasVoted);
             if (!playersNotVoted || playersNotVoted.length === 0) {
@@ -172,7 +180,14 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
                 table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; });
             }
         }
-        broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        // const brokePlayers = table.players.filter((p) => {
+        //     return p.getChipTotal() <= 0;
+        // });
+        // brokePlayers.forEach((bp) => {
+        //     table.addMessage(`${bp.name} is out of chips 😢.`);
+        //     removePlayer(bp, table, apigwManagementApi, true);
+        // });
+        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -229,12 +244,12 @@ socketEventHandlers['poker-remove-player'] = async (apigwManagementApi, connecti
         const tableId = data.tableId;
         const table = tables.get(tableId);
         const player = table.players.find(player => player.id === playerId);
-        table.players = table.players.filter((p) => { return p.id !== player.id; });
+        removePlayer(player, table, apigwManagementApi, true);
+        // table.players = table.players.filter((p) => { return p.id !== player.id; });
 
-        console.log(`${player.name}, ${player.id} left the game.`);
-        table.addMessage(`${player.name} left the game.`);
-        table.socketConnections = table.socketConnections.filter((c) => { return c !== connectionId; });
-        broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        // console.log(`${player.name}, ${player.id} left the game.`);
+        // table.addMessage(`${player.name} left the game.`);
+        // await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -256,13 +271,46 @@ exports.lambdaSocketHandler = async (data, apigwManagementApi, connectionId) => 
     }
 }
 
+exports.lambdaSocketDisconnectHandler = async (apigwManagementApi, connectionId) => {
+    try {
+        checkForPlayerToDisconnect(connectionId, apigwManagementApi);
+    } catch (error) {
+        handleError(apigwManagementApi, connectionId, error, { disconnect: connectionId });
+    }
+}
 
-function removePlayer(player, table, apigwManagementApi){
+function checkForPlayerToDisconnect(connectionId, apigwManagementApi) {
+    const table = findTableByConnectionId(tables, connectionId);
+    if (table) {
+        const player = table.players.find(player => player.connectionId === connectionId);
+        removePlayer(player, table, apigwManagementApi, false);
+    }
+}
+
+async function removePlayer(player, table, apigwManagementApi, thisPlayerIsConnected) {
     table.players = table.players.filter((p) => { return p.id !== player.id; });
-    console.log(`${player.name}, ${player.id} left the game.`);
-    table.addMessage(`${player.name} left the game.`);
+    console.log(`${player.name}, ${player.id} left the game - the player is still connected: ${thisPlayerIsConnected}. If true will be removed.`);
+    table.addMessage(`${player.name} left the game. ${thisPlayerIsConnected ? '' : " Apparently the browser disconnected."}`);
+    // remove the player
+    if (thisPlayerIsConnected) {
+        const response = { action: 'poker-remove-player', payload: table };
+        await apigwManagementApi.postToConnection({ ConnectionId: player.connectionId, Data: JSON.stringify(response) });
+       // update everyone still in
+       await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+    }
 
-    broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+}
+
+function findTableByConnectionId(tables, connectionId) {
+    for (let table of tables.values()) {
+        console.log(`table: ${table}`);
+        // const table = tables[tableId];
+        const player = table.players.find(player => player.id === connectionId);
+        if (player) {
+            return table;
+        }
+    }
+    return null;
 }
 
 function handleError(apigwManagementApi, connectionId, error, data) {
