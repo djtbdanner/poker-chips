@@ -62,14 +62,17 @@ function drawScreen(table) {
             }
             html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
-                html += `<input type = "button" class="voteButton" value="${player.name} wins" onClick = "choseRoundWinner('${player.id}')" ></div>`;
+                html += `<input type = "button" class="voteButton" value="${player.name} wins" id="${player.id}_win" onClick = "voteForWinner('${player.id}', '${player.name}')" ></div>`;
             } else {
                 html += `</div>`;
             }
         }
     }
+   
+    html += `    <div class="playerDiv playerPot">pot<br>${playStatus.pot}`;  
+    html += `      <input type = "button" class="voteButton" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
+    html += `    </div>`;
 
-    html += `    <div class="playerDiv playerPot">pot<br>${playStatus.pot}</div>`;
     html += `    <div class="footer">`;
     html += `        <table>`;
     html += `            <tr>`;
@@ -142,7 +145,7 @@ function drawScreen(table) {
     html += `                </td>`;
     html += `            </tr>`;
     html += `        </table>`;
-    html += `    </div>`;
+    html += `    </div>`;   
     createAndAppendDiv(html, id, true);
     scrollText();
     if (thisPlayer.showChipExchangeDiv){
@@ -318,4 +321,43 @@ function getPlayerLocationStyle(table, i) {
         }
         return loc;
     }
+}
+
+const winnerNames = [];
+const winnerIds = [];
+const voteForWinner = (playerId, playerName) => {
+    if (winnerIds.includes(playerId)){
+        alert(`${playerName} already selected..`);
+        return;
+    }
+    const voteButton = document.getElementById(`submit-vote-button`);
+    const votedPlayerButton = document.getElementById(`${playerId}_win`);
+    if (votedPlayerButton){
+        votedPlayerButton.style.display = "none";
+    }
+    voteButton.style.display = "block";
+
+    const playerDiv = document.getElementById(playerId);
+    playerDiv.innerHTML = playerDiv.innerHTML + getWinnerLogo();
+
+    winnerNames.push(playerName);
+    winnerIds.push(playerId);
+    console.log(`${winnerNames} ${winnerIds}`);
+    document.getElementById(`winner_names`).innerHTML = winnerNames.join(`, `);
+ };
+
+const submitVote = () => {  
+    choseRoundWinner(winnerIds.join(`,`));
+    // above wesocket call will not stop the below code from running
+    winnerNames.length = 0;
+    winnerIds.length = 0;
+}
+
+const getWinnerLogo = () => {
+    let html = '';
+    html += `    <svg id="winner-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="2"/>`;
+    html += `    <path fill="none" stroke="#4CAF50" stroke-width="5" d="M14 27l7 7 16-16"/>`;
+    html += `    </svg>`;
+    return html;
 }

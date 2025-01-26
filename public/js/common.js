@@ -10,10 +10,10 @@ let callAmount = 0;
 
 function createAndAppendDiv(html, id, isFullScreen) {
     let div = document.getElementById(id);
-    if (div) {
-        destroyNode(div);
-        div = undefined;
-    }
+    // if (div) {
+    //     destroyNode(div);
+    //     div = undefined;
+    // }
     if (!div) {
         div = document.createElement(`div`);
         div.id = id;

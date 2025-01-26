@@ -3,7 +3,6 @@ async function startPokerGame(tableName, playerName, playerCount, startChipCount
     console.log(`Data Back from call to startPokerGame ${JSON.stringify(table)}`);
     if (table) {
         drawScreen(table);
-        console.log(JSON.stringify(table));
     }
 }
 
@@ -51,7 +50,6 @@ socketEventHandlers['poker-table-change'] = async (data) => {
     const table = JSON.parse(JSON.stringify(data));
     if (table) {
         drawScreen(table);
-        console.log(JSON.stringify(table));
     }
 };
 
@@ -81,10 +79,10 @@ function playerAction(action, chips) {
     connectAndSendSocketRequest(message);
 }
 
-function choseRoundWinner(winningPlayerId) {
+function choseRoundWinner(winningPlayerIds) {
     const playerId = document.getElementById(`player-id`).value;
     const tableId = document.getElementById(`table-id`).value;
-    const message = { action: 'poker-win-round', payload: {winningPlayerId, playerId, tableId} };
+    const message = { action: 'poker-win-round', payload: {winningPlayerIds, playerId, tableId} };
     connectAndSendSocketRequest(message);
 }
 

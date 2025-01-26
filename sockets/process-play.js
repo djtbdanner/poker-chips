@@ -42,7 +42,7 @@ exports.processSidePots = (table, player) => {
         });
         allInPlayer.splitPotTotal = splitPotTotal;
         // table.addMessage(`${allInPlayer.name} is all in for ${allInBet} and can win ${splitPotTotal}!`);
-        console.log (  `${allInPlayer.name} is all in and the split pot amount is ${allInPlayer.splitPotTotal}`);
+        console.log(`${allInPlayer.name} is all in and the split pot amount is ${allInPlayer.splitPotTotal}`);
     });
 }
 
@@ -62,7 +62,10 @@ exports.isBetRoundOver = (currentPlayer, table) => {
 
     const playersNotFolded = table.players.filter(player => !player.folded);
     if (playersNotFolded.length < 2) {
-        this.processWinner(playersNotFolded[0], table);
+        const winningPlayer = playersNotFolded[0];
+        table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
+        winningPlayer.chips.push(...table.playStatus.chips);
+        this.resetTable(table);
         return true;
     }
 
@@ -101,8 +104,7 @@ exports.updatePlayersAfterBetting = (table) => {
     const nextPlayer = this.getNextActivePlayer(nextDealer, table);
     nextPlayer.turn = true;
     nextPlayer.firstBettor = true;
-    table.addMessage(`Betting round complete.`);
-    table.addMessage(`${nextDealer.name} is dealer with ${nextPlayer.name} betting.`);
+    table.addMessage(`Betting round complete. ${nextDealer.name} is dealer with ${nextPlayer.name} betting.`);
 }
 
 const resetPotChips = (table, theChips) => {
@@ -115,7 +117,41 @@ const resetPotChips = (table, theChips) => {
     this.setPotChips(table, blackCount, greenCount, redCount, grayCount);
 }
 
-exports.processWinner = (winningPlayer, table) => {
+exports.processWinner = (winningPlayers, table) => {
+    if (winningPlayers.length > 1) {
+        const sidePotWinningPlayers = winningPlayers.filter((p) => p.splitPotTotal > 0);
+        if (sidePotWinningPlayers.length > 0) {
+            // wow multiple winners and one of them has side pot and has we have a split pot/side pot situation 😒. 
+            // we will get the least side pot player split pot for that and the other players, reset the pot and reprocess any remaining winners.
+            const playerWithLeastSidePot = sidePotWinningPlayers.reduce((minPlayer, currentPlayer) => {
+                return (currentPlayer.splitPotTotal < minPlayer.splitPotTotal) ? currentPlayer : minPlayer;
+            }, sidePotWinningPlayers[0]);
+            // get any leftover pot
+            const leftOverPot = table.playStatus.pot - playerWithLeastSidePot.splitPotTotal;
+            const leftOverPotChips = this.parseChips(leftOverPot);
+            // split the sidePot
+            const winningPlayerChips = this.parseChips(playerWithLeastSidePot.splitPotTotal);
+            resetPotChips(table, winningPlayerChips)
+            splitPotBetweenPlayers(table, winningPlayers); 
+            // pot is now any leftover pot - so all we gotta do is reprocess the whole thing
+            resetPotChips(table, leftOverPotChips);
+            // reset any other split pot players with a value for them
+            resetAnyOtherSidePotPlayerAmounts(table, playerWithLeastSidePot);
+            // Remove the player with the least split pot total from winningPlayers
+            let remainingWinningPlayers = winningPlayers.filter(player => player.id !== playerWithLeastSidePot.id);
+            // any remaining players with a split pot total that has zeroed out need to be removed as well as they cannot win any more
+            remainingWinningPlayers = remainingWinningPlayers.filter((p) => !p.folded);
+            this.processWinner(remainingWinningPlayers, table);
+        } else {
+            // no all ins pot, just split the pot giving any remainders to whoever is the first one in the list
+            splitPotBetweenPlayers(table, winningPlayers);    
+            resetTable(table);
+        }
+        return;
+    }
+
+    const winningPlayer = winningPlayers[0];
+    // winner has side pot so we need to process that players portion of the pot.
     if (winningPlayer.splitPotTotal > 0 && winningPlayer.splitPotTotal < table.playStatus.pot) {
         const newPotTotal = table.playStatus.pot - winningPlayer.splitPotTotal;
         const potChips = this.parseChips(newPotTotal);
@@ -125,37 +161,34 @@ exports.processWinner = (winningPlayer, table) => {
         table.addMessage(`${winningPlayer.name} WINS split pot of ${winningPlayer.splitPotTotal}, leaving ${newPotTotal} chips!!`);
         winningPlayer.chips.push(...table.playStatus.chips);
 
-        const splitPotPlayers = table.players.filter((p) => p.splitPotTotal > 0);
-        splitPotPlayers.forEach((p) => {
-            if (p.id !== winningPlayer.id) {
-                const initialSplitPotTotal = p.splitPotTotal;
-                p.splitPotTotal = p.splitPotTotal - winningPlayer.splitPotTotal;
-                if (p.splitPotTotal < 1) {
-                    p.splitPotTotal = 0;
-                }
-                console.log(`After processing the winner ${winningPlayer.name}, ${p.name} split pot total was ${initialSplitPotTotal} now ${p.splitPotTotal}`);
-            }
-        });
+        // reset any other split pot players with a value for them
+        resetAnyOtherSidePotPlayerAmounts(table, winningPlayer);
 
+        // set the player as folded to remove them from the potential winners
         winningPlayer.getChipTotal();
         winningPlayer.allIn = false;
         resetPotChips(table, potChips);
-        winningPlayer.folded = true;// todo something other that folded
+        winningPlayer.folded = true;// todo something other that folded?
         winningPlayer.splitPotTotal = 0;
 
+        // check if there are other players that could win the rest of the pot, if only one player not folded or out, that playet gets the rest of the pot.
         table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; });
         const playersThatCanWin = table.players.filter((p) => !p.folded);
         if (playersThatCanWin.length === 1) {
             const thisWinner = playersThatCanWin[0];
             table.addMessage(`${thisWinner.name} gets the leftover pot with no challengers.`);
-            processWinner(thisWinner, table);
+            winningPlayer.chips.push(...table.playStatus.chips);
+            resetTable(table);
         } else {
             table.playStatus.selectWinner = true;
             // todo if there is only one player left they win any of the rest and we done.
             table.addMessage(`${winningPlayer.name} won their side pot, we need to choose a winner for the rest; ${table.playStatus.pot}!`);
         }
     } else {
-        processWinner(winningPlayer, table);
+        // one winner... easy path
+        table.addMessage(`${winningPlayer.name} wins ${table.playStatus.pot} chips!`);
+        winningPlayer.chips.push(...table.playStatus.chips);
+        resetTable(table);
     }
     // give the process a second to update the pages, then flash (no harm if not done)
     // setTimeout(() => {
@@ -163,10 +196,8 @@ exports.processWinner = (winningPlayer, table) => {
     //     socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
     // }, 500);
 }
-const processWinner = (winningPlayer, table) => {
+const resetTable = (table) => {
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
-    table.addMessage(`${winningPlayer.name} WINS the pot of ${table.playStatus.pot} chips!!`);
-    winningPlayer.chips.push(...table.playStatus.chips);
     table.playStatus.reset();
     table.setChipTotalsForPlayers();
     this.updatePlayersAfterBetting(table);
@@ -521,3 +552,40 @@ exports.initializePlayerChips = (table, player) => {
     const chips = this.parseChips(totalChips);
     this.setPlayerChips(table, player, chips['black'], chips['green'], chips['red'], chips['gray']);
 };
+
+function splitPotBetweenPlayers(table, winningPlayers) {
+    let totalPot = table.playStatus.pot;
+    let numWinners = winningPlayers.length;
+    const baseAmount = Math.floor(totalPot / numWinners);
+    let remainder = totalPot % numWinners;
+
+    winningPlayers.forEach((player, index) => {
+        const amount = baseAmount + (index < remainder ? 1 : 0);
+        table.addMessage(`${player.name} wins ${amount} chips in split win!`);
+        const potChips = localParseChips(amount);
+        resetPotChips(table, potChips);
+        player.chips.push(...table.playStatus.chips);
+    });
+}
+
+const localParseChips = (amount) => {
+    return this.parseChips(amount);
+}
+
+function resetAnyOtherSidePotPlayerAmounts(table, winningPlayer) {
+    const splitPotPlayers = table.players.filter((p) => p.splitPotTotal > 0);
+    splitPotPlayers.forEach((p) => {
+        if (p.id !== winningPlayer.id) {
+            const initialSplitPotTotal = p.splitPotTotal;
+            p.splitPotTotal = p.splitPotTotal - winningPlayer.splitPotTotal;
+            if (p.splitPotTotal < 1) {
+                p.splitPotTotal = 0;
+            }
+            if (p.splitPotTotal === 0) {
+                p.folded = true;  // TODO -- consider a different state, not technically folded but is same thing
+            }    
+            console.log(`After processing the winner ${winningPlayer.name}, ${p.name} split pot total was ${initialSplitPotTotal} now ${p.splitPotTotal}`);
+        }
+    });
+}
+

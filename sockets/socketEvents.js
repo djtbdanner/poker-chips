@@ -154,16 +154,22 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
     try {
         console.log(`poker-win-round: ${JSON.stringify(data)}`);
         const votingPlayerId = data.playerId;
-        const winningPlayerId = data.winningPlayerId;
+        let winningPlayerIds;
+        if (data.winningPlayerIds){
+            winningPlayerIds = data.winningPlayerIds.split(',');
+        }
         const tableId = data.tableId;
         const table = tables.get(tableId);
         const votingPlayer = table.players.find(player => player.id === votingPlayerId);
         votingPlayer.hasVoted = true;
-        const winningPlayer = table.players.find(player => player.id === winningPlayerId);
-        winningPlayer.winVoteCount = winningPlayer.winVoteCount + 1;
-        table.addMessage(`${votingPlayer.name} voted ${winningPlayer.name} winner.`);
-        if (winningPlayer.winVoteCount >= 2) {
-            PlayProcessor.processWinner(winningPlayer, table);
+        const winningPlayers = table.players.filter(player => winningPlayerIds.includes(player.id));
+        winningPlayers.forEach((wp) => {
+            wp.winVoteCount = wp.winVoteCount + 1;
+        });
+        const winningPlayerNames = winningPlayers.map(player => player.name).join(', ');
+        table.addMessage(`${votingPlayer.name} voted ${winningPlayerNames} winner${winningPlayerNames.length>1?"s":""}.`);
+        if (winningPlayers.every(player => player.winVoteCount >= 2)) {
+            PlayProcessor.processWinner(winningPlayers, table);
             // PlayProcessor.updatePlayersAfterBetting(table);
             // const brokePlayers = table.players.filter((p) => {
             //     console.log(p.getChipTotal());
