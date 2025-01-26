@@ -16,11 +16,11 @@ class Player {
     this.showChipExchangeDiv = false;
     this.allIn = false;
     this.totalRoundBet = 0;
-    this.splitPotTotal = 0;
+    this.sidePotTotal = 0;
   }
 
   reset() {
-    this.splitPotTotal = 0;
+    this.sidePotTotal = 0;
     this.totalRoundBet = 0;
     this.allIn = false;
     this.turn = false; 
