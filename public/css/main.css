@@ -561,5 +561,13 @@ textarea{
 #winner-checkmark {
   display: inline-block;
   vertical-align: middle;
+  cursor: pointer;
+  margin-left: 5px;
+}
+
+#select-winner-logo {
+  display: inline-block;
+  vertical-align: middle;
+  cursor: pointer;
   margin-left: 5px;
 }

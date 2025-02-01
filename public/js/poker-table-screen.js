@@ -66,12 +66,12 @@ function drawScreen(table) {
             if (!player.isConnected){
                 divClass = `playerDisconnectedDiv`// TODO this needs some effort 
             }
-            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
-            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
-                html += `<input type = "button" class="voteButton" value="${player.name} wins" id="${player.id}_win" onClick = "voteForWinner('${player.id}', '${player.name}')" ></div>`;
-            } else {
-                html += `</div>`;
-            }
+            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer && !playStatus.selectWinner ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
+             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
+                html += `<div id="${player.id}_win" onClick = "voteForWinner('${player.id}')" style="padding-top:5px;" >${getSelectWinnerLogo()}</div>`
+                // html += `<input type = "button" class="voteButton" value="${player.name} wins" id="${player.id}_win" onClick = "voteForWinner('${player.id}', '${player.name}')" >`;
+            } 
+            html += `</div>`;
         }
     }
    
@@ -329,41 +329,43 @@ function getPlayerLocationStyle(table, i) {
     }
 }
 
-const winnerNames = [];
 const winnerIds = [];
-const voteForWinner = (playerId, playerName) => {
+const voteForWinner = (playerId) => {
+    const voteButton = document.getElementById(`submit-vote-button`);
+    const playerWinDiv = document.getElementById(`${playerId}_win`);
+
     if (winnerIds.includes(playerId)){
-        alert(`${playerName} already selected..`);
+        playerWinDiv.innerHTML = getSelectWinnerLogo();
+        winnerIds.splice(winnerIds.indexOf(playerId),1);
+        if (winnerIds.length < 1){
+            voteButton.style.display = "none";
+        }
         return;
     }
-    const voteButton = document.getElementById(`submit-vote-button`);
-    const votedPlayerButton = document.getElementById(`${playerId}_win`);
-    if (votedPlayerButton){
-        votedPlayerButton.style.display = "none";
-    }
+    playerWinDiv.innerHTML = getWinnerLogo();
     voteButton.style.display = "block";
-
-    const playerDiv = document.getElementById(playerId);
-    playerDiv.innerHTML = playerDiv.innerHTML + getWinnerLogo();
-
-    winnerNames.push(playerName);
     winnerIds.push(playerId);
-    console.log(`${winnerNames} ${winnerIds}`);
-    document.getElementById(`winner_names`).innerHTML = winnerNames.join(`, `);
  };
 
 const submitVote = () => {  
     choseRoundWinner(winnerIds.join(`,`));
-    // above wesocket call will not stop the below code from running
-    winnerNames.length = 0;
     winnerIds.length = 0;
 }
 
 const getWinnerLogo = () => {
     let html = '';
-    html += `    <svg id="winner-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
-    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="10"/>`;
-    html += `    <path fill="none" stroke="#4CAF50" stroke-width="5" d="M14 27l7 7 16-16"/>`;
-    html += `    </svg>`;
+    html += `<svg id="winner-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="green" stroke-width="4"/>`;
+    html += `    <path fill="none" stroke="#2E7D32" stroke-width="5" d="M14 27l7 7 16-16"/>`;
+    html += `</svg>`;
+    return html;
+}
+
+const getSelectWinnerLogo = () => {
+    let html = '';
+    html += `<svg id="select-winner-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="green" stroke-width="4"/>`;
+    // html += `    <path fill="#2E7D32" d="M26 12c-1.1 0-2 .9-2 2v12h-4v-8c0-1.1-.9-2-2-2s-2 .9-2 2v8h-4v-4c0-1.1-.9-2-2-2s-2 .9-2 2v4h-2v2h2v4h2v-4h4v4h2v-4h4v4h2v-4h4v-4h2v-2h-2v-4h-4v-8c0-1.1-.9-2-2-2z"/>`;
+    html += `</svg>`;
     return html;
 }
