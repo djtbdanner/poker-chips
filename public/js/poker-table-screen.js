@@ -362,7 +362,7 @@ const submitVote = () => {
 const getWinnerLogo = () => {
     let html = '';
     html += `    <svg id="winner-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
-    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="2"/>`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="#4CAF50" stroke-width="10"/>`;
     html += `    <path fill="none" stroke="#4CAF50" stroke-width="5" d="M14 27l7 7 16-16"/>`;
     html += `    </svg>`;
     return html;
