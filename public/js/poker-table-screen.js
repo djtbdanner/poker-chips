@@ -8,7 +8,8 @@ function drawScreen(table) {
     let html = ``;
     html += `    <div class="pokerTableDiv"></div>`;
     const myTurnPlayer = table.players.find(player => player.turn);
-    const thisPlayerId = document.getElementById(`player-id`).value;
+    // const thisPlayerId = document.getElementById(`player-id`).value;
+    const thisPlayerId = localStorage.getItem(`player-id`);
     const thisPlayer = table.players.find(player => player.id === thisPlayerId);
     const playStatus = table.playStatus;
     let disabledFold = `disabled`;
@@ -46,7 +47,9 @@ function drawScreen(table) {
     }
     if (table.players.length > 0) {
         for (let i = 0; i < table.players.length; i++) {
+
             const player = table.players[i];
+            console.log(JSON.stringify(player));
             let divClass = `playerDiv`;
             if (player.dealer) {
                 divClass = `playerDivDealer`;
@@ -59,6 +62,9 @@ function drawScreen(table) {
             }
             if (player.allIn) {
                 divClass = `playerAllinDiv`;
+            }
+            if (!player.isConnected){
+                divClass = `playerDisconnectedDiv`// TODO this needs some effort 
             }
             html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
@@ -159,7 +165,7 @@ function scrollText() {
 
 function getPlayerLocationStyle(table, i) {
     const count = table.players.length;
-    const indexOfThisPlayer = table.players.findIndex((player) => player.id === document.getElementById(`player-id`).value);
+    const indexOfThisPlayer = table.players.findIndex((player) => player.id === localStorage.getItem(`player-id`));
     i = i - indexOfThisPlayer;
     if (i < 0) {
         i = (i + count);

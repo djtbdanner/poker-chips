@@ -17,6 +17,7 @@ class Player {
     this.allIn = false;
     this.totalRoundBet = 0;
     this.sidePotTotal = 0;
+    this.isConnected = true;
   }
 
   reset() {

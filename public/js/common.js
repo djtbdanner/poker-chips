@@ -188,3 +188,23 @@ async function modalMessage(message) {
 //     sendTextMessage(roomName, message);
 //     destroyById('text-message-in');
 // }
+function getBrowserName() {
+    const userAgent = navigator.userAgent;
+    let browserName = "Unknown";
+
+    if (userAgent.indexOf("Firefox") > -1) {
+        browserName = "Firefox";
+    } else if (userAgent.indexOf("Opera") > -1 || userAgent.indexOf("OPR") > -1) {
+        browserName = "Opera";
+    } else if (userAgent.indexOf("Trident") > -1) {
+        browserName = "Internet Explorer";
+    } else if (userAgent.indexOf("Edg") > -1) {
+        browserName = "Edge";
+    } else if (userAgent.indexOf("Chrome") > -1) {
+        browserName = "Chrome";
+    } else if (userAgent.indexOf("Safari") > -1) {
+        browserName = "Safari";
+    }
+
+    return browserName;
+}

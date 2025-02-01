@@ -17,7 +17,7 @@ exports.getNextActivePlayer = (currentPlayer, table) => {
         nextPlayer = 0;
     }
     const player = table.players[nextPlayer];
-    if (player.folded || player.chipTotal <= 0) {
+    if (player.folded || !player.isConnected || player.chipTotal <= 0) {
         return this.getNextActivePlayer(player, table)
     } else {
         return player;
@@ -45,8 +45,6 @@ exports.processSidePots = (table, player) => {
         console.log(`${allInPlayer.name} is all in and the side pot amount is ${allInPlayer.sidePotTotal}`);
     });
 }
-
-
 
 exports.calculateCurrentCallAmount = (table) => {
     table.playStatus.callAmount = 0;
@@ -199,6 +197,7 @@ exports.processWinner = (winningPlayers, table) => {
 const resetTable = (table) => {
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
     table.playStatus.reset();
+    
     table.setChipTotalsForPlayers();
     this.updatePlayersAfterBetting(table);
 };
@@ -406,7 +405,6 @@ exports.pullChipsToAmount = (table, player, totalBet) => {
     this.setPlayerChips(table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     return true;
 }
-
 
 exports.exchangeChipsPlayer = (table, player, fromChipColor, toChipColor) => {
     console.log(`Player ${player.name} exchanging ${fromChipColor} chips for ${toChipColor} chips.`);

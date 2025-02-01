@@ -10,7 +10,7 @@ const socketEventHandlers = {};
 async function broadcastToTable(table, message, apigwManagementApi) {
     try {
         for (const p of table.players) {
-            // console.log(`Broadcast table, player connection id ${p.connectionId} message:${message}: ${JSON.stringify(apigwManagementApi)}`);
+            console.log(`Broadcast table, player connection id ${p.connectionId}, ${p.name} =================`);
             await apigwManagementApi.postToConnection({ ConnectionId: p.connectionId, Data: JSON.stringify(message) });
         }
     } catch (error) {
@@ -139,6 +139,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         }
         table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""} with ${totalChips} chips.`);
         if (PlayProcessor.isBetRoundOver(player, table)) {
+            table.addMessage('Betting complete, select and submit winner (anyone with 2 votes will be considered a winner).')
             // PlayProcessor.processRoundOver(table);
         } else {
             PlayProcessor.getNextActivePlayer(player, table).turn = true;
@@ -201,16 +202,37 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
 
 socketEventHandlers['poker-get-current-table'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
-        const playerId = data.playerId;
         const tableId = data.tableId;
         const table = tables.get(tableId);
-
         response = { action: messageId, payload: table };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
 };
+
+
+socketEventHandlers['poker-reconnect-to-game'] = async (apigwManagementApi, connectionId, data, messageId) => {
+    try {
+        const playerId = data.playerId;
+        const tableId = data.tableId;
+        const table = tables.get(tableId);
+        const player = table.players.find(player => player.id === playerId);
+        player.isConnected=true;
+        player.connectionId = connectionId;
+        player.id = connectionId;
+        response = { action: 'set-player-id', payload: { playerId: player.id } };
+        await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
+        table.addMessage(`${player.name} has reconnected to game.`);
+
+          // update everyone still in
+          await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+    } catch (error) {
+        handleError(apigwManagementApi, connectionId, error, data);
+    }
+};
+
+
 
 socketEventHandlers['poker-player-chip-denomination-change'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
@@ -279,19 +301,42 @@ exports.lambdaSocketHandler = async (data, apigwManagementApi, connectionId) => 
 
 exports.lambdaSocketDisconnectHandler = async (apigwManagementApi, connectionId) => {
     try {
-        checkForPlayerToDisconnect(connectionId, apigwManagementApi);
+        const table = findTableByConnectionId(tables, connectionId);
+        if (table){
+            const player = table.players.find(player => player.connectionId === connectionId);
+            player.isConnected = false;
+            player.connectionId = undefined;
+            table.addMessage(`${player.name} may have left the game perhaps disconnected browser`);
+        }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, { disconnect: connectionId });
     }
 }
-
-function checkForPlayerToDisconnect(connectionId, apigwManagementApi) {
-    const table = findTableByConnectionId(tables, connectionId);
-    if (table) {
-        const player = table.players.find(player => player.connectionId === connectionId);
-        removePlayer(player, table, apigwManagementApi, false);
+/**
+ * After possible disconnection frontend check to see if game is still going and player is still in the game
+ */
+socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connectionId, data, messageId) => {
+    try {
+        console.log('Received  poker-can-reconnect:', JSON.stringify(data));
+        if (!messageId) {
+            throw new Error(`No messageId in  poker-can-reconnect - supposed to be a synchronous call`);
+        }
+        const playerId = data.playerId;
+        const tableId = data.tableId;
+        const table = tables.get(tableId);
+        let canReconnect = false;
+        if (table){
+            const player = table.players.find(player => player.id === playerId);
+            if (player){
+                canReconnect = true;
+            }
+        }
+        const response = { action: messageId, payload: JSON.stringify({canReconnect}) };
+        await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
+    } catch (error) {
+        handleError(apigwManagementApi, connectionId, error, data);
     }
-}
+};
 
 async function removePlayer(player, table, apigwManagementApi, thisPlayerIsConnected) {
     table.players = table.players.filter((p) => { return p.id !== player.id; });
@@ -301,10 +346,12 @@ async function removePlayer(player, table, apigwManagementApi, thisPlayerIsConne
     if (thisPlayerIsConnected) {
         const response = { action: 'poker-remove-player', payload: table };
         await apigwManagementApi.postToConnection({ ConnectionId: player.connectionId, Data: JSON.stringify(response) });
-       // update everyone still in
-       await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        // update everyone still in
+        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+    } else {
+        // await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     }
-
+ 
 }
 
 function findTableByConnectionId(tables, connectionId) {

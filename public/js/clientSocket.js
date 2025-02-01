@@ -1,6 +1,6 @@
 async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
     const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
-    console.log(`Data Back from call to startPokerGame ${JSON.stringify(table)}`);
+    // console.log(`Data Back from call to startPokerGame ${JSON.stringify(table)}`);
     if (table) {
         drawScreen(table);
     }
@@ -14,15 +14,15 @@ async function joinPokerGame(tableId, playerName) {
 }
 
 function pokerChipDenominationChange(fromChipColor, toChipColor){
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const message = { action: `poker-player-chip-denomination-change`, payload:  {playerId, tableId, fromChipColor, toChipColor} };
     connectAndSendSocketRequest(message);
 }
 
 function pokerChipDenominationQuit(){
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const message = { action: `poker-player-chip-denomination-change`, payload: {playerId, tableId, playerDone:true} };
     connectAndSendSocketRequest(message);
 }
@@ -39,8 +39,8 @@ socketEventHandlers['poker-remove-player'] = async (data) => {
 
 
 function removePlayer() {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const message = { action: `poker-remove-player`, payload: { playerId, tableId }};
     connectAndSendSocketRequest(message);// backend will call poker-remove-player handler and do the rest
 }
@@ -54,11 +54,11 @@ socketEventHandlers['poker-table-change'] = async (data) => {
 };
 
 socketEventHandlers[`set-player-id`] = async (data) => {
-    document.getElementById(`player-id`).value = data.playerId;
+    localStorage.setItem(`player-id`, data.playerId);
 };
 
 socketEventHandlers[`set-table-id`] = async (data) => {
-    document.getElementById(`table-id`).value = data.tableId;
+    localStorage.setItem(`table-id`, data.tableId);
 };
 
 socketEventHandlers[`poker-div-blink`] = async (data) => {
@@ -73,23 +73,39 @@ socketEventHandlers[`poker-table-modal-message`] = async (data) => {
 };
 
 function playerAction(action, chips) {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const message = { action: 'poker-action', payload: { tableId, playerId, action, chips } };
     connectAndSendSocketRequest(message);
 }
 
 function choseRoundWinner(winningPlayerIds) {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const message = { action: 'poker-win-round', payload: {winningPlayerIds, playerId, tableId} };
     connectAndSendSocketRequest(message);
 }
 
 async function getCurrentTable() {
-    const playerId = document.getElementById(`player-id`).value;
-    const tableId = document.getElementById(`table-id`).value;
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
     const table = await asyncEmit(`poker-get-current-table`, { tableId, playerId });
+    if (table) {
+        drawScreen(table);
+    }
+}
+
+async function canReconnect() {
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
+    const result = await asyncEmit(`poker-can-reconnect`, { tableId, playerId });
+    return JSON.parse(result);
+}
+
+async function reconnectToGame() {
+    const playerId = localStorage.getItem(`player-id`);
+    const tableId = localStorage.getItem(`table-id`);
+    const table = await asyncEmit(`poker-reconnect-to-game`, { tableId, playerId });
     if (table) {
         drawScreen(table);
     }

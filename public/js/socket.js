@@ -74,7 +74,8 @@ const waitForSocketConnection = (socket) => new Promise((resolve) => {
 // global socketEventHandlers will be in clientSocket
 const socketEventHandlers = {};
 const socketOnMessage = async (message) => {
-    console.log(`socket message received: ${message} - JSON.stringify: ${JSON.stringify(message)} - data:${message.data}`);
+    // console.log(`socket message received: ${message} - JSON.stringify: ${JSON.stringify(message)} - data:${message.data}`);
+    console.log(`socket message received: ${message.data}`);
     try {
         const data = JSON.parse(message.data);
         const { action, payload } = data;
