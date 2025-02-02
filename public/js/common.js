@@ -139,55 +139,13 @@ async function modalMessage(message) {
     createAndAppendDiv(html, id, false);
 }
 
-// async function textMessages() {
-//     destroyById('text-message');
-//     const roomName = document.getElementById(`room-name`).value;
-//     let messages = await getMessages(roomName);
-//     if (!messages || messages.length < 1) {
-//         messages = [`no messages`];
-//     }
-//     let html = ``;
-//     html += `<div id="text-message" class="txt" style="background-color: rgba(139, 139, 139, 0.9);text-align:center;">`;
-//     html += `<textarea style="width:98%;height:90%;" id="txt-messages" readonly="true">`;
-//     messages.forEach((message) => html += `&#8226;${message}\n`);
-//     html += `</textarea>`;
-//     html += `</br><input type="button" value="close" onClick="destroyById('text-message');" />`;
-//     html += `</div>`;
-//     createAndAppendDiv(html, 'default', false);
-//     var textarea = document.getElementById('txt-messages');
-//     textarea.scrollTop = textarea.scrollHeight;
-// }
+function clearAllNodes() {
+    const body = document.body;
+    while (body.firstChild) {
+        body.removeChild(body.firstChild);
+    }
+}
 
-// function sendMessage() {
-//     const roomName = document.getElementById(`room-name`).value;
-//     destroyById('text-message-in');
-//     let html = ``;
-//     html += `<form><div id="text-message-in" class="txt" style="background-color: rgba(139, 139, 139, 0.9);text-align:center;">`;
-//     html += `<textarea id="txt-message-to-send" style="width:98%;height:50%;" onKeyup="checkDisabled()">`;
-//     html += `</textarea>`;
-//     html += `</br><input type="button" value="Cancel" onClick="destroyById('text-message-in');" />`;
-//     html += `<input type="submit" value="Send" disabled="true" id="send-text-button" formaction="javascript:send()"/>`;
-//     html += `</div></form>`;
-//     createAndAppendDiv(html, 'default', false);
-//     document.getElementById(`txt-message-to-send`).focus();
-// }
-
-// function checkDisabled() {
-//     const textMessage = document.getElementById(`txt-message-to-send`).value;
-//     const button = document.getElementById(`send-text-button`);
-//     if (textMessage) {
-//         button.disabled = false;
-//     } else {
-//         button.disabled = true;
-//     }
-// }
-
-// function send() {
-//     const roomName = document.getElementById(`room-name`).value;
-//     const message = document.getElementById(`txt-message-to-send`).value;
-//     sendTextMessage(roomName, message);
-//     destroyById('text-message-in');
-// }
 function getBrowserName() {
     const userAgent = navigator.userAgent;
     let browserName = "Unknown";

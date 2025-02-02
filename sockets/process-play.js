@@ -3,12 +3,12 @@ const Chip = require('./classes/Chip');
 exports.getNextActivePlayer = (currentPlayer, table) => {
 
     const activePlayers = table.players.filter((p) => {
-        return !p.folded && p.getChipTotal() > 0;
+        return !p.folded && p.getChipTotal() > 0 && p.isConnected;
     });
-    // if (activePlayers.length < 2) {
-    //     console.log("Less than 2 active players - returning the current player in getNextActive player");
-    //     return currentPlayer;
-    // }
+    if (activePlayers.length < 1) {
+        console.log("Less than 1 active players - returning the current player in getNextActive player");
+        return currentPlayer;
+    }
 
     const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
     currentPlayer.turn = false;
@@ -63,27 +63,31 @@ exports.isBetRoundOver = (currentPlayer, table) => {
         const winningPlayer = playersNotFolded[0];
         table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
         winningPlayer.chips.push(...table.playStatus.chips);
-        this.resetTable(table);
+        resetTable(table);
         return true;
     }
 
-    const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
-    let nextPlayer = playerIndex + 1;
-    if (nextPlayer >= table.players.length) {
-        nextPlayer = 0;
-    }
-    const player = table.players[nextPlayer];
+    player = this.getNextActivePlayer(currentPlayer, table);
 
+    const isPot = table.playStatus.pot > 0;
     if (!table.playStatus.playerLastRaised) {
-        // if no one has raised, the round is over with the first bettor.
+        // if no one has raised
         if (player.firstBettor) {
-            table.playStatus.selectWinner = true;
+            if (isPot) {
+                table.addMessage(`Bet round complete. A couple of you vote the winner(s).`);
+                table.playStatus.selectWinner = true; // no need to select winner if no pot
+            } else {
+                table.addMessage(`Since there is no pot, there is no need to select a winner.`);
+                resetTable(table);
+            }
             return true;
         }
     } else {
-        if (player.id === table.playStatus.playerLastRaised.id) {
+        // either we have the player id of the last raise or we do not have a next active player becasue they are out of money 
+        if (player.id === table.playStatus.playerLastRaised.id  || currentPlayer.id === player.id) {
             table.playStatus.selectWinner = true;
             table.playStatus.playerLastRaised = undefined;
+            table.addMessage(`Bet round complete. A couple of you vote the winner(s).`);
             return true;
         }
     }
@@ -91,18 +95,31 @@ exports.isBetRoundOver = (currentPlayer, table) => {
 }
 
 exports.updatePlayersAfterBetting = (table) => {
-
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
     currentDealer.dealer = false;
     const nextDealer = this.getNextActivePlayer(currentDealer, table);
     nextDealer.dealer = true;
-
     table.players.forEach((p) => { p.reset(); });
     const nextPlayer = this.getNextActivePlayer(nextDealer, table);
     nextPlayer.turn = true;
     nextPlayer.firstBettor = true;
-    table.addMessage(`Betting round complete. ${nextDealer.name} is dealer with ${nextPlayer.name} betting.`);
+
+    // if only one player has any money we be done.
+    const playersWithMoney = table.players.filter((p) => {
+        return p.getChipTotal() > 0;
+    });
+
+    if (playersWithMoney.length === 1){
+        const theWinner = playersWithMoney[0];
+        theWinner.isChampion = true;
+        table.playStatus.gameOver = true;
+        table.addMessage(`THE WINNER: ${theWinner.name}`);
+        table.addMessage(`========== GAME OVER =============`);
+
+    } else {
+        table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
+    }
 }
 
 const resetPotChips = (table, theChips) => {
@@ -130,7 +147,7 @@ exports.processWinner = (winningPlayers, table) => {
             // split the sidePot
             const winningPlayerChips = this.parseChips(playerWithLeastSidePot.sidePotTotal);
             resetPotChips(table, winningPlayerChips)
-            splitPotBetweenPlayers(table, winningPlayers); 
+            splitPotBetweenPlayers(table, winningPlayers);
             // pot is now any leftover pot - so all we gotta do is reprocess the whole thing
             resetPotChips(table, leftOverPotChips);
             // reset any other split pot players with a value for them
@@ -142,7 +159,7 @@ exports.processWinner = (winningPlayers, table) => {
             this.processWinner(remainingWinningPlayers, table);
         } else {
             // no all ins pot, just split the pot giving any remainders to whoever is the first one in the list
-            splitPotBetweenPlayers(table, winningPlayers);    
+            splitPotBetweenPlayers(table, winningPlayers);
             resetTable(table);
         }
         return;
@@ -197,7 +214,6 @@ exports.processWinner = (winningPlayers, table) => {
 const resetTable = (table) => {
     table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
     table.playStatus.reset();
-    
     table.setChipTotalsForPlayers();
     this.updatePlayersAfterBetting(table);
 };
@@ -581,7 +597,7 @@ function resetAnyOtherSidePotPlayerAmounts(table, winningPlayer) {
             }
             if (p.sidePotTotal === 0) {
                 p.folded = true;  // TODO -- consider a different state, not technically folded but is same thing
-            }    
+            }
             console.log(`After processing the winner ${winningPlayer.name}, ${p.name} split pot total was ${initialsidePotTotal} now ${p.sidePotTotal}`);
         }
     });

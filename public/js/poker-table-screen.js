@@ -1,10 +1,11 @@
 let firstScreen = true;
 function drawScreen(table) {
+    clearAllNodes();
     const id = `table-div`;
-    destroyById(`bet-input`);
-    destroyById(`initial-screen`);
-    destroyById(`chip-change`);
-    destroyById(id);
+    // destroyById(`bet-input`);
+    // destroyById(`initial-screen`);
+    // destroyById(`chip-change`);
+    // destroyById(id);
     let html = ``;
     html += `    <div class="pokerTableDiv"></div>`;
     const myTurnPlayer = table.players.find(player => player.turn);
@@ -32,7 +33,7 @@ function drawScreen(table) {
         document.title = `Poker Chips`;
     }
  
-    if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner) {
+    if (myTurnPlayer && (myTurnPlayer.id === thisPlayerId) && !playStatus.selectWinner && !playStatus.gameOver) {
         disabledFold = ``;
         if (thisPlayer.chipTotal > playStatus.callAmount ){
             disabledRaise = ``;
@@ -57,7 +58,7 @@ function drawScreen(table) {
             if (player.turn) {
                 divClass = `playerDivTurn`;
             }
-            if (player.folded) {
+            if (player.folded || player.chipTotal < 1) {
                 divClass = `playerFoldedDiv`;
             }
             if (player.allIn) {
@@ -65,6 +66,9 @@ function drawScreen(table) {
             }
             if (!player.isConnected){
                 divClass = `playerDisconnectedDiv`// TODO this needs some effort 
+            }
+            if (player.isChampion){
+                divClass = `playerIsChampionDiv`
             }
             html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer && !playStatus.selectWinner ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
              if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {

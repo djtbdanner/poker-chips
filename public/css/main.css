@@ -1,22 +1,26 @@
 :root {
-  --default-input-bgcolor:rgb(235, 200, 155);
+  --default-input-bgcolor: rgb(235, 200, 155);
 }
 
 /* Vertical - like the phone */
 @media screen and (orientation: portrait) {
+
   html,
   body {
     font-size: 3vh;
   }
+
   .smallitalic {
     font-size: 1.5vh;
     font-style: italic;
-    color:rgb(100, 100, 100);
+    color: rgb(100, 100, 100);
   }
-  .imgreduced{
+
+  .imgreduced {
     width: 15px;
     height: 15px;
   }
+
   /* h5{
     font-size: 3vh;
     font-weight: bold;
@@ -30,134 +34,173 @@
     font-weight: 550;
     font-size: 3.5vh;
   } */
-  .pokerTableDiv{
+  .pokerTableDiv {
     width: 70%;
     background-color: green;
-    height:50%;
-    border-radius:10px;
+    height: 50%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
-    top:7%;
-    left:15%;
+    top: 7%;
+    left: 15%;
     box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
   }
-  .playerDiv{
+
+  .playerDiv {
     background-color: rgb(214, 214, 214);
-    height:12%;
-    width:22%;
-    border-radius:10px;
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerDivTurn{
+  .playerDivTurn {
     background-color: white;
-    height:12%;
-    width:22%;
-    border-width:5px;
+    height: 12%;
+    width: 22%;
+    border-width: 5px;
     border-style: solid;
-    border-image: conic-gradient(from var(--angle), red, yellow,blue, red) 1;
+    border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1;
     animation: 10s rotate linear infinite;
-    position: absolute;    
+    position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
-  } 
+  }
 
-  .playerDivDealer{
+  .playerDivDealer {
     background-color: rgb(214, 214, 214);
-    height:12%;
-    width:22%;
-    border-radius:10px;
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: blue;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerFoldedDiv{
+  .playerFoldedDiv {
     background-color: rgb(104, 100, 100);
-    height:12%;
-    width:22%;
-    border-radius:10px;
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerAllinDiv{
-    background-color:greenyellow;
-    height:12%;
-    width:22%;
-    border-radius:10px;
+  .playerAllinDiv {
+    background-color: greenyellow;
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
-    opacity:.5;
+    opacity: .5;
   }
 
-  .playerTopLeft{
-    top:1%;
-    left:24%;
+  .playerDisconnectedDiv {
+    background-color: rgb(121, 12, 12);
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
+    border-style: ridge;
+    border-color: rgb(170, 147, 13);
+    border-width: 2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
+    text-align: center;
   }
-  .playerTopRight{
-    top:1%;
-    left:52%;
+
+  .playerIsChampionDiv {
+    background-color: rgb(121, 12, 12);
+    height: 12%;
+    width: 22%;
+    border-radius: 10px;
+    border-style: ridge;
+    border-color: rgb(170, 147, 13);
+    border-width: 2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
+    animation: championColors 5s infinite;
   }
-  .playerTopCenter{
-    top:1%;
-    left:39%;
+
+
+  .playerTopLeft {
+    top: 1%;
+    left: 24%;
   }
-  .playerRightTop{
-    top:14%;
-    left:75%;
+
+  .playerTopRight {
+    top: 1%;
+    left: 52%;
   }
-  .playerRightCenter{
-    top:28%;
-    left:75%;
+
+  .playerTopCenter {
+    top: 1%;
+    left: 39%;
   }
-  .playerRightBottom{
-    top:42%;
-    left:75%;
+
+  .playerRightTop {
+    top: 14%;
+    left: 75%;
   }
-  .playerLeftTop{
-    top:14%;
-    left:1%;
+
+  .playerRightCenter {
+    top: 28%;
+    left: 75%;
   }
-  .playerLeftCenter{
-    top:28%;
-    left:1%;
+
+  .playerRightBottom {
+    top: 42%;
+    left: 75%;
   }
-  .playerLeftBottom{
-    top:42%;
-    left:1%;
+
+  .playerLeftTop {
+    top: 14%;
+    left: 1%;
   }
-  .playerCurrent{
-    top:50%;
-    left:39%;
+
+  .playerLeftCenter {
+    top: 28%;
+    left: 1%;
   }
-  .playerPot{
-    top:25%;
-    left:39%;
+
+  .playerLeftBottom {
+    top: 42%;
+    left: 1%;
   }
-  .playerVote{
-    top:35%;
-    left:39%;
+
+  .playerCurrent {
+    top: 50%;
+    left: 39%;
   }
-  
+
+  .playerPot {
+    top: 25%;
+    left: 39%;
+  }
+
+  .playerVote {
+    top: 35%;
+    left: 39%;
+  }
+
   .footer {
     position: fixed;
     bottom: 0;
@@ -165,160 +208,191 @@
     font-weight: bold;
   }
 
- }
+}
 
 /* Horizontal, like good old browser */
 @media screen and (orientation: landscape) {
+
   html,
   body {
     font-size: 3vh;
   }
+
   .smallitalic {
     font-size: 2vh;
     font-style: italic;
-    color:rgb(100, 100, 100);
+    color: rgb(100, 100, 100);
   }
 
-  .imgreduced{
+  .imgreduced {
     width: 50px;
     height: 50px;
   }
-  /* .menuDiv{
-    background-color:rgb(194, 192, 192); 
-    color:black;
-    width:100%;
-    height:4%;
-    text-align: center;
-    font-weight: 550;
-    font-size: 3.5vh; 
-  } */
-  .pokerTableDiv{
+
+  .pokerTableDiv {
     width: 40%;
     background-color: green;
-    height:80%;
-    border-radius:10px;
+    height: 80%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
-    top:9%;
-    left:3%;
+    top: 9%;
+    left: 3%;
     box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
   }
-  .playerDiv{
+
+  .playerDiv {
     background-color: rgb(214, 214, 214);
-    height:15%;
-    width:10%;
-    border-radius:10px;
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerDivTurn{
+  .playerDivTurn {
     background-color: white;
-    height:15%;
-    width:10%;
+    height: 15%;
+    width: 10%;
     border-style: solid;
-    border-width:5px;
-    border-image: conic-gradient(from var(--angle), red, yellow,blue, red) 1;
+    border-width: 5px;
+    border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1;
     animation: 10s rotate linear infinite;
     position: absolute;
     text-align: center;
-  } 
+  }
 
-  .playerDivDealer{
+  .playerDivDealer {
     background-color: rgb(214, 214, 214);
-    height:15%;
-    width:10%;
-    border-radius:10px;
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: blue;
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerFoldedDiv{
+  .playerFoldedDiv {
     background-color: rgb(104, 100, 100);
-    height:15%;
-    width:10%;
-    border-radius:10px;
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
   }
 
-  .playerAllinDiv{
-    background-color:greenyellow;
-    height:15%;
-    width:10%;
-    border-radius:10px;
+  .playerAllinDiv {
+    background-color: greenyellow;
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
     text-align: center;
-    opacity:.5;
+    opacity: .5;
   }
 
-  .playerDisconnectedDiv{
+  .playerDisconnectedDiv {
     background-color: rgb(121, 12, 12);
-    height:15%;
-    width:10%;
-    border-radius:10px;
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
     border-style: ridge;
     border-color: rgb(170, 147, 13);
-    border-width:2%;
+    border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
     text-align: center;
   }
 
-  .playerTopLeft{
-    top:1%;left:10%;
+  .playerIsChampionDiv {
+    background-color: rgb(121, 12, 12);
+    height: 15%;
+    width: 10%;
+    border-radius: 10px;
+    border-style: ridge;
+    border-color: rgb(170, 147, 13);
+    border-width: 2%;
+    position: absolute;
+    box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
+    text-align: center;
+    animation: championColors 5s infinite;
   }
-  .playerTopRight{
-    top:1%;left:26%;
+
+  .playerTopLeft {
+    top: 1%;
+    left: 10%;
   }
-  .playerTopCenter{
-    top:1%;left:18%;
+
+  .playerTopRight {
+    top: 1%;
+    left: 26%;
   }
-  .playerRightTop{
-    top:20%;left:35%;
+
+  .playerTopCenter {
+    top: 1%;
+    left: 18%;
   }
-  .playerRightCenter{
-    top:42%;left:35%;
+
+  .playerRightTop {
+    top: 20%;
+    left: 35%;
   }
-  .playerRightBottom{
-    top:65%;left:35%;
+
+  .playerRightCenter {
+    top: 42%;
+    left: 35%;
   }
-  .playerLeftTop{
-    top:20%;left:1%;
+
+  .playerRightBottom {
+    top: 65%;
+    left: 35%;
   }
-  .playerLeftCenter{
-    top:42%;left:1%;
+
+  .playerLeftTop {
+    top: 20%;
+    left: 1%;
   }
-  .playerLeftBottom{
-    top:65%;left:1%;
+
+  .playerLeftCenter {
+    top: 42%;
+    left: 1%;
   }
-  .playerCurrent{
-    top:82%;left:18%;
+
+  .playerLeftBottom {
+    top: 65%;
+    left: 1%;
   }
-  .playerPot{
-    top:40%;left:18%;
+
+  .playerCurrent {
+    top: 82%;
+    left: 18%;
   }
-  .playerVote{
-    top:45%;
-    left:18%;
+
+  .playerPot {
+    top: 40%;
+    left: 18%;
+  }
+
+  .playerVote {
+    top: 45%;
+    left: 18%;
   }
 
   .footer {
@@ -330,15 +404,15 @@
   }
 }
 
-.additionalInputDiv{
-  background-color:white;
-  width:85%;
-  height:90%;
-  left:8%;
-  top:8%;
-  position:absolute;
-  background-image:url('../images/wood-pattern.png');
-  border-radius:10px;
+.additionalInputDiv {
+  background-color: white;
+  width: 85%;
+  height: 90%;
+  left: 8%;
+  top: 8%;
+  position: absolute;
+  background-image: url('../images/wood-pattern.png');
+  border-radius: 10px;
 }
 
 @keyframes rotate {
@@ -352,29 +426,31 @@
   initial-value: 0deg;
   inherits: false;
 }
-table{
-  padding:0;
-  margin:0;
-  width:100%;
+
+table {
+  padding: 0;
+  margin: 0;
+  width: 100%;
   /* border: solid rgba(0, 0, 0, 0.5); */
 }
-.even5td{
+
+.even5td {
   width: 20%;
-  padding:0;
-  margin:0;
+  padding: 0;
+  margin: 0;
   text-align: center;
   /* border: solid rgba(0, 0, 0, 0.3); */
 }
 
-.tdSlim{
+.tdSlim {
   width: 14%;
-  padding:0;
-  margin:0;
+  padding: 0;
+  margin: 0;
   text-align: center;
   /* border: solid rgba(0, 0, 0, 0.9); */
 }
 
-img{
+img {
   width: 75%;
   height: 75%;
 }
@@ -383,104 +459,131 @@ html,
 body {
   height: 100%;
   padding: 0;
-  margin: 0; 
-  font-family:Arial, Helvetica, sans-serif, Geneva, Tahoma, sans-serif;
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif, Geneva, Tahoma, sans-serif;
   background-color: #705000;
   background-image: url("../images/wood-pattern.png");
 }
 
-input{
-  padding: 10%; 
-  margin: 5px; 
+input {
+  padding: 10%;
+  margin: 5px;
   background: var(--default-input-bgcolor);
   border-radius: 5px;
   font-weight: bold;
 }
 
-.screenInput{
-  padding:2px; 
-  margin:0px; 
+.screenInput {
+  padding: 2px;
+  margin: 0px;
   background: white;
   border-radius: 5px;
   font-weight: bold;
 }
 
-.voteButton{
-  padding: 2%; 
-  margin-left: 1%; 
-  width:98%;
+.voteButton {
+  padding: 2%;
+  margin-left: 1%;
+  width: 98%;
   /* background: var(--default-input-bgcolor); */
   border-radius: 5px;
   font-weight: bold;
-  position:absolute;
-  bottom:0;
-  left:0;
+  position: absolute;
+  bottom: 0;
+  left: 0;
 }
 
-.stInput{
-  padding: 1%; 
-  margin: 5px; 
-  background:  white;
+.stInput {
+  padding: 1%;
+  margin: 5px;
+  background: white;
   border-radius: 5px;
   font-weight: bold;
 }
 
-.stInputDefaultcolor{
-  padding: 1%; 
-  margin: 5px; 
-  background:   var(--default-input-bgcolor);
+.stInputDefaultcolor {
+  padding: 1%;
+  margin: 5px;
+  background: var(--default-input-bgcolor);
   border-radius: 5px;
   font-weight: bold;
 }
 
 input:disabled,
-input[disabled]{
+input[disabled] {
   opacity: 0.7;
   background-color: rgb(87, 84, 84);
 }
 
-textarea{
-  width:99%;
-  background-color:white;
+textarea {
+  width: 99%;
+  background-color: white;
   opacity: 0.7;
   font-weight: 900;
   font-style: oblique;
   resize: none;
-  border-radius:10px;
+  border-radius: 10px;
   border-style: ridge;
   border-color: rgb(0, 0, 0);
-  border-width:2%;
+  border-width: 2%;
 }
 
 @keyframes blinking {
   0% {
     opacity: 0;
   }
+
   12% {
     opacity: .25;
   }
+
   25% {
     opacity: .50;
   }
+
   33% {
     opacity: .75;
   }
+
   50% {
     opacity: 1;
   }
+
   62% {
     opacity: .75;
   }
+
   75% {
     opacity: .50;
   }
+
   87% {
     opacity: .25;
   }
+
   100% {
     opacity: .12;
   }
 }
+
+@keyframes championColors {
+  0% {
+    background-color: red;
+  }
+
+  33% {
+    background-color: white;
+  }
+
+  66% {
+    background-color: blue;
+  }
+
+  100% {
+    background-color: red;
+  }
+}
+
 .blink {
   animation: blinking .6s;
   animation-iteration-count: 5;
@@ -489,9 +592,9 @@ textarea{
 .slider {
   -webkit-appearance: slider-vertical;
   height: 45vh;
-  width:5vw; 
-  margin:0px;
-  padding: 0px; 
+  width: 5vw;
+  margin: 0px;
+  padding: 0px;
   /* background-color: silver;
   color: silver; */
 }
@@ -515,8 +618,8 @@ textarea{
   height: 100%;
   position: absolute;
   left: 0%;
-  top: 0%; 
-  background-color:rgba(0, 0, 0, 0.5); 
+  top: 0%;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modalInnerDiv {
@@ -524,25 +627,26 @@ textarea{
   height: 50%;
   position: absolute;
   left: 25%;
-  top: 25%; 
-  background-color:rgba(254,254,254,  1); 
-  border:3px ridge black; 
-  border-radius: 15px; 
+  top: 25%;
+  background-color: rgba(254, 254, 254, 1);
+  border: 3px ridge black;
+  border-radius: 15px;
   box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
 }
 
 .menu {
   position: absolute;
   left: 5px;
-  top: 20px; 
+  top: 20px;
   width: 95%;
   padding: 5px;
-  background-color:white ; 
+  background-color: white;
   opacity: 0.9;
-  border:3px solid black; 
+  border: 3px solid black;
   border-radius: 5px;
   box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
 }
+
 .grid-container {
   display: grid;
   grid-template-columns: repeat(7, 1fr);

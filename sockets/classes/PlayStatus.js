@@ -9,6 +9,7 @@ class PlayStatus {
         this.totalRaiseThisRound = 0;
         this.chips = [];
         this.splitPotCount = 0;
+        this.gameOver = false;
     }
 
     reset() {
@@ -22,6 +23,7 @@ class PlayStatus {
         this.totalRaiseThisRound = 0;
         this.chips = [];
         this.splitPotCount = 0;
+        this.gameOver = false;
     }
 }
 module.exports = PlayStatus

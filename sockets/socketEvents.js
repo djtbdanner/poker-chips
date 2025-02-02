@@ -5,6 +5,9 @@ const PlayStatus = require('./classes/PlayStatus');
 const Chip = require('./classes/Chip');
 // --TODO-- will be replaced with a database
 let tables = new Map();
+let connetedButNotPlaying = new Map();
+
+
 const socketEventHandlers = {};
 
 async function broadcastToTable(table, message, apigwManagementApi) {
@@ -12,6 +15,20 @@ async function broadcastToTable(table, message, apigwManagementApi) {
         for (const p of table.players) {
             console.log(`Broadcast table, player connection id ${p.connectionId}, ${p.name} =================`);
             await apigwManagementApi.postToConnection({ ConnectionId: p.connectionId, Data: JSON.stringify(message) });
+        }
+    } catch (error) {
+        console.error(`Error in broadcastToTable: ${error}`);
+    }
+}
+
+async function broadCastOpenTables(apigwManagementApi, connections) {
+    try {
+         const arr = Array.from(tables.values());
+        const availableTables = arr.filter((table) => !table.playersFull());
+        const response = { action: 'poker-open-tables', payload: JSON.stringify(availableTables) };
+        for (let connectionId of connections.keys()) {
+            console.log(`Sending new table to connection id ${connectionId}`);
+            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) })
         }
     } catch (error) {
         console.error(`Error in broadcastToTable: ${error}`);
@@ -43,9 +60,10 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
             table.addMessage(`${player.name} joined table ${table.name}, filling table.`);
             table.players[0].dealer = true;
             table.players[1].turn = true;
+            table.players[1].firstBettor = true;
             table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
         }
-
+        connetedButNotPlaying.delete(connectionId);
         let response = { action: 'set-player-id', payload: { playerId: player.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'set-table-id', payload: { tableId: table.id } };
@@ -75,7 +93,8 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         PlayProcessor.initializePlayerChips(table, player);
         table.addMessage(`${player.name} started ${table.name}, ${table.playerCount} players, each with ${table.startChipCount} chips.`);
         tables.set(table.id, table);
-
+        connetedButNotPlaying.delete(connectionId);
+        broadCastOpenTables(apigwManagementApi, connetedButNotPlaying);
         response = { action: messageId, payload: table };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
     } catch (error) {
@@ -139,7 +158,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         }
         table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""} with ${totalChips} chips.`);
         if (PlayProcessor.isBetRoundOver(player, table)) {
-            table.addMessage('Betting complete, select and submit winner (anyone with 2 votes will be considered a winner).')
+            // table.addMessage('Betting complete, select and submit winner (anyone with 2 votes will be considered a winner).')
             // PlayProcessor.processRoundOver(table);
         } else {
             PlayProcessor.getNextActivePlayer(player, table).turn = true;
@@ -156,7 +175,7 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
         console.log(`poker-win-round: ${JSON.stringify(data)}`);
         const votingPlayerId = data.playerId;
         let winningPlayerIds;
-        if (data.winningPlayerIds){
+        if (data.winningPlayerIds) {
             winningPlayerIds = data.winningPlayerIds.split(',');
         }
         const tableId = data.tableId;
@@ -168,7 +187,7 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
             wp.winVoteCount = wp.winVoteCount + 1;
         });
         const winningPlayerNames = winningPlayers.map(player => player.name).join(', ');
-        table.addMessage(`${votingPlayer.name} voted ${winningPlayerNames} winner${winningPlayerNames.length>1?"s":""}.`);
+        table.addMessage(`${votingPlayer.name} voted ${winningPlayerNames} winner${winningPlayers.length > 1 ? "s" : ""}.`);
         if (winningPlayers.every(player => player.winVoteCount >= 2)) {
             PlayProcessor.processWinner(winningPlayers, table);
             // PlayProcessor.updatePlayersAfterBetting(table);
@@ -218,21 +237,19 @@ socketEventHandlers['poker-reconnect-to-game'] = async (apigwManagementApi, conn
         const tableId = data.tableId;
         const table = tables.get(tableId);
         const player = table.players.find(player => player.id === playerId);
-        player.isConnected=true;
+        player.isConnected = true;
         player.connectionId = connectionId;
         player.id = connectionId;
         response = { action: 'set-player-id', payload: { playerId: player.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         table.addMessage(`${player.name} has reconnected to game.`);
 
-          // update everyone still in
-          await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        // update everyone still in
+        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
 };
-
-
 
 socketEventHandlers['poker-player-chip-denomination-change'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
@@ -271,8 +288,16 @@ socketEventHandlers['poker-remove-player'] = async (apigwManagementApi, connecti
         const playerId = data.playerId;
         const tableId = data.tableId;
         const table = tables.get(tableId);
-        const player = table.players.find(player => player.id === playerId);
-        removePlayer(player, table, apigwManagementApi, true);
+        if (table){
+            const player = table.players.find(player => player.id === playerId);
+            if (player){
+                removePlayer(player, table, apigwManagementApi, true);
+            }   
+        } else {
+            // just this player
+            const response = { action: 'poker-remove-player', payload: table };
+            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
+        }
         // table.players = table.players.filter((p) => { return p.id !== player.id; });
 
         // console.log(`${player.name}, ${player.id} left the game.`);
@@ -302,7 +327,7 @@ exports.lambdaSocketHandler = async (data, apigwManagementApi, connectionId) => 
 exports.lambdaSocketDisconnectHandler = async (apigwManagementApi, connectionId) => {
     try {
         const table = findTableByConnectionId(tables, connectionId);
-        if (table){
+        if (table) {
             const player = table.players.find(player => player.connectionId === connectionId);
             player.isConnected = false;
             player.connectionId = undefined;
@@ -321,17 +346,19 @@ socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connecti
         if (!messageId) {
             throw new Error(`No messageId in  poker-can-reconnect - supposed to be a synchronous call`);
         }
+        connetedButNotPlaying.set(connectionId, connectionId);
         const playerId = data.playerId;
         const tableId = data.tableId;
         const table = tables.get(tableId);
         let canReconnect = false;
-        if (table){
+        if (table) {
             const player = table.players.find(player => player.id === playerId);
-            if (player){
+            if (player) {
                 canReconnect = true;
+                connetedButNotPlaying.delete(connectionId);
             }
         }
-        const response = { action: messageId, payload: JSON.stringify({canReconnect}) };
+        const response = { action: messageId, payload: JSON.stringify({ canReconnect }) };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -339,19 +366,30 @@ socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connecti
 };
 
 async function removePlayer(player, table, apigwManagementApi, thisPlayerIsConnected) {
-    table.players = table.players.filter((p) => { return p.id !== player.id; });
-    console.log(`${player.name}, ${player.id} left the game - the player is still connected: ${thisPlayerIsConnected}. If true will be removed.`);
-    table.addMessage(`${player.name} left the game. ${thisPlayerIsConnected ? '' : " Apparently the browser disconnected."}`);
-    // remove the player
-    if (thisPlayerIsConnected) {
-        const response = { action: 'poker-remove-player', payload: table };
-        await apigwManagementApi.postToConnection({ ConnectionId: player.connectionId, Data: JSON.stringify(response) });
-        // update everyone still in
-        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
-    } else {
-        // await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+    try {
+        table.players = table.players.filter((p) => { return p.id !== player.id; });
+        console.log(`${player.name}, ${player.id} left the game - the player is still connected: ${thisPlayerIsConnected}. If true will be removed.`);
+        table.addMessage(`${player.name} left the game. ${thisPlayerIsConnected ? '' : " Apparently the browser disconnected."}`);
+        // remove the player
+        if (thisPlayerIsConnected) {
+            table.playerCount = table.playerCount - 1;
+
+            const response = { action: 'poker-remove-player', payload: table };
+            await apigwManagementApi.postToConnection({ ConnectionId: player.connectionId, Data: JSON.stringify(response) });
+            if (table.playerCount > 1) {
+                // update everyone still in
+                await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+            } else {
+                table.addMessage("Not enough players table will be terminated");
+                await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+                console.log(`Not enough players for table: ${JSON.stringify(table)}, table count ${tables.size} `);
+                tables.delete(table.id);
+                console.log(`Now there are ${tables.size} tables`);
+            }
+        }
+    } catch (error) {
+        handleError(undefined, undefined, error, data);
     }
- 
 }
 
 function findTableByConnectionId(tables, connectionId) {
@@ -371,7 +409,7 @@ function handleError(apigwManagementApi, connectionId, error, data) {
         console.log(`ERROR: ${error} - DATA: ${JSON.stringify(data)} - STACK: ${error.stack}`);
         console.error(error);
         let errorMessage = `A stupid error [${error.message}]. Not something we expected. Sorry!`
-        if (apigwManagementApi) {
+        if (apigwManagementApi && connectionId) {
             let response = { action: 'backendError', payload: errorMessage };
             apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         }

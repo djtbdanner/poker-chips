@@ -29,12 +29,14 @@ function pokerChipDenominationQuit(){
 
 socketEventHandlers['poker-remove-player'] = async (data) => {
     console.log('poker-remove-player:', JSON.stringify(data));
-    const table = JSON.parse(JSON.stringify(data));
-    // destroyById(`table-div`);
-    // destroyById(`bet-input`);
-    // destroyById(`initial-screen`);
-    // destroyById(`chip-change`);
-    alert('bye');
+    alert('Good Luck...');
+    buildEntryScreens();
+};
+
+// message that open tables may have changed
+socketEventHandlers['poker-open-tables'] = async (data) => {
+    console.log('poker-open-tables', JSON.stringify(data));
+    buildEntryScreens();
 };
 
 

@@ -1,6 +1,7 @@
 async function buildEntryScreens() {
     // check backend for existing game with this player, if there reconnect 
     // otherwise just show the screen.
+    clearAllNodes();
     const data = await canReconnect();
     if (data.canReconnect) {
         await reconnectToGame();

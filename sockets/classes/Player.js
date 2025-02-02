@@ -18,6 +18,7 @@ class Player {
     this.totalRoundBet = 0;
     this.sidePotTotal = 0;
     this.isConnected = true;
+    this.isChampion = false;
   }
 
   reset() {
@@ -26,6 +27,7 @@ class Player {
     this.allIn = false;
     this.turn = false; 
     this.firstBettor = false;
+    this.isChampion = false;
   }
   
   getChipTotal() {
