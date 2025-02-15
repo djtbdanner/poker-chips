@@ -2,12 +2,7 @@ let firstScreen = true;
 function drawScreen(table) {
     clearAllNodes();
     const id = `table-div`;
-    // destroyById(`bet-input`);
-    // destroyById(`initial-screen`);
-    // destroyById(`chip-change`);
-    // destroyById(id);
-    let html = ``;
-    html += `    <div class="pokerTableDiv"></div>`;
+
     const myTurnPlayer = table.players.find(player => player.turn);
     // const thisPlayerId = document.getElementById(`player-id`).value;
     const thisPlayerId = localStorage.getItem(`player-id`);
@@ -46,13 +41,16 @@ function drawScreen(table) {
             disabledCheck = ``;
         }
     }
+
+    let html = ``;
+    html += `    <div class="pokerTableDiv"></div>`;
     if (table.players.length > 0) {
         for (let i = 0; i < table.players.length; i++) {
 
             const player = table.players[i];
             console.log(JSON.stringify(player));
             let divClass = `playerDiv`;
-            if (player.dealer) {
+            if (player.dealer && !playStatus.selectWinner) {
                 divClass = `playerDivDealer`;
             }
             if (player.turn) {
@@ -70,18 +68,25 @@ function drawScreen(table) {
             if (player.isChampion){
                 divClass = `playerIsChampionDiv`
             }
-            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">${player.name}<br>${player.chipTotal}${player.dealer && !playStatus.selectWinner ? "<br>&#9886;&DD;&#9887;" : ""}<br>`;
-             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
-                html += `<div id="${player.id}_win" onClick = "voteForWinner('${player.id}')" style="padding-top:5px;" >${getSelectWinnerLogo()}</div>`
-                // html += `<input type = "button" class="voteButton" value="${player.name} wins" id="${player.id}_win" onClick = "voteForWinner('${player.id}', '${player.name}')" >`;
-            } 
+            // === Player div ==== //
+            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">`;
+            html+=generateChipColumnsSVG(player.chips);
+            html += ` ${player.name}`
+            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
+                html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')" style="padding-top:5px;" >${getSelectWinnerLogo()}</span>`
+            }    
             html += `</div>`;
         }
     }
-   
-    html += `    <div class="playerDiv playerPot">pot<br>${playStatus.pot}`;  
-    html += `      <input type = "button" class="voteButton" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
-    html += `    </div>`;
+    // === Pot Div === /
+    if (playStatus.pot > 0){
+        html += `    <div class="playerDiv playerPot">POT:${playStatus.pot}`;  
+        html += `      <input type = "button" class="voteButton" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
+        // html == `       
+        html +=        getPotChipPile(playStatus);
+
+        html += `    </div>`;
+    }
 
     html += `    <div class="footer">`;
     html += `        <table>`;
@@ -359,8 +364,8 @@ const submitVote = () => {
 const getWinnerLogo = () => {
     let html = '';
     html += `<svg id="winner-checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
-    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="green" stroke-width="4"/>`;
-    html += `    <path fill="none" stroke="#2E7D32" stroke-width="5" d="M14 27l7 7 16-16"/>`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="white" stroke-width="5"/>`;
+    html += `    <path fill="none" stroke="white" stroke-width="5" d="M14 27l7 7 16-16"/>`;
     html += `</svg>`;
     return html;
 }
@@ -368,8 +373,200 @@ const getWinnerLogo = () => {
 const getSelectWinnerLogo = () => {
     let html = '';
     html += `<svg id="select-winner-logo" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52" width="24" height="24">`;
-    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="green" stroke-width="4"/>`;
-    // html += `    <path fill="#2E7D32" d="M26 12c-1.1 0-2 .9-2 2v12h-4v-8c0-1.1-.9-2-2-2s-2 .9-2 2v8h-4v-4c0-1.1-.9-2-2-2s-2 .9-2 2v4h-2v2h2v4h2v-4h4v4h2v-4h4v4h2v-4h4v-4h2v-2h-2v-4h-4v-8c0-1.1-.9-2-2-2z"/>`;
+    html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="white" stroke-width="5"/>`;
     html += `</svg>`;
     return html;
+}
+
+
+const getPotChipPile = (playStatus) => {
+    const lastPotAmount = localStorage.getItem(`pot`);
+    if (parseInt(lastPotAmount, 10) === parseInt(playStatus.pot, 10)){
+        const theExistingPile = localStorage.getItem(`chip-pile`);
+        if (theExistingPile){
+            return theExistingPile;
+        }
+    }
+    const theNewPile = generateChipPileSVG(playStatus.chips);
+    playPokerChipSound();
+    localStorage.setItem(`pot`, playStatus.pot);
+    localStorage.setItem(`chip-pile`, theNewPile);
+    return theNewPile;
+};
+
+
+function generateChipPileSVG(theChips) {
+
+    const blacks = theChips.filter(c => c.color === `black`).length;
+    const greens = theChips.filter(c => c.color === `green`).length;
+    const reds = theChips.filter(c => c.color === `red`).length;
+    const greys = theChips.filter(c => c.color === `gray`).length;
+
+
+    const chipValues = [
+        { color: 'black', count: blacks, label: '100' },
+        { color: 'green', count: greens, label: '25' },
+        { color: 'red', count: reds, label: '5' },
+        { color: 'grey', count: greys, label: '1' }
+    ];
+
+    let chips = [];
+
+    chipValues.forEach(chip => {
+        for (let i = 0; i < chip.count; i++) {
+            chips.push(chip);
+        }
+    });
+
+    console.log(`The chips - ${JSON.stringify(chips)}`);
+    let svg = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">';
+    chips.forEach((chip) => {
+        const x = 50 + (Math.random() * 40 - 20); // Random x position within a range
+        const y = 50 + (Math.random() * 40 - 20); // Random y position within a range
+        const rotation = Math.random() * 360; // Random rotation
+
+        // Group the chip elements
+        svg += `<g transform="translate(${x}, ${y}) rotate(${rotation})">`;
+
+        // Draw the chip
+        svg += `<circle cx="0" cy="0" r="15" fill="${chip.color}" stroke="white" stroke-width="1.5"/>`;
+
+        // Draw the inner circle
+        svg += `<circle cx="0" cy="0" r="9" fill="none" stroke="white" stroke-width="1.5"/>`;
+
+        // Draw pie-cut lines
+        for (let i = 0; i < 8; i++) {
+            const angle = (i * 45) * (Math.PI / 180); // Convert degrees to radians
+            const x1 = 9 * Math.cos(angle);
+            const y1 = 9 * Math.sin(angle);
+            const x2 = 15 * Math.cos(angle);
+            const y2 = 15 * Math.sin(angle);
+            svg += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="white" stroke-width="1.5"/>`;
+        }
+
+        // Add the number to the chip
+        svg += `<text x="0" y="1" font-size="7" fill="white" text-anchor="middle" alignment-baseline="middle">${chip.label}</text>`;
+
+        // Close the group
+        svg += `</g>`; });
+    svg += '</svg>';
+
+    return svg;
+}
+
+function generateChipColumnsSVG(theChips) {
+
+    const blacks = theChips.filter(c => c.color === `black`).length;
+    const greens = theChips.filter(c => c.color === `green`).length;
+    const reds = theChips.filter(c => c.color === `red`).length;
+    const greys = theChips.filter(c => c.color === `gray`).length;
+
+    const chipValues = [
+        { color: 'black', count: blacks, label: '100' },
+        { color: 'green', count: greens, label: '25' },
+        { color: 'red', count: reds, label: '5' },
+        { color: 'grey', count: greys, label: '1' }
+    ];
+
+    let svg = '<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">';
+    const columnWidth = 25;
+    const chipHeight = 3; // Reduced chip height for less space between chips
+    // const maxHeight = 80; // Maximum height for the tallest column
+    const maxChips = 27; // Maximum number of chips to display
+
+    // Define gradients for shading
+    svg += `
+        <defs>
+            <linearGradient id="blackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(165, 163, 163);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(8, 8, 8);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(145, 207, 145);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(40, 116, 40);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(240, 104, 104);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(100, 3, 3);stop-opacity:1" />
+            </linearGradient>
+            <linearGradient id="greyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:rgb(207, 203, 203);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(68, 65, 65);stop-opacity:1" />
+            </linearGradient>
+        </defs>
+    `;
+
+    chipValues.forEach((chip, columnIndex) => {
+        const x = columnWidth * columnIndex;
+        const height = Math.min(chip.count, maxChips) * chipHeight;
+        const y = 90 - height;
+
+        // Determine the gradient to use
+        let gradientId;
+        switch (chip.color) {
+            case 'black':
+                gradientId = 'blackGradient';
+                break;
+            case 'green':
+                gradientId = 'greenGradient';
+                break;
+            case 'red':
+                gradientId = 'redGradient';
+                break;
+            case 'grey':
+                gradientId = 'greyGradient';
+                break;
+        }
+
+        // Draw the column with gradient fill
+        // svg += `<rect x="${x}" y="${y}" width="${columnWidth-10}" height="${height}" fill="url(#${gradientId})"/>`;
+        svg += `<rect x="${x}" y="${y}" width="${columnWidth -1}" height="${height}" fill="url(#${gradientId})" rx="1" ry="1"/>`;;
+
+        // Draw divider lines for each chip
+        for (let i = 1; i < Math.min(chip.count, maxChips); i++) {
+            const lineY = y + i * chipHeight;
+            svg += `<line x1="${x}" y1="${lineY}" x2="${x + columnWidth - 1}" y2="${lineY}" stroke="black" stroke-width="0.6"/>`;
+        }
+
+        // Add ellipsis if there are more than maxChips
+        if (chip.count > maxChips) {
+            svg += `<text x="${x + (columnWidth - 1) / 2}" y="${y - 5}" font-size="25" fill="black" text-anchor="middle">...</text>`;
+        }
+
+        // Add the label at the bottom of the column with the actual number of chips
+        svg += `<text x="${x + (columnWidth - 1) / 2}" y="95" font-size="15" fill="white" text-anchor="middle">${chip.count}</text>`;
+    });
+    svg += '</svg>';
+
+    return svg;
+}
+
+function playPokerChipSound() {
+    // Create an audio context
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+    // Create a buffer for the sound
+    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+    const data = buffer.getChannelData(0);
+
+    // Fill the buffer with white noise
+    for (let i = 0; i < data.length; i++) {
+        data[i] = Math.random() * 2 - 1;
+    }
+
+    // Create a buffer source
+    const bufferSource = audioContext.createBufferSource();
+    bufferSource.buffer = buffer;
+
+    // Create a gain node to control the volume
+    const gainNode = audioContext.createGain();
+    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+
+    // Connect the buffer source to the gain node and the gain node to the audio context
+    bufferSource.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+
+    // Start the buffer source
+    bufferSource.start();
 }

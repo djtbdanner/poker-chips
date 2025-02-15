@@ -1,5 +1,4 @@
 class Chip {
-    // Create new instances of the same class as static attributes
     static Gray = new Chip("gray", 1);
     static Red = new Chip("red", 5);
     static Green = new Chip("green", 25);

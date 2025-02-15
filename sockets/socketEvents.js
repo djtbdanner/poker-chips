@@ -311,6 +311,14 @@ socketEventHandlers['poker-remove-player'] = async (apigwManagementApi, connecti
 exports.lambdaSocketHandler = async (data, apigwManagementApi, connectionId) => {
     try {
         console.log(typeof data);
+        console.log(data);
+
+        if (data === 'PING'){
+            console.log('Received WebSocket ping');
+            await apigwManagementApi.postToConnection({ ConnectionId: connectionId, action:'PONG' });
+            return;
+        }
+
         const obj = typeof data === 'string' ? JSON.parse(data) : data;
         const { action, payload, messageId } = obj;
         if (socketEventHandlers[action]) {

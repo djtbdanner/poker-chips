@@ -36,81 +36,134 @@
   } */
   .pokerTableDiv {
     width: 70%;
-    background-color: green;
     height: 50%;
-    border-radius: 10px;
-    border-style: ridge;
-    border-color: gold;
-    border-width: 2%;
+    border: 10px solid transparent;
+    border-radius: 50%;
+    background-image:
+      linear-gradient( #228B22,  #3f883f, #228B22 ), 
+      linear-gradient( #8b4513dd,#a0512ddd, #8b4513dd);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 1), inset 0 0 10px  #000; 
     position: absolute;
     top: 7%;
     left: 15%;
-    box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
+    overflow: hidden;
   }
 
-  .playerDiv {
-    background-color: rgb(214, 214, 214);
+  .playerDiv {  
+    /* background-color: rgb(214, 214, 214); */
+    background-color: transparent;
+    color: white;
     height: 12%;
     width: 22%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width: 2%;
+    border-width: 2%; */
+    border-width: 5px;
+    border-style: solid;
+    border-color: transparent;
+    border-radius: 50%;
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    padding-left: 5%;
+    align-items: center;
+    align-items: top;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1); 
+    overflow: visible;
+    
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerDivTurn {
-    background-color: white;
+    /* background-color: white; */
+    background-color: transparent;
     height: 12%;
     width: 22%;
+    border-radius: 50%;
+    padding-left: 5%;
+    color: white;
     border-width: 5px;
     border-style: solid;
-    border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1;
-    animation: 10s rotate linear infinite;
+    border-color: blue;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 1); 
+    /* border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1;
+    animation: 10s rotate linear infinite; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerDivDealer {
-    background-color: rgb(214, 214, 214);
+    /* background-color: rgb(214, 214, 214); */
+    background-color: transparent;
     height: 12%;
     width: 22%;
-    border-radius: 10px;
+    color: white;
+    padding-left: 5%;
+    border-width: 5px;
+    border-color: transparent;
+    border-style: solid;
+    border-radius:50%;
+    font-variant-caps: normal;
+    font-style: italic; 
+    text-decoration: underline;
+    /* animation: textShadowRoll 5s infinite;  */
+    color:black;
+    text-decoration-color: black;
+      text-shadow: 2px 2px 4px rgba(255, 255, 255, 1); /* White shadow */
+        /* border-radius: 10px;
     border-style: ridge;
     border-color: blue;
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
+
+  @keyframes textShadowRoll {
+    0% {
+      color:black;
+      text-decoration-color: black;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 1); /* White shadow */
+    }
+    50% {
+      color:white;
+        text-decoration-color: white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 1); /* Black shadow */
+    }
+    100% {
+      color: black;
+      text-decoration-color: black;
+        text-shadow: 2px 2px 4px rgba(255, 255, 255, 1); /* White shadow */
+    }
+}
 
   .playerFoldedDiv {
     background-color: rgb(104, 100, 100);
     height: 12%;
     width: 22%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerAllinDiv {
     background-color: greenyellow;
     height: 12%;
     width: 22%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
     opacity: .5;
   }
 
@@ -124,7 +177,7 @@
     border-width: 2%;
     position: absolute;
     box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
-    text-align: center;
+    /* text-align: center; */
   }
 
   .playerIsChampionDiv {
@@ -231,80 +284,84 @@
 
   .pokerTableDiv {
     width: 40%;
-    background-color: green;
     height: 80%;
-    border-radius: 10px;
-    border-style: ridge;
-    border-color: gold;
-    border-width: 2%;
+    border: 15px solid transparent;
+    border-radius: 50%;
+    background-image:
+      linear-gradient( #228B22,  #3f883f, #228B22 ), 
+      linear-gradient( #8b4513dd,#a0512ddd, #8b4513dd);
+    background-origin: border-box;
+    background-clip: padding-box, border-box;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 1), inset 0 0 10px  #000; 
     position: absolute;
     top: 9%;
     left: 3%;
-    box-shadow: 5px 10px 5px rgba(0, 0, 0, 0.5);
   }
-
   .playerDiv {
-    background-color: rgb(214, 214, 214);
+    /* background-color: rgb(214, 214, 214); */
+    background-color: transparent; 
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: gold;
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerDivTurn {
-    background-color: white;
+    /* background-color: white;*/
+        background-color: white; 
     height: 15%;
     width: 10%;
-    border-style: solid;
+    /* border-style: solid;
     border-width: 5px;
-    border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1;
-    animation: 10s rotate linear infinite;
+    border-image: conic-gradient(from var(--angle), red, yellow, blue, red) 1; */
+    /* animation: 10s rotate linear infinite; */
     position: absolute;
-    text-align: center;
+    /* text-align: center; */
   }
 
   .playerDivDealer {
-    background-color: rgb(214, 214, 214);
+    /* background-color: rgb(214, 214, 214); */
+    background-color: transparent; 
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: blue;
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerFoldedDiv {
     background-color: rgb(104, 100, 100);
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
   }
 
   .playerAllinDiv {
     background-color: greenyellow;
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(46, 44, 33);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(0, 0, 0, 0.5); */
+    /* text-align: center; */
     opacity: .5;
   }
 
@@ -312,26 +369,26 @@
     background-color: rgb(121, 12, 12);
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(170, 147, 13);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5); */
+    /* text-align: center; */
   }
 
   .playerIsChampionDiv {
     background-color: rgb(121, 12, 12);
     height: 15%;
     width: 10%;
-    border-radius: 10px;
+    /* border-radius: 10px;
     border-style: ridge;
     border-color: rgb(170, 147, 13);
-    border-width: 2%;
+    border-width: 2%; */
     position: absolute;
-    box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5);
-    text-align: center;
+    /* box-shadow: 1px 2px 1px rgba(109, 101, 101, 0.5); */
+    /* text-align: center; */
     animation: championColors 5s infinite;
   }
 

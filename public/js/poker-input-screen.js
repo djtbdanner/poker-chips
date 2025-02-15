@@ -45,7 +45,7 @@ async function buildInitialScreen() {
     html += `<tr><td style="text-align:right;">`;
     html += `Initial # chips: `;
     html += `</td><td>`;
-    html += `<input type="number" maxlength="4" class="stInput" id="chip-count" value = "15" min="2" max="9999" />`;
+    html += `<input type="number" maxlength="4" class="stInput" id="chip-count" value = "1509" min="2" max="9999" />`;
     html += `</td></tr>`;
     // html += `<tr><td colspan="2" style = "text-align:center;">`;
     // html += `<span id = "game-msg-span">&nbsp</span>`;
