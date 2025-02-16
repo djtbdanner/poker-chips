@@ -10,10 +10,6 @@ let callAmount = 0;
 
 function createAndAppendDiv(html, id, isFullScreen) {
     let div = document.getElementById(id);
-    // if (div) {
-    //     destroyNode(div);
-    //     div = undefined;
-    // }
     if (!div) {
         div = document.createElement(`div`);
         div.id = id;
@@ -52,8 +48,8 @@ async function buildMenu() {
     }
     html += `<a class ="menuItem" onclick = "buildChangeChipsHtml()">Change Chip Denomination </a></br>`;
     html += `<hr>`;
-    html += `<a class ="menuItem">Sit out/Return </a></br>`;
-    html += `<hr>`;
+    // html += `<a class ="menuItem">Sit out/Return </a></br>`;
+    // html += `<hr>`;
     html += `<a class ="menuItem" onclick = "removePlayer()">Leave table</a></br>`;
     html += `<hr>`;
     html += `<a class ="menuItem">Close...</a></br>`;
@@ -90,35 +86,6 @@ function openFullScreen() {
         root.msRequestFullscreen();
     }
 }
-
-// function goToHomePage() {
-//     window.location = '/';
-// }
-
-// async function modalConfirm(message, doFunctionName, dontFunctionName, doButton, dontButton) {
-
-//     if (!doButton) {
-//         doButton = `Continue`;
-//     }
-//     if (!dontButton) {
-//         dontButton = `Cancel`;
-//     }
-//     destroyById(`modal-confirm`);
-//     let html = ``;
-//     html += `<div id="modal-confirm" class="modal" style="background-color: rgba(139, 139, 139, 0.9);">`;
-//     html += `<table cellpadding="0" cellspacing="0" width="100%" border="0">`;
-//     html += `<tr><td colspan="2" style = "text-align:center;">`;
-//     html += `<p>${message}</p>`;
-//     html += `</td></tr>`;
-//     html += `<tr><td style = "text-align:center;">`;
-//     html += `<input type="button" value="${doButton}" onClick="destroyById('modal-confirm');${doFunctionName};" />`;
-//     html += `</td><td  style = "text-align:center;">`;
-//     html += `<input type="button" value="${dontButton}" onClick="destroyById('modal-confirm');${dontFunctionName};" />`;
-//     html += `</td></tr>`;
-//     html += `</table>`;
-//     html += `</div>`;
-//     createAndAppendDiv(html, 'default', false);
-// }
 
 async function modalMessage(message) {
     const id = `modal-message`;

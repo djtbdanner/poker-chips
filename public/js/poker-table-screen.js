@@ -1,5 +1,4 @@
-let firstScreen = true;
-function drawScreen(table) {
+const drawScreen = (table) => {
     clearAllNodes();
     const id = `table-div`;
 
@@ -41,108 +40,84 @@ function drawScreen(table) {
             disabledCheck = ``;
         }
     }
-
+    // === Build HTML ====/
     let html = ``;
-    html += `    <div class="pokerTableDiv"></div>`;
+    html += `    <div class="outerContainer">`;
+    // === Top Section =====/
+    html += `        <div class="topSection">`;
+    html += `            <div class="tableContainer">`;
+    html += `                   <div class="playerGrid">`;
+    // ==== Player divs ======/
     if (table.players.length > 0) {
         for (let i = 0; i < table.players.length; i++) {
-
             const player = table.players[i];
-            console.log(JSON.stringify(player));
-            let divClass = `playerDiv`;
+            let additionalClass = ``;
             if (player.dealer && !playStatus.selectWinner) {
-                divClass = `playerDivDealer`;
+                additionalClass = `playerDealer`;
             }
             if (player.turn) {
-                divClass = `playerDivTurn`;
+                additionalClass = `playerTurn${additionalClass?" "+additionalClass:""}`;
             }
             if (player.folded || player.chipTotal < 1) {
-                divClass = `playerFoldedDiv`;
+                additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
             }
             if (player.allIn) {
-                divClass = `playerAllinDiv`;
+                additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
             }
             if (!player.isConnected){
-                divClass = `playerDisconnectedDiv`// TODO this needs some effort 
+                additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
             }
-            if (player.isChampion){
-                divClass = `playerIsChampionDiv`
-            }
+            console.log(JSON.stringify(player));
             // === Player div ==== //
-            html += `<div id="${player.id}" class="${divClass} ${getPlayerLocationStyle(table, i)}">`;
+            html += `<div id="${player.id}" class="playerDiv ${getPlayerLocationStyle(table, i)} ${additionalClass?additionalClass:''}">`;
+            console.log(html);
             html+=generateChipColumnsSVG(player.chips);
-            html += ` ${player.name}`
+            html += `${player.name}:${player.chipTotal}`
             if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
                 html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')" style="padding-top:5px;" >${getSelectWinnerLogo()}</span>`
             }    
             html += `</div>`;
         }
     }
-    // === Pot Div === /
+    //  === Pot Div === /
     if (playStatus.pot > 0){
         html += `    <div class="playerDiv playerPot">POT:${playStatus.pot}`;  
-        html += `      <input type = "button" class="voteButton" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
-        // html == `       
+        html += `      <input type = "button" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
         html +=        getPotChipPile(playStatus);
-
         html += `    </div>`;
     }
-
-    html += `    <div class="footer">`;
-    html += `        <table>`;
-    html += `            <tr>`;
-    html += `                <td colspan="5" width="100%">`;
-    html += `                    <textarea id="history-text" rows = "4"  readonly>`;
+    ///////////////////////////////////////////////// GRID CELLS - VISUALIZE THINGS
+    // html += getGridLines();
+    ///////////////////////////////////////////////// GRID CELLS TO VISUALIZE THINGS
+    html += `                   </div>`;
+    html += `                   <div class = "pokerTableDiv"></div>`
+    html += `                </div>`;
+    html += `           </div>`;
+    html += `        <div class="middleSection">`;
+    html += `           <textarea id="history-text" rows = "4"  readonly>`;
     table.messages.forEach((message) => {
-        html += `&#8226; ${message}\r\n`;
-    });
-    html += `                      </textarea>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `        </table>`;
-    html += `        <table>`;
-    html += `            <tr>`;
-    html += `                <td class="even5td">`;
-    html += `                    Total Chips`;
-    html += `                    <br>`;
-    html += `                    <div id="total-chip-count">${thisPlayer.chipTotal}</div>`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
-    html += `                    <img src="images/chip-black.png"></img>`;
-    html += `                    <div id="black-chip-count">${playerBlackChipCount}</div>`;
-    html += `                </td>`;
-    html += `                    <td class="even5td">`;
-    html += `                    <img src="images/chip-green.png"></img>`;
-    html += `                    <div id="green-chip-count">${playerGreenChipCount}</div>`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
-    html += `                    <img src="images/chip-red.png"></img>`;
-    html += `                    <div id="red-chip-count">${playerRedChipCount}</div>`;
-    html += `                </td>`;
-    html += `                 <td class="even5td">`;
-    html += `                    <img src="images/chip-gray.png"></img>`;
-    html += `                    <div id="gray-chip-count">${playerGrayChipCount}</div>`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `        </table>`;
-    html += `        <table>`;
-    html += `            <tr>`;
-    html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="options-button" value="..." onclick = "buildMenu()" \>`;
-    html += `                    <br>`;
-    html += `                    Options`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="fold-button" ${disabledFold} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
-    html += `                    <br>`;
-    html += `                    Fold`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
-    html += `                    <input type="button" id="check-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;" onClick="playerAction('CHECK', 0);" \>`;
-    html += `                    <br>`;
-    html += `                    Check`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
+         html += `&#8226; ${message}\r\n`;
+     });
+    html += `           </textarea>`;
+    html += `        </div>`;   
+    html += `        <div class="bottomSection">`;
+    html += `           <div class="dynamicGrid">`;
+    html += `               <div class="grid-item-dynamic">`;
+    html += `                   <input type="button" id="options-button" value="..." onclick = "buildMenu()" \>`;
+    html += `                   <br>`;
+    html += `                   Options`;
+    html += `               </div>`;
+    html += `               <div class="grid-item-dynamic">`;
+    html += `                   <input type="button" id="fold-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;"  onClick="playerAction('CHECK', 0);" \>`;
+    html += `                   <br>`;   
+    html += `                   Check`;
+    html += `               </div>`;
+    html += `               <div class="grid-item-dynamic">`;
+    html += `                   <input type="button" id="fold-button" ${disabledFold} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
+    html += `                   <br>`;   
+    html += `                   Fold`;
+    html += `               </div>`;
+    html += `               <div class="grid-item-dynamic">`;
     let icon = `&phone;`;
     let text = `Call`;
     if (thisPlayer.chipTotal <= playStatus.callAmount){
@@ -152,27 +127,27 @@ function drawScreen(table) {
     html += `                    <input type="button" id="call-button" ${disabledCall} value="&nbsp;${icon}&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `                    <br>`;
     html += `                    ${text} ${callAmount}`;
-    html += `                </td>`;
-    html += `                <td class="even5td">`;
+    html += `               </div>`;
+    html += `               <div class="grid-item-dynamic">`;
     html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;
     html += `                    <br>`;
     html += `                    Raise`;
-    html += `                </td>`;
-    html += `            </tr>`;
-    html += `        </table>`;
-    html += `    </div>`;   
+    html += `               </div>`;
+    html += `           </div>`; // end div for "dynamic grid"
+    html += `    </div>`; /// end div for "bottom section"
     createAndAppendDiv(html, id, true);
     scrollText();
     if (thisPlayer.showChipExchangeDiv){
         buildChangeChipsHtml();
     }
-}
-function scrollText() {
+};
+
+const scrollText = () => {
     var textarea = document.getElementById('history-text');
     textarea.scrollTop = textarea.scrollHeight;
-}
+};
 
-function getPlayerLocationStyle(table, i) {
+const getPlayerLocationStyle = (table, i) => {
     const count = table.players.length;
     const indexOfThisPlayer = table.players.findIndex((player) => player.id === localStorage.getItem(`player-id`));
     i = i - indexOfThisPlayer;
@@ -336,7 +311,7 @@ function getPlayerLocationStyle(table, i) {
         }
         return loc;
     }
-}
+};
 
 const winnerIds = [];
 const voteForWinner = (playerId) => {
@@ -359,7 +334,7 @@ const voteForWinner = (playerId) => {
 const submitVote = () => {  
     choseRoundWinner(winnerIds.join(`,`));
     winnerIds.length = 0;
-}
+};
 
 const getWinnerLogo = () => {
     let html = '';
@@ -368,7 +343,7 @@ const getWinnerLogo = () => {
     html += `    <path fill="none" stroke="white" stroke-width="5" d="M14 27l7 7 16-16"/>`;
     html += `</svg>`;
     return html;
-}
+};
 
 const getSelectWinnerLogo = () => {
     let html = '';
@@ -376,8 +351,7 @@ const getSelectWinnerLogo = () => {
     html += `    <circle cx="26" cy="26" r="25" fill="none" stroke="white" stroke-width="5"/>`;
     html += `</svg>`;
     return html;
-}
-
+};
 
 const getPotChipPile = (playStatus) => {
     const lastPotAmount = localStorage.getItem(`pot`);
@@ -394,8 +368,7 @@ const getPotChipPile = (playStatus) => {
     return theNewPile;
 };
 
-
-function generateChipPileSVG(theChips) {
+const generateChipPileSVG = (theChips) => {
 
     const blacks = theChips.filter(c => c.color === `black`).length;
     const greens = theChips.filter(c => c.color === `green`).length;
@@ -404,10 +377,10 @@ function generateChipPileSVG(theChips) {
 
 
     const chipValues = [
-        { color: 'black', count: blacks, label: '100' },
-        { color: 'green', count: greens, label: '25' },
-        { color: 'red', count: reds, label: '5' },
-        { color: 'grey', count: greys, label: '1' }
+        { color: 'black', count: blacks, label: '100', strokecolor: 'rgb(0,0,0)' },
+        { color: 'green', count: greens, label: '25', strokecolor: 'rgb(45,102,33)' },
+        { color: 'red', count: reds, label: '5', strokecolor: 'rgb(183,40,32)' },
+        { color: 'grey', count: greys, label: '1', strokecolor: 'rgb(110,112,112)' },
     ];
 
     let chips = [];
@@ -429,7 +402,7 @@ function generateChipPileSVG(theChips) {
         svg += `<g transform="translate(${x}, ${y}) rotate(${rotation})">`;
 
         // Draw the chip
-        svg += `<circle cx="0" cy="0" r="15" fill="${chip.color}" stroke="white" stroke-width="1.5"/>`;
+        svg += `<circle cx="0" cy="0" r="15" fill="${chip.strokecolor}" stroke="white" stroke-width="1.5"/>`;
 
         // Draw the inner circle
         svg += `<circle cx="0" cy="0" r="9" fill="none" stroke="white" stroke-width="1.5"/>`;
@@ -452,9 +425,9 @@ function generateChipPileSVG(theChips) {
     svg += '</svg>';
 
     return svg;
-}
+};
 
-function generateChipColumnsSVG(theChips) {
+const generateChipColumnsSVG = (theChips) => {
 
     const blacks = theChips.filter(c => c.color === `black`).length;
     const greens = theChips.filter(c => c.color === `green`).length;
@@ -462,36 +435,40 @@ function generateChipColumnsSVG(theChips) {
     const greys = theChips.filter(c => c.color === `gray`).length;
 
     const chipValues = [
-        { color: 'black', count: blacks, label: '100' },
-        { color: 'green', count: greens, label: '25' },
-        { color: 'red', count: reds, label: '5' },
-        { color: 'grey', count: greys, label: '1' }
+        { color: 'black', count: blacks, label: '100', strokecolor: 'rgb(0,0,0)' },
+        { color: 'green', count: greens, label: '25', strokecolor: 'rgb(45,102,33)' },
+        { color: 'red', count: reds, label: '5', strokecolor: 'rgb(183,40,32)' },
+        { color: 'grey', count: greys, label: '1', strokecolor: 'rgb(110,112,112)' },
     ];
 
-    let svg = '<svg width="200" height="100" xmlns="http://www.w3.org/2000/svg">';
+    let svg = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">';
+   
+     
+    // Add a temporary border around the SVG
+    // svg += '<rect x="0" y="0" width="100" height="100" stroke="blue" fill="none" stroke-width="2"/>';
+   
     const columnWidth = 25;
-    const chipHeight = 3; // Reduced chip height for less space between chips
-    // const maxHeight = 80; // Maximum height for the tallest column
-    const maxChips = 27; // Maximum number of chips to display
+    const chipHeight = 3; 
+    const maxChips = 26; // Maximum number of chips to display
 
     // Define gradients for shading
     svg += `
         <defs>
             <linearGradient id="blackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:rgb(165, 163, 163);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(8, 8, 8);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(0, 0, 0);stop-opacity:1" />
             </linearGradient>
             <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:rgb(145, 207, 145);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(40, 116, 40);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(45, 102, 32);stop-opacity:1" />
             </linearGradient>
             <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:rgb(240, 104, 104);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(100, 3, 3);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(183, 40, 32);stop-opacity:1" />
             </linearGradient>
             <linearGradient id="greyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
                 <stop offset="0%" style="stop-color:rgb(207, 203, 203);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(68, 65, 65);stop-opacity:1" />
+                <stop offset="100%" style="stop-color:rgb(110, 112, 112);stop-opacity:1" />
             </linearGradient>
         </defs>
     `;
@@ -519,8 +496,7 @@ function generateChipColumnsSVG(theChips) {
         }
 
         // Draw the column with gradient fill
-        // svg += `<rect x="${x}" y="${y}" width="${columnWidth-10}" height="${height}" fill="url(#${gradientId})"/>`;
-        svg += `<rect x="${x}" y="${y}" width="${columnWidth -1}" height="${height}" fill="url(#${gradientId})" rx="1" ry="1"/>`;;
+          svg += `<rect x="${x}" y="${y}" width="${columnWidth -1}" height="${height}" fill="url(#${gradientId})" rx="1" ry="1"/>`;;
 
         // Draw divider lines for each chip
         for (let i = 1; i < Math.min(chip.count, maxChips); i++) {
@@ -530,8 +506,13 @@ function generateChipColumnsSVG(theChips) {
 
         // Add ellipsis if there are more than maxChips
         if (chip.count > maxChips) {
-            svg += `<text x="${x + (columnWidth - 1) / 2}" y="${y - 5}" font-size="25" fill="black" text-anchor="middle">...</text>`;
+            svg += `<text x="${x + (columnWidth - 1) / 2}" y="${y - 5}" font-size="25" fill="${chip.strokecolor}" text-anchor="middle">...</text>`;
         }
+        // Add an arrow up icon if the stack exceeds the maximum number of chips displayed
+        if (chip.count > maxChips) {
+            svg += `<text x="${x + columnWidth / 2}" y="${y - 5}" font-size="10" text-anchor="middle" fill="white">&#9650;</text>`; // Unicode for up arrow
+        }
+
 
         // Add the label at the bottom of the column with the actual number of chips
         svg += `<text x="${x + (columnWidth - 1) / 2}" y="95" font-size="15" fill="white" text-anchor="middle">${chip.count}</text>`;
@@ -539,9 +520,9 @@ function generateChipColumnsSVG(theChips) {
     svg += '</svg>';
 
     return svg;
-}
+};
 
-function playPokerChipSound() {
+const playPokerChipSound = () => {
     // Create an audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
@@ -569,4 +550,74 @@ function playPokerChipSound() {
 
     // Start the buffer source
     bufferSource.start();
-}
+};
+
+const getGridLines = () => {
+    let html = ``;
+    html += `    <div class="playerGrid">`;
+    html += `        <div class="grid-cell">1</div>`;
+    html += `        <div class="grid-cell">2</div>`;
+    html += `        <div class="grid-cell">3</div>`;
+    html += `        <div class="grid-cell">4</div>`;
+    html += `        <div class="grid-cell">5</div>`;
+    html += `        <div class="grid-cell">6</div>`;
+    html += `        <div class="grid-cell">7</div>`;
+    html += `        <div class="grid-cell">8</div>`;
+    html += `        <div class="grid-cell">9</div>`;
+    html += `        <div class="grid-cell">10</div>`;
+    html += `        <div class="grid-cell">11</div>`;
+    html += `        <div class="grid-cell">12</div>`;
+    html += `        <div class="grid-cell">13</div>`;
+    html += `        <div class="grid-cell">14</div>`;
+    html += `        <div class="grid-cell">15</div>`;
+    html += `        <div class="grid-cell">16</div>`;
+    html += `        <div class="grid-cell">17</div>`;
+    html += `        <div class="grid-cell">18</div>`;
+    html += `        <div class="grid-cell">19</div>`;
+    html += `        <div class="grid-cell">20</div>`;
+    html += `        <div class="grid-cell">21</div>`;
+    html += `        <div class="grid-cell">22</div>`;
+    html += `        <div class="grid-cell">23</div>`;
+    html += `        <div class="grid-cell">24</div>`;
+    html += `        <div class="grid-cell">25</div>`;
+    html += `        <div class="grid-cell">26</div>`;
+    html += `        <div class="grid-cell">27</div>`;
+    html += `        <div class="grid-cell">28</div>`;
+    html += `        <div class="grid-cell">29</div>`;
+    html += `        <div class="grid-cell">30</div>`;
+    html += `        <div class="grid-cell">31</div>`;
+    html += `        <div class="grid-cell">32</div>`;
+    html += `        <div class="grid-cell">33</div>`;
+    html += `        <div class="grid-cell">34</div>`;
+    html += `        <div class="grid-cell">35</div>`;
+    html += `        <div class="grid-cell">36</div>`;
+    html += `        <div class="grid-cell">37</div>`;
+    html += `        <div class="grid-cell">38</div>`;
+    html += `        <div class="grid-cell">39</div>`;
+    html += `        <div class="grid-cell">40</div>`;
+    html += `        <div class="grid-cell">41</div>`;
+    html += `        <div class="grid-cell">42</div>`;
+    html += `        <div class="grid-cell">43</div>`;
+    html += `        <div class="grid-cell">44</div>`;
+    html += `        <div class="grid-cell">45</div>`;
+    html += `        <div class="grid-cell">46</div>`;
+    html += `        <div class="grid-cell">47</div>`;
+    html += `        <div class="grid-cell">48</div>`;
+    html += `        <div class="grid-cell">49</div>`;
+    html += `        <div class="grid-cell">50</div>`;
+    html += `        <div class="grid-cell">51</div>`;
+    html += `        <div class="grid-cell">52</div>`;
+    html += `        <div class="grid-cell">53</div>`;
+    html += `        <div class="grid-cell">54</div>`;
+    html += `        <div class="grid-cell">55</div>`;
+    html += `        <div class="grid-cell">56</div>`;
+    html += `        <div class="grid-cell">57</div>`;
+    html += `        <div class="grid-cell">58</div>`;
+    html += `        <div class="grid-cell">59</div>`;
+    html += `        <div class="grid-cell">60</div>`;
+    html += `        <div class="grid-cell">61</div>`;
+    html += `        <div class="grid-cell">62</div>`;
+    html += `        <div class="grid-cell">63</div>`;
+    html += `    </div>`;
+    return html;
+};

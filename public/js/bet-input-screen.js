@@ -6,117 +6,118 @@ function drawBetScreen() {
     destroyById(`table-div`);
     const html = getBetScreenHTML();
     createAndAppendDiv(html, id, true);
+
+    const blackbetval = 0;
+    const greenbetval = 0;
+    const redbetval = 0;
+    const graybetval = 0;
+
+    const blackCount = isNaN(parseInt(playerBlackChipCount))?0:parseInt(playerBlackChipCount);
+    const greenCount =  isNaN(parseInt(playerGreenChipCount))?0:parseInt(playerGreenChipCount);;
+    const redCount =  isNaN(parseInt(playerRedChipCount))?0:parseInt(playerRedChipCount);;
+    const grayCount =  isNaN(parseInt(playerGrayChipCount))?0:parseInt(playerGrayChipCount);;
+
+
+    initializeAllSliders(graybetval,grayCount,redbetval,redCount,greenbetval,greenCount,blackbetval,blackCount);
 }
 
 function getBetScreenHTML(id) {
     destroyById(id);
     let html = ``;
     html += `<div id = "${id}" class="additionalInputDiv">`;
-    html += `    <table>`;
-    html += `        <tr>`;
-    html += `            <td colspan="5" style="text-align: center;">Current Amount Bet: 5 chips`;
-    html += `        </tr>`;
-    html += `        <tr>`;
-    html += `            <td class="even5td" style="height:50vh;">`;
-    html += `                f x`;
-    html += `            </td>`;
-    html += `            <!-- The colors only work in Firefox unless a lot of work into getting them vertical by rotating and that presents own issue`;
-    html += `            the orient vertical here is only for Firefox -->`;
-    html += `            <td class="even5td" style="height:25vh;">`;
-    html += `                <input type="range" min="0" max="${playerBlackChipCount}" value="0" class="slider" style="background:#000000;"`;
-    html += `                    id="black-range" oninput="processSliderInput(this)" orient="vertical">`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="${playerGreenChipCount}" value="0" class="slider" style="background:#2d6621;"`;
-    html += `                    id="green-range" oninput="processSliderInput(this)" orient="vertical">`;
-    html += `            </td>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="${playerRedChipCount}" value="0" class="slider" id="red-range" style="background:#b72820;"`;
-    html += `                    oninput="processSliderInput(this)" orient="vertical">`;
-    html += `            </td>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="range" min="0" max="${playerGrayChipCount}" value="0" class="slider" style="background:#6e7070;" id="gray-range"`;
-    html += `                    oninput="processSliderInput(this)" orient="vertical">`;
-    html += `            </td>`;
-    html += `            </td>`;
-    html += `        </tr>`;
-    html += `        <tr>`;
-    html += `            <td class="even5td">`;
-    html += `                Total Chips<br>`;
-    html += `                <span id="totalChips">${totalChips}</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <img src="images/chip-black.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="black-chipcount">${playerBlackChipCount}</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <img src="images/chip-green.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="green-chipcount">${playerGreenChipCount}</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <img src="images/chip-red.png" style="width:7vw;height:7vw;"></img><br><span id="red-chipcount">${playerRedChipCount}</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <img src="images/chip-gray.png" style="width:7vw;height:7vw;"></img><br><span`;
-    html += `                    id="gray-chipcount">${playerGrayChipCount}</span>`;
-    html += `            </td>`;
-    html += `        </tr>`;
-    html += `        <tr>`;
-    html += `            <td class="even5td">`;
-    html += `                Total Bet:<br>`;
-    html += `                <span id="totalBet">0</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="text" class="screenInput" id="black-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)"> <br><span`;
-    html += `                    class="smallitalic">x 100</span><br>`;
-    html += `                <span id="black-betval">0</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="text" class="screenInput" id="green-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)"> <br><span`;
-    html += `                    class="smallitalic">x 25</span><br>`;
-    html += `                <span id="green-betval">0</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="text" class="screenInput" id="red-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)"> <br><span`;
-    html += `                    class="smallitalic">x 5</span><br>`;
-    html += `                <span id="red-betval">0</span>`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="text" class="screenInput" id="gray-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)"> <br><span`;
-    html += `                    class="smallitalic">x 1</span><br>`;
-    html += `                <span id="gray-betval">0</span>`;
-    html += `            </td>`;
-    html += `        <tr>`;
-    html += `            <td class="even5td">`;
-    // html += `                <input type="button" id="bet-change" value="Change">`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="button" id="bet-cancel" value="CANCEL" onClick="cancelBetScreen();">`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="button" id="bet-reset" value="RESET" onClick="resetBet();">`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `            </td>`;
-    html += `            <td class="even5td">`;
-    html += `                <input type="button" id="bet-bet" value="RAISE" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
-    html += `            </td>`;
-    html += `        </tr>`;
-    html += `    </table>`;
+    html += `    <div class="grid-container5x4">`;
+    html += `        <div class="grid-item5x4"></div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <div class="svg-container" id ="blackContainer">`;
+    html += `               <svg class="svg-column" id="blackColumn" xmlns="http://www.w3.org/2000/svg">`;
+    html += `               </svg>`;
+    html += `           </div>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <div class="svg-container" id ="greenContainer">`;
+    html += `               <svg class="svg-column" id="redColumn" xmlns="http://www.w3.org/2000/svg">`;
+    html += `               </svg>`;
+    html += `           </div>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <div class="svg-container" id ="redContainer">`;
+    html += `               <svg class="svg-column" id="greenColumn" xmlns="http://www.w3.org/2000/svg">`;
+    html += `               </svg>`;
+    html += `           </div>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <div class="svg-container" id ="grayContainer">`;
+    html += `               <svg class="svg-column" id="grayColumn" xmlns="http://www.w3.org/2000/svg">`;
+    html += `               </svg>`;
+    html += `           </div>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `            Total Chips<br>`;
+    html += `            <span id="totalChips">${totalChips}</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <img src="images/chip-black.png" style="width:7vw;height:7vw;"></img>`
+    html += `           <span id="black-chipcount">${playerBlackChipCount}</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <img src="images/chip-green.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <span id="green-chipcount">${playerGreenChipCount}</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <img src="images/chip-red.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <span id="red-chipcount">${playerRedChipCount}</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <img src="images/chip-gray.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <span id="gray-chipcount">${playerGrayChipCount}</span>`;   
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="text" class="screenInput" id="black-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `            <span class="smallitalic">x 100</span><br>`;
+    html += `            <span id="black-betval">0</span>`;   
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="text" class="screenInput" id="green-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <span class="smallitalic">x 25</span><br>`;
+    html += `           <span id="green-betval">0</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="text" class="screenInput" id="red-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <span class="smallitalic">x 5</span><br>`;
+    html += `           <span id="red-betval">0</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="text" class="screenInput" id="gray-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <span class="smallitalic">x 1</span><br>`;
+    html += `           <span id="gray-betval">0</span>`;   
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           Total Bet:`;
+    html += `           <span id="totalBet">0</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="button" id="bet-cancel" value="CANCEL" onClick="cancelBetScreen();">`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="button" id="bet-reset" value="RESET" onClick="resetBet();">`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `           <input type="button" id="bet-bet" value="RAISE" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
+    html += `        </div>`;
+    html += `    </div>`;  /// end grid container
     html += `</div>`;
     return html;
 }
 
-////////////////
 function cancelBetScreen() {
     getCurrentTable();
 }
 
-function processSliderInput(elem) {
-    const count = elem.value;
-    const chipColor = elem.id.split("-")[0];
+function processSliderInput(chipColor, count) {
     chipsChange(chipColor, count);
 }
 
@@ -211,10 +212,6 @@ function resetBet() {
     document.getElementById("red-chipcount").innerHTML = playerRedChipCount;
     document.getElementById("gray-chipcount").innerHTML = playerGrayChipCount;
 
-    document.getElementById("black-range").value = 0;
-    document.getElementById("green-range").value = 0;
-    document.getElementById("red-range").value = 0;
-    document.getElementById("gray-range").value = 0;
     document.getElementById("totalBet").innerHTML = calcTotalBet();
     document.getElementById("totalChips").innerHTML = totalChips;
     document.getElementById(`bet-bet`).disabled = true;
@@ -258,6 +255,110 @@ function onChangeBet(element) {
         element.value = "";
         val = 0;
     }
-    document.getElementById(chipColor + "-range").value = val;
+    initializeSingleSlider(val, chipColor);
     chipsChange(chipColor, val);
+}
+
+function createChips(svgColumn, count, maxCount, color) {
+    svgColumn.innerHTML = ''; // Clear existing chips
+    const containerHeight = svgColumn.parentElement.clientHeight;
+    const chipHeight = containerHeight / maxCount; // Height of each chip based on maxCount
+    const columnHeight = count * chipHeight;
+    svgColumn.setAttribute('height', columnHeight);
+
+    for (let i = 0; i < count; i++) {
+        const chip = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        chip.setAttribute('x', 0);
+        chip.setAttribute('y', columnHeight - (i + 1) * chipHeight);
+        chip.setAttribute('width', '100%');
+        chip.setAttribute('height', chipHeight);
+        chip.setAttribute('fill', color); // Color of the chips
+        svgColumn.appendChild(chip);
+    }
+}
+
+const initializeAllSliders = (greyCount, maxGreyCount,redCount, maxRedCount, greenCount, maxGreenCount,  blackCount, maxBlackCount) => {
+    initializeBlackSlider(blackCount, maxBlackCount);
+    initializeGreenSlider(greenCount, maxGreenCount);
+    initializeRedSlider(redCount, maxRedCount);
+    initializeGraySlider(greyCount,maxGreyCount);
+}
+const initializeBlackSlider = (count, maxCount) => {
+    const container = document.getElementById('blackContainer');
+    initializeSvgColumn(container, count, maxCount, 'rgb(0,0,0)','black');
+}
+const initializeGreenSlider = (count, maxCount) => {
+    const container = document.getElementById('greenContainer');
+    initializeSvgColumn(container, count, maxCount, 'rgb(45,102,33)','green');
+}
+const initializeRedSlider = (count, maxCount) => {
+    const container = document.getElementById('redContainer');
+    initializeSvgColumn(container, count, maxCount, 'rgb(183,40,32)','red');
+}
+const initializeGraySlider = (count, maxCount) => {
+    const container = document.getElementById('grayContainer');
+    initializeSvgColumn(container, count, maxCount, 'rgb(110,112,112)','gray');
+}
+
+const initializeSingleSlider = (count, color) => {
+    switch (color) {
+        case 'black':
+            initializeBlackSlider(count, playerBlackChipCount);
+            break;
+        case 'green':
+            initializeGreenSlider(count, playerGreenChipCount);
+            break;
+        case 'red':
+            initializeRedSlider(count, playerRedChipCount);
+            break;
+        case 'gray':
+            initializeGraySlider(count, playerGrayChipCount);
+            break;
+        default:
+            console.log(`${color} is unexpected and the slider will not be updated.`);
+    }
+}
+
+
+function initializeSvgColumn(svgContainer, initialChipCount, maxChipCount, color, colorName) {
+    const svgColumn = svgContainer.querySelector('.svg-column');
+    let isDragging = false;
+    let startY;
+    let initialHeight;
+    let currentChipCount = initialChipCount;
+    createChips(svgColumn, initialChipCount, maxChipCount, color);
+    // Function to handle the dragging logic
+    function handleDrag(e) {
+        if (isDragging) {
+            const clientY = e.clientY || e.touches[0].clientY;
+            const deltaY = startY - clientY;
+            const newHeight = initialHeight + deltaY;
+            currentChipCount = Math.max(0, Math.min(maxChipCount, Math.round(newHeight / (svgContainer.clientHeight / maxChipCount)))); // Ensure within bounds
+            createChips(svgColumn, currentChipCount, maxChipCount, color);
+        }
+    }
+
+    // Mouse down and touch start event to start dragging
+    function startDrag(e) {
+        isDragging = true;
+        startY = e.clientY || e.touches[0].clientY;
+        initialHeight = svgColumn.getBoundingClientRect().height;
+        document.addEventListener('mousemove', handleDrag);
+        document.addEventListener('touchmove', handleDrag);
+    }
+
+    // Mouse up and touch end event to stop dragging
+    function stopDrag() {
+        if (isDragging) {
+            isDragging = false;
+            document.removeEventListener('mousemove', handleDrag);
+            document.removeEventListener('touchmove', handleDrag);
+            processSliderInput(colorName, currentChipCount); // Process the slider input with the color name and chip count
+        }
+    }
+
+    svgContainer.addEventListener('mousedown', startDrag);
+    svgContainer.addEventListener('touchstart', startDrag);
+    document.addEventListener('mouseup', stopDrag);
+    document.addEventListener('touchend', stopDrag);
 }
