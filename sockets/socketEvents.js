@@ -135,9 +135,13 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         const player = table.players.find(player => player.id === playerId);
         let totalChips = 0;
         // const initialCallAmount = table.playStatus.callAmount;
+        let raisedBy = '';
         if (action === "RAISE") {
             totalChips = PlayProcessor.calculateChips(chips, player, table);
             const raisedByAmount = totalChips - table.playStatus.callAmount;
+            if (raisedByAmount > 0 && table.playStatus.callAmount >0){
+                raisedBy = ` (bet raised by ${raisedByAmount})`;
+            }
             table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
             table.playStatus.playerLastRaised = player;
             player.totalRoundBet = player.totalRoundBet + totalChips;
@@ -156,7 +160,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
             player.folded = true;
         } else if (action === "CHECK") {
         }
-        table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""} with ${totalChips} chips.`);
+        table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ?" !ALL IN! ":""}with ${totalChips} chips${raisedBy}.`);
         if (PlayProcessor.isBetRoundOver(player, table)) {
             // table.addMessage('Betting complete, select and submit winner (anyone with 2 votes will be considered a winner).')
             // PlayProcessor.processRoundOver(table);

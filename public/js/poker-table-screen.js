@@ -74,8 +74,8 @@ const drawScreen = (table) => {
             console.log(html);
             html+=generateChipColumnsSVG(player.chips);
             html += `${player.name}:${player.chipTotal}`
-            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded) {
-                html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')" style="padding-top:5px;" >${getSelectWinnerLogo()}</span>`
+            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded && !(!player.folded && player.chipTotal < 1)) {
+                html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')"" >${getSelectWinnerLogo()}</span>`
             }    
             html += `</div>`;
         }
