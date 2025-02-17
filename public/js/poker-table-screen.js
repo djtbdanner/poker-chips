@@ -83,10 +83,13 @@ const drawScreen = (table) => {
     //  === Pot Div === /
     if (playStatus.pot > 0){
         html += `    <div class="playerDiv playerPot">POT:${playStatus.pot}`;  
-        html += `      <input type = "button" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
         html +=        getPotChipPile(playStatus);
         html += `    </div>`;
     }
+    // === VoteButton ==== 
+    html += `    <div class="playerDiv playerVote">`;  
+    html += `      <input type = "button" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
+    html += `    </div>`;
     ///////////////////////////////////////////////// GRID CELLS - VISUALIZE THINGS
     // html += getGridLines();
     ///////////////////////////////////////////////// GRID CELLS TO VISUALIZE THINGS
@@ -94,13 +97,17 @@ const drawScreen = (table) => {
     html += `                   <div class = "pokerTableDiv"></div>`
     html += `                </div>`;
     html += `           </div>`;
+    // === message section ==== /
     html += `        <div class="middleSection">`;
-    html += `           <textarea id="history-text" rows = "4"  readonly>`;
+    html += `        <div class="textADiv">`;
+    html += `           <textarea id="history-text" readonly>`;
     table.messages.forEach((message) => {
          html += `&#8226; ${message}\r\n`;
      });
     html += `           </textarea>`;
+        html += `        </div>`;
     html += `        </div>`;   
+    // ============== Buttons section ======/
     html += `        <div class="bottomSection">`;
     html += `           <div class="dynamicGrid">`;
     html += `               <div class="grid-item-dynamic">`;
