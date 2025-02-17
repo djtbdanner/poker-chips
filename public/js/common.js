@@ -6,6 +6,21 @@ let playerGrayChipCount = 0;
 let totalChips = 0;
 let currentBetAmount = 0;
 let callAmount = 0;
+
+const BLACK_CHIP_COLOR = 'rgb(0,0,0)' ;
+const GREEN_CHIP_COLOR = 'rgb(45,102,33)' ;
+const RED_CHIP_COLOR = 'rgb(183,40,32)' ;
+const GRAY_CHIP_COLOR = 'rgb(112,110,110)' ;
+
+const GRAY_CHIP_COLOR_HIGHLIGHT = `rgb(207, 203, 203)`;
+const RED_CHIP_COLOR_HIGHLIGHT = `rgb(240, 104, 104)`;
+const GREEN_CHIP_COLOR_HIGHLIGHT = `rgb(145, 207, 145)`;
+const BLACK_CHIP_COLOR_HIGHLIGHT = `rgb(165, 163, 163)`;
+
+const BLACK = 'black';
+const GREEN  = 'green';
+const RED = 'red';
+const GRAY = 'gray';
 ////
 
 function createAndAppendDiv(html, id, isFullScreen) {

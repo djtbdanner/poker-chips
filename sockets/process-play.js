@@ -220,6 +220,7 @@ const resetTable = (table) => {
 
 exports.calculateChips = (chips, player, table) => {
     // like this [{color:"black", count:0},{color:"green", count:0},{color:"red", count:0},{color:"gray", count:10},]
+    let totalChips;
     if (Array.isArray(chips)) {
         totalChips = this.pullChipsByChipCount(table, player, chips);
     } else {

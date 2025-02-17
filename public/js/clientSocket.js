@@ -41,10 +41,13 @@ socketEventHandlers['poker-open-tables'] = async (data) => {
 
 
 function removePlayer() {
-    const playerId = localStorage.getItem(`player-id`);
-    const tableId = localStorage.getItem(`table-id`);
-    const message = { action: `poker-remove-player`, payload: { playerId, tableId }};
-    connectAndSendSocketRequest(message);// backend will call poker-remove-player handler and do the rest
+    const confirmed = confirm("Are you sure you want to quit?");
+    if (confirmed){
+        const playerId = localStorage.getItem(`player-id`);
+        const tableId = localStorage.getItem(`table-id`);
+        const message = { action: `poker-remove-player`, payload: { playerId, tableId }};
+        connectAndSendSocketRequest(message);// backend will call poker-remove-player handler and do the rest
+    }
 }
 
 socketEventHandlers['poker-table-change'] = async (data) => {

@@ -17,8 +17,8 @@ const drawScreen = (table) => {
     playerRedChipCount = thisPlayer.chips.filter(c => c.color === `red`).length;
     playerGrayChipCount = thisPlayer.chips.filter(c => c.color === `gray`).length;
     totalChips = thisPlayer.chipTotal;
+    callAmount = ``;
     // these are global
-    let callAmount = ``;
 
     // add name to title
     if (thisPlayer && thisPlayer.name){
@@ -40,6 +40,7 @@ const drawScreen = (table) => {
             disabledCheck = ``;
         }
     }
+
     // === Build HTML ====/
     let html = ``;
     html += `    <div class="outerContainer">`;
@@ -370,17 +371,17 @@ const getPotChipPile = (playStatus) => {
 
 const generateChipPileSVG = (theChips) => {
 
-    const blacks = theChips.filter(c => c.color === `black`).length;
-    const greens = theChips.filter(c => c.color === `green`).length;
-    const reds = theChips.filter(c => c.color === `red`).length;
-    const greys = theChips.filter(c => c.color === `gray`).length;
+    const blacks = theChips.filter(c => c.color === BLACK).length;
+    const greens = theChips.filter(c => c.color === GREEN).length;
+    const reds = theChips.filter(c => c.color === RED).length;
+    const grays = theChips.filter(c => c.color === GRAY).length;
 
 
     const chipValues = [
-        { color: 'black', count: blacks, label: '100', strokecolor: 'rgb(0,0,0)' },
-        { color: 'green', count: greens, label: '25', strokecolor: 'rgb(45,102,33)' },
-        { color: 'red', count: reds, label: '5', strokecolor: 'rgb(183,40,32)' },
-        { color: 'grey', count: greys, label: '1', strokecolor: 'rgb(110,112,112)' },
+        { color: BLACK, count: blacks, label: '100', strokecolor: BLACK_CHIP_COLOR },
+        { color: GREEN, count: greens, label: '25', strokecolor: GREEN_CHIP_COLOR },
+        { color: RED, count: reds, label: '5', strokecolor: RED_CHIP_COLOR},
+        { color: GRAY, count: grays, label: '1', strokecolor: GRAY_CHIP_COLOR },
     ];
 
     let chips = [];
@@ -429,16 +430,16 @@ const generateChipPileSVG = (theChips) => {
 
 const generateChipColumnsSVG = (theChips) => {
 
-    const blacks = theChips.filter(c => c.color === `black`).length;
-    const greens = theChips.filter(c => c.color === `green`).length;
-    const reds = theChips.filter(c => c.color === `red`).length;
-    const greys = theChips.filter(c => c.color === `gray`).length;
+    const blacks = theChips.filter(c => c.color === BLACK).length;
+    const greens = theChips.filter(c => c.color === GREEN).length;
+    const reds = theChips.filter(c => c.color === RED).length;
+    const grays = theChips.filter(c => c.color === GRAY).length;
 
     const chipValues = [
-        { color: 'black', count: blacks, label: '100', strokecolor: 'rgb(0,0,0)' },
-        { color: 'green', count: greens, label: '25', strokecolor: 'rgb(45,102,33)' },
-        { color: 'red', count: reds, label: '5', strokecolor: 'rgb(183,40,32)' },
-        { color: 'grey', count: greys, label: '1', strokecolor: 'rgb(110,112,112)' },
+        { color: BLACK, count: blacks, label: '100', strokecolor: BLACK_CHIP_COLOR },
+        { color: GREEN, count: greens, label: '25', strokecolor: GREEN_CHIP_COLOR },
+        { color: RED, count: reds, label: '5', strokecolor: RED_CHIP_COLOR },
+        { color: GRAY, count: grays, label: '1', strokecolor:GRAY_CHIP_COLOR },
     ];
 
     let svg = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">';
@@ -455,20 +456,20 @@ const generateChipColumnsSVG = (theChips) => {
     svg += `
         <defs>
             <linearGradient id="blackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(165, 163, 163);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(0, 0, 0);stop-opacity:1" />
+                <stop offset="0%" style="stop-color:${BLACK_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${BLACK_CHIP_COLOR};stop-opacity:1" />
             </linearGradient>
             <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(145, 207, 145);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(45, 102, 32);stop-opacity:1" />
+                <stop offset="0%" style="stop-color:${GREEN_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${GREEN_CHIP_COLOR};stop-opacity:1" />
             </linearGradient>
             <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(240, 104, 104);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(183, 40, 32);stop-opacity:1" />
+                <stop offset="0%" style="stop-color:${RED_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${RED_CHIP_COLOR};stop-opacity:1" />
             </linearGradient>
-            <linearGradient id="greyGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:rgb(207, 203, 203);stop-opacity:1" />
-                <stop offset="100%" style="stop-color:rgb(110, 112, 112);stop-opacity:1" />
+            <linearGradient id="grayGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" style="stop-color:${GRAY_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
+                <stop offset="100%" style="stop-color:${GRAY_CHIP_COLOR};stop-opacity:1" />
             </linearGradient>
         </defs>
     `;
@@ -481,17 +482,17 @@ const generateChipColumnsSVG = (theChips) => {
         // Determine the gradient to use
         let gradientId;
         switch (chip.color) {
-            case 'black':
+            case BLACK:
                 gradientId = 'blackGradient';
                 break;
-            case 'green':
+            case GREEN:
                 gradientId = 'greenGradient';
                 break;
-            case 'red':
+            case RED:
                 gradientId = 'redGradient';
                 break;
-            case 'grey':
-                gradientId = 'greyGradient';
+            case GRAY:
+                gradientId = 'grayGradient';
                 break;
         }
 
