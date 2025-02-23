@@ -86,7 +86,7 @@ const drawScreen = (table) => {
     }
     // === VoteButton ==== 
     html += `    <div class="playerDiv playerVote">`;  
-    html += `      <input type = "button" style="visibility:hidden;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
+    html += `      <input type = "button" class="mainButton" style="visibility:hidden;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
     html += `    </div>`;
     ///////////////////////////////////////////////// GRID CELLS - VISUALIZE THINGS
     // html += getGridLines();
@@ -114,12 +114,12 @@ const drawScreen = (table) => {
     // html += `                   Options`;
     // html += `               </div>`;
     html += `               <div class="grid-item-dynamic">`;
-    html += `                   <input type="button" id="fold-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;"  onClick="playerAction('CHECK', 0);" \>`;
+    html += `                   <input type="button" class="mainButton" id="fold-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;"  onClick="playerAction('CHECK', 0);" \>`;
     html += `                   <br>`;   
     html += `                   Check`;
     html += `               </div>`;
     html += `               <div class="grid-item-dynamic">`;
-    html += `                   <input type="button" id="fold-button" ${disabledFold} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
+    html += `                   <input type="button" class="mainButton" id="fold-button" ${disabledFold} value="&nbsp;&#10008;&nbsp;"  onClick="playerAction('FOLD', 0);" \>`;
     html += `                   <br>`;   
     html += `                   Fold`;
     html += `               </div>`;
@@ -130,12 +130,12 @@ const drawScreen = (table) => {
         icon= `$$`
         text = `!All In!`
     }                                
-    html += `                    <input type="button" id="call-button" ${disabledCall} value="&nbsp;${icon}&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
+    html += `                    <input type="button" class="mainButton" id="call-button" ${disabledCall} value="&nbsp;${icon}&nbsp;"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `                    <br>`;
     html += `                    ${text} ${callAmount}`;
     html += `               </div>`;
     html += `               <div class="grid-item-dynamic">`;
-    html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;
+    html += `                    <input type="button" class="mainButton" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;
     html += `                    <br>`;
     if (playStatus.callAmount > 0) {
     html += `                    Raise`;

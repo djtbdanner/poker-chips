@@ -84,7 +84,6 @@ function buildChangeChipsHtml() {
     html += `                   <svg width="4vw" height="7vw" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"  style="cursor:pointer;" onClick="pokerChipDenominationChange(GRAY,RED)">`; 
     html += `                       <polygon points="50,50 100,0 100,100" fill="url(#redToGray)" filter="url(#blurFilter)" style="stroke:black;stroke-width:1;stroke-linejoin:round;"/>`;
     html += `                   </svg>`;
-    html += `                   </svg>`;   
     } else {
     html +=                     getEmptySVG();
     }
@@ -94,7 +93,7 @@ function buildChangeChipsHtml() {
     html += `               ${playerGrayChipCount}`
     html += `            </div>`;
     html += `            <div class="grid-item hr-item">`;
-    html += `                <input type="button" value="DONE" class="stInputDefaultcolor" onClick="pokerChipDenominationQuit()"></input>`;
+    html += `                <input type="button" value="DONE" class="mainButton" onClick="pokerChipDenominationQuit()"></input>`;
     html += `            </div>`;
     html += `       </div>`;
     html += `    </div>`;

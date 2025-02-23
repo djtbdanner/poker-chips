@@ -102,39 +102,49 @@ function getBetScreenHTML(id) {
     html += `           <span id="gray-betval">0</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="button" id="bet-cancel" value="CANCEL" onClick="cancelBetScreen();">`;
+    html += `           <input type="button" id="bet-cancel" class="mainButton" value="CANCEL" onClick="cancelBetScreen();">`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="button" id="bet-reset" value="RESET" onClick="resetBet();">`;
+    html += `           <input type="button" id="bet-reset" class="mainButton" value="RESET" onClick="resetBet();">`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="button" id="bet-button" ${callAmount > 0 ? "" : "disabled"} value="CALL"  onClick="playerAction('CALL', ${callAmount});" \>`;
+    html += `           <input type="button" id="bet-button" class="mainButton" ${callAmount > 0 ? "" : "disabled"} value="CALL"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="button" id="bet-bet" value="${callAmount > 0 ? "RAISE" : "BET"}" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
+    html += `           <input type="button" id="bet-bet" class="mainButton" value="${callAmount > 0 ? "RAISE" : "BET"}" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
     html += `        </div>`;
-    // html += `        <div class="hr-item">`;
-    html += `        <div class="grid-item5x4">`;
-    html += `            Total Bet:`;
-    html += `            <span id="totalBet">0</span>`;
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
     if(callAmount > 0){
-    html += `            Call:`;
-    html += `            <span id="callAmount">${callAmount}</span>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Total Bet:`;
+        html += `            <span id="totalBet">0</span>`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Remaining Chips:`;
+        html += `            <span id="totalChips">${totalChips}</span>`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Call:`;
+        html += `            <span id="callAmount">${callAmount}</span>`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Amount Raised:`;
+        html += `            <span id="totalRaise">0</span>`;   
+        html += `        </div>`;
+    } else {
+        html += `        <div class="grid-item5x4">`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Remaining Chips:`;
+        html += `            <span id="totalChips">${totalChips}</span>`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            No Call`;
+        html += `        </div>`;
+        html += `        <div class="grid-item5x4">`;
+        html += `            Total Bet:`;
+        html += `            <span id="totalBet">0</span>`;
+        html += `        </div>`;
     }
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
-    if(callAmount > 0){
-    html += `            Amount Raised:`;
-    html += `            <span id="totalRaise">0</span>`;   
-    }
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
-    html += `            Remaining Chips:`;
-    html += `            <span id="totalChips">${totalChips}</span>`;
-    html += `        </div>`;
-    html += `        </div>`;
     html += `    </div>`;  /// end grid container
     html += `</div>`;
     return html;
@@ -173,12 +183,13 @@ const chipsChange = (chipColor, chipBet) => {
     document.getElementById(`totalChips`).innerHTML = totalChips - totalBet;
     const callInt = isNaN(parseInt(callAmount, 10)) ? 0 : parseInt(callAmount, 10)
     const totalRaise = totalBet - callInt;
+    if (callAmount > 0){
+        document.getElementById(`totalRaise`).innerHTML = totalRaise;
+    }
     if (totalRaise > 0) {
         document.getElementById(`bet-bet`).disabled = false;
-        document.getElementById(`totalRaise`).innerHTML = totalRaise;
     } else {
         document.getElementById(`bet-bet`).disabled = true;
-        document.getElementById(`totalRaise`).innerHTML = 0;
     }
 };
 

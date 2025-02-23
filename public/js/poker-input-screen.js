@@ -20,7 +20,7 @@ async function buildInitialScreen() {
     destroyById(`initial-screen`);
     let html = ``;
     // html += `<form><div id="initial-screen" class="modal">`;
-    html += `<div style="background-color:tan;width:100%;height:100%;">`;
+    html += `<div style="background-color:tan;width:100%;height:100%;color:black;">`;
     html += `<form id ="initial-screen">`;
     html += `<table>`;
     html += `<tr><td colspan = "2" style = "text-align:center;">`;
