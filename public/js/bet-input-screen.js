@@ -11,82 +11,95 @@ function drawBetScreen() {
 function getBetScreenHTML(id) {
     destroyById(id);
     let html = ``;
-    html += `<div id = "${id}" class="betInputScreen">`;
+
+    html += getSVGchipGradients();
+    html += getSVGArrowGradsAndShads();
+
+    html += `<div id = "${id}" class="addedInputScreen">`;
     html += `    <div class="grid-container5x4">`;
-    html += `        <div class="grid-item5x4"></div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <div class="svg-container" id ="blackContainer">`;
+    html += `           <div class="svg-container-border" id ="blackContainer">`;
     html += `               <svg class="svg-column" id="blackColumn" xmlns="http://www.w3.org/2000/svg">`;
     html += `               </svg>`;
     html += `           </div>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <div class="svg-container" id ="greenContainer">`;
+    html += `           <div class="svg-container-border" id ="greenContainer">`;
     html += `               <svg class="svg-column" id="greenColumn" xmlns="http://www.w3.org/2000/svg">`;
     html += `               </svg>`;
     html += `           </div>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <div class="svg-container" id ="redContainer">`;
+    html += `           <div class="svg-container-border" id ="redContainer">`;
     html += `               <svg class="svg-column" id="redColumn" xmlns="http://www.w3.org/2000/svg">`;
     html += `               </svg>`;
     html += `           </div>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <div class="svg-container" id ="grayContainer">`;
+    html += `           <div class="svg-container-border" id ="grayContainer">`;
     html += `               <svg class="svg-column" id="grayColumn" xmlns="http://www.w3.org/2000/svg">`;
     html += `               </svg>`;
     html += `           </div>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `            Remaining:`;
-    html += `            <span id="totalChips">${totalChips}</span>`;
-    html += `            Betting:`;
-    html += `            <span id="totalBet">0</span>`;
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
-    html += `           <img src="images/chip-black.png" style="width:7vw;height:7vw;"></img>`
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${BLACK}-up" onClick="sumColor('${BLACK}', 1)"  >`; 
+    html += `               <polygon points="20,300 580,300 300,75" fill="${BLACK_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
+    html += `           ${createSVGChip(BLACK_CHIP_COLOR,"6vh", 100 )}`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${BLACK}-down" onClick="sumColor('${BLACK}', -1)">`; 
+    html += `               <polygon points="20,0 580,0 300,225" fill="${BLACK_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;    
     html += `           <span id="black-chipcount">${playerBlackChipCount}</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <img src="images/chip-green.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GREEN}-up" onClick="sumColor('${GREEN}', 1)"  >`; 
+    html += `               <polygon points="20,300 580,300 300,75" fill="${GREEN_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
+    html += `           ${createSVGChip(GREEN_CHIP_COLOR,"6vh", 25 )}`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GREEN}-down" onClick="sumColor('${GREEN}', -1)">`; 
+    html += `               <polygon points="20,0 580,0 300,225" fill="${GREEN_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
     html += `           <span id="green-chipcount">${playerGreenChipCount}</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <img src="images/chip-red.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${RED}-up" onClick="sumColor('${RED}', 1)"  >`; 
+    html += `               <polygon points="20,300 580,300 300,75" fill="${RED_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
+    html += `           ${createSVGChip(RED_CHIP_COLOR,"6vh", 5 )}`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${RED}-down" onClick="sumColor('${RED}', -1)">`; 
+    html += `               <polygon points="20,0 580,0 300,225" fill="${RED_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
     html += `           <span id="red-chipcount">${playerRedChipCount}</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <img src="images/chip-gray.png" style="width:7vw;height:7vw;"></img>`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GRAY}-up" onClick="sumColor('${GRAY}', 1)"  >`; 
+    html += `               <polygon points="20,300 580,300 300,75" fill="${GRAY_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
+    html += `           ${createSVGChip(GRAY_CHIP_COLOR,"6vh", 1 )}`;
+    html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GRAY}-down" onClick="sumColor('${GRAY}', -1)">`; 
+    html += `               <polygon points="20,0 580,0 300,225" fill="${GRAY_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
+    html += `           </svg>`;
     html += `           <span id="gray-chipcount">${playerGrayChipCount}</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `            Call:`;
-    html += `            <span id="callAmount">${callAmount}</span>`;
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
-    html += `           <input type="text" class="screenInput" id="black-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <input type="text" class="addedInputScreenInput" id="black-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
     html += `            <span class="smallitalic">x 100</span><br>`;
     html += `            <span id="black-betval">0</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="text" class="screenInput" id="green-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <input type="text" class="addedInputScreenInput" id="green-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
     html += `           <span class="smallitalic">x 25</span><br>`;
     html += `           <span id="green-betval">0</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="text" class="screenInput" id="red-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <input type="text" class="addedInputScreenInput" id="red-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
     html += `           <span class="smallitalic">x 5</span><br>`;
     html += `           <span id="red-betval">0</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="text" class="screenInput" id="gray-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
+    html += `           <input type="text" class="addedInputScreenInput" id="gray-bet" maxlength="3" size="3" onKeyUp = "onChangeBet(this)">`;
     html += `           <span class="smallitalic">x 1</span><br>`;
     html += `           <span id="gray-betval">0</span>`;
-    html += `        </div>`;
-    html += `        <div class="grid-item5x4">`;
-    html += `           Raising:`;
-    html += `           <span id="totalRaise">0</span>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
     html += `           <input type="button" id="bet-cancel" value="CANCEL" onClick="cancelBetScreen();">`;
@@ -98,45 +111,44 @@ function getBetScreenHTML(id) {
     html += `           <input type="button" id="bet-button" ${callAmount > 0 ? "" : "disabled"} value="CALL"  onClick="playerAction('CALL', ${callAmount});" \>`;
     html += `        </div>`;
     html += `        <div class="grid-item5x4">`;
-    html += `           <input type="button" id="bet-bet" value="RAISE" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
+    html += `           <input type="button" id="bet-bet" value="${callAmount > 0 ? "RAISE" : "BET"}" disabled onClick="playerAction('RAISE', buildChipsForBet());">`;
+    html += `        </div>`;
+    // html += `        <div class="hr-item">`;
+    html += `        <div class="grid-item5x4">`;
+    html += `            Total Bet:`;
+    html += `            <span id="totalBet">0</span>`;
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    if(callAmount > 0){
+    html += `            Call:`;
+    html += `            <span id="callAmount">${callAmount}</span>`;
+    }
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    if(callAmount > 0){
+    html += `            Amount Raised:`;
+    html += `            <span id="totalRaise">0</span>`;   
+    }
+    html += `        </div>`;
+    html += `        <div class="grid-item5x4">`;
+    html += `            Remaining Chips:`;
+    html += `            <span id="totalChips">${totalChips}</span>`;
+    html += `        </div>`;
     html += `        </div>`;
     html += `    </div>`;  /// end grid container
     html += `</div>`;
-
-    /// this will not show, but is used for the chip gradients
-html +=  `<svg width="0" height="0"><defs>
-<linearGradient id="blackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" style="stop-color:${BLACK_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-    <stop offset="100%" style="stop-color:${BLACK_CHIP_COLOR};stop-opacity:1" />
-</linearGradient>
-<linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" style="stop-color:${GREEN_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-    <stop offset="100%" style="stop-color:${GREEN_CHIP_COLOR};stop-opacity:1" />
-</linearGradient>
-<linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" style="stop-color:${RED_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-    <stop offset="100%" style="stop-color:${RED_CHIP_COLOR};stop-opacity:1" />
-</linearGradient>
-<linearGradient id="grayGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-    <stop offset="0%" style="stop-color:${GRAY_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-    <stop offset="100%" style="stop-color:${GRAY_CHIP_COLOR};stop-opacity:1" />
-</linearGradient>
-</defs></svg>`;
-
-
-
     return html;
 }
 
-function cancelBetScreen() {
+const cancelBetScreen =  () => {
     getCurrentTable();
-}
+};
 
-function processSliderInput(chipColor, count) {
+const processSliderInput = (chipColor, count) => {
     chipsChange(chipColor, count);
-}
+};
 
-function chipsChange(chipColor, chipBet) {
+const chipsChange = (chipColor, chipBet) => {
     let chipMultiplier = 100;// black
     let originalChipCount = playerBlackChipCount;
 
@@ -168,10 +180,9 @@ function chipsChange(chipColor, chipBet) {
         document.getElementById(`bet-bet`).disabled = true;
         document.getElementById(`totalRaise`).innerHTML = 0;
     }
-}
+};
 
-function calcTotalBet() {
-
+const calcTotalBet = () => {
     const blackbetval = document.getElementById("black-betval").innerHTML;
     const greenbetval = document.getElementById("green-betval").innerHTML;
     const redbetval = document.getElementById("red-betval").innerHTML;
@@ -191,9 +202,9 @@ function calcTotalBet() {
         total = total + parseInt(graybetval, 10);
     }
     return total;
-}
+};
 
-function buildChipsForBet() {
+const buildChipsForBet = () => {
 
     let blackbet = document.getElementById("black-bet").value;
     let greenbet = document.getElementById("green-bet").value;
@@ -213,9 +224,9 @@ function buildChipsForBet() {
     }
     const chips = `[{"color":"black", "count":${blackbet}},{"color":"green","count":${greenbet}},{"color":"red","count":${redbet}},{"color":"gray","count":${graybet}}]`
     return chips;
-}
+};
 
-function resetBet() {
+const resetBet = () => {
     document.getElementById("black-bet").value = "";
     document.getElementById("green-bet").value = "";
     document.getElementById("red-bet").value = "";
@@ -237,7 +248,24 @@ function resetBet() {
     initializeAllSliders();
 }
 
-function onChangeBet(element) {
+const sumColor = (color, val) => {
+    let currentChipsBet = document.getElementById(`${color}-bet`).value;
+    currentChipsBet = isNaN(parseInt(currentChipsBet, 10))?0:parseInt(parseInt(currentChipsBet, 10));
+    currentChipsBet = currentChipsBet+val;
+    const maxBetForThisColor = color===BLACK?playerBlackChipCount:color===GREEN?playerGreenChipCount:color===RED?playerRedChipCount:color===GRAY?playerGrayChipCount:-1;
+    if (maxBetForThisColor < 0){
+        throw new Error("invalid color passed");
+    }
+
+    if (currentChipsBet > maxBetForThisColor || currentChipsBet < 0){
+        return;
+    }
+
+    setChipSlider(currentChipsBet, color);
+    chipsChange(color, currentChipsBet);
+};
+
+const onChangeBet = (element) => {
     const id = element.id;
     const chipColor = id.split("-")[0];
     if (!chipColor || !chipColors.includes(chipColor)) {
@@ -277,9 +305,9 @@ function onChangeBet(element) {
     }
     setChipSlider(val, chipColor);
     chipsChange(chipColor, val);
-}
+};
 
-function createChips(svgColumn, count, maxCount, color) {
+const createChips = (svgColumn, count, maxCount, color) => {
     svgColumn.innerHTML = ''; 
     const containerHeight = svgColumn.parentElement.clientHeight;
     const chipHeight = containerHeight / maxCount; 
@@ -296,7 +324,7 @@ function createChips(svgColumn, count, maxCount, color) {
         chip.setAttribute('fill', `url(#${gradientId})`); 
         svgColumn.appendChild(chip);
     }
-}
+};
 
 const setChipSlider = (count, color) => {
     const svgColumnId = `${color}Column`;
@@ -326,7 +354,7 @@ const initializeAllSliders = () => {
     initializeSvgColumn(grayCount, GRAY);
 };
 
-function initializeSvgColumn(maxChipCount, colorName) {
+const initializeSvgColumn = (maxChipCount, colorName) => {
 
     const containerId = colorName===BLACK?"blackContainer":colorName===GREEN?"greenContainer":colorName===RED?"redContainer":"grayContainer";
     let  svgContainer = document.getElementById(containerId);
@@ -366,18 +394,12 @@ function initializeSvgColumn(maxChipCount, colorName) {
     }
 
     function handleClick(e) {
-        const clickY = e.clientY || e.touches[0].clientY;
-        const svgRect = svgContainer.getBoundingClientRect();
-        const clickPosition = clickY - svgRect.top;
-        const chipHeight = svgRect.height / maxChipCount;
-
-        // Check if the click is on the filled section (SVG color)
-        if (clickPosition > svgRect.height - currentChipCount * chipHeight) {
+        const clickedElement = e.target; 
+        if (clickedElement.tagName === 'rect') {
             currentChipCount = Math.max(0, currentChipCount - 1);
         } else {
             currentChipCount = Math.min(maxChipCount, currentChipCount + 1);
         }
-
         createChips(svgColumn, currentChipCount, maxChipCount, colorName);
         processSliderInput(colorName, currentChipCount); 
     }

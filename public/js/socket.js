@@ -11,7 +11,7 @@ const sendSocketMessage = async (msg, webSocketUrl) => {
     try {
         let socket = await getSocket(webSocketUrl);
         socket.send(msg);
-        console.log(`Sent Message: ${msg}`);
+        // console.log(`Sent Message: ${msg}`);
     } catch (e) {
         console.log(`Error sending message: ${e}`);
         console.log(e.stack);
@@ -20,14 +20,14 @@ const sendSocketMessage = async (msg, webSocketUrl) => {
 
 const getSocket = async (webSocketUrl) => {
     if (ws) {
-        console.log(`Have socket, getSocket returning ${ws}`);
+        // console.log(`Have socket, getSocket returning ${ws}`);
         return ws;
     }
     try {
-        console.log(`getSocket setting up socket`);
+        // console.log(`getSocket setting up socket`);
         const socket = await openWebSocket(webSocketUrl);
         await waitForSocketConnection(socket);
-        console.log('WebSocket is ready to be used');
+        // console.log('WebSocket is ready to be used');
         return socket;
     } catch (error) {
         console.error('WebSocket connection failed:', error);
@@ -75,7 +75,7 @@ const waitForSocketConnection = (socket) => new Promise((resolve) => {
 const socketEventHandlers = {};
 const socketOnMessage = async (message) => {
     // console.log(`socket message received: ${message} - JSON.stringify: ${JSON.stringify(message)} - data:${message.data}`);
-    console.log(`socket message received: ${message.data}`);
+    // console.log(`socket message received: ${message.data}`);
     try {
         const data = JSON.parse(message.data);
         const { action, payload } = data;

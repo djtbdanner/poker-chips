@@ -60,7 +60,7 @@ const drawScreen = (table) => {
                 additionalClass = `playerTurn${additionalClass?" "+additionalClass:""}`;
             }
             if (player.folded || player.chipTotal < 1) {
-                additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
+                additionalClass = `playerFold${additionalClass?" "+additionalClass:""}`;
             }
             if (player.allIn) {
                 additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
@@ -68,15 +68,13 @@ const drawScreen = (table) => {
             if (!player.isConnected){
                 additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
             }
-            console.log(JSON.stringify(player));
             // === Player div ==== //
-            html += `<div id="${player.id}" class="playerDiv ${getPlayerLocationStyle(table, i)} ${additionalClass?additionalClass:''}">`;
-            console.log(html);
-            html+=generateChipColumnsSVG(player.chips);
+            const addListener = player.id === thisPlayerId && (!playStatus.selectWinner || thisPlayer.hasVoted);
+            html += `<div id="${player.id}" class="playerDiv ${getPlayerLocationStyle(table, i)} ${additionalClass?additionalClass:''}" addListener>`;
+            html+=generateChipColumnsSVG(player.chips, addListener);
             html += `${player.name}:${player.chipTotal}`
-            if (playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded && !(!player.folded && player.chipTotal < 1)) {
-                html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')"" >${getSelectWinnerLogo()}</span>`
-            }    
+            const showVoteButton = playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded && !(!player.folded && player.chipTotal < 1);
+            html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')" ${showVoteButton?"":"style='visibility:hidden;'"}>${getSelectWinnerLogo()}</span>`
             html += `</div>`;
         }
     }
@@ -88,7 +86,7 @@ const drawScreen = (table) => {
     }
     // === VoteButton ==== 
     html += `    <div class="playerDiv playerVote">`;  
-    html += `      <input type = "button" style="display:none;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
+    html += `      <input type = "button" style="visibility:hidden;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
     html += `    </div>`;
     ///////////////////////////////////////////////// GRID CELLS - VISUALIZE THINGS
     // html += getGridLines();
@@ -110,11 +108,11 @@ const drawScreen = (table) => {
     // ============== Buttons section ======/
     html += `        <div class="bottomSection">`;
     html += `           <div class="dynamicGrid">`;
-    html += `               <div class="grid-item-dynamic">`;
-    html += `                   <input type="button" id="options-button" value="..." onclick = "buildMenu()" \>`;
-    html += `                   <br>`;
-    html += `                   Options`;
-    html += `               </div>`;
+    // html += `               <div class="grid-item-dynamic">`;
+    // html += `                   <input type="button" id="options-button" value="..." onclick = "buildMenu()" \>`;
+    // html += `                   <br>`;
+    // html += `                   Options`;
+    // html += `               </div>`;
     html += `               <div class="grid-item-dynamic">`;
     html += `                   <input type="button" id="fold-button" ${disabledCheck} value="&nbsp;&#10004;&nbsp;"  onClick="playerAction('CHECK', 0);" \>`;
     html += `                   <br>`;   
@@ -139,7 +137,11 @@ const drawScreen = (table) => {
     html += `               <div class="grid-item-dynamic">`;
     html += `                    <input type="button" id="raise-button" ${disabledRaise} value="&nbsp;&#10010;&nbsp;"  onClick="drawBetScreen();" \>`;
     html += `                    <br>`;
+    if (playStatus.callAmount > 0) {
     html += `                    Raise`;
+    } else {
+    html += `                    Bet`;     
+    }
     html += `               </div>`;
     html += `           </div>`; // end div for "dynamic grid"
     html += `    </div>`; /// end div for "bottom section"
@@ -330,12 +332,12 @@ const voteForWinner = (playerId) => {
         playerWinDiv.innerHTML = getSelectWinnerLogo();
         winnerIds.splice(winnerIds.indexOf(playerId),1);
         if (winnerIds.length < 1){
-            voteButton.style.display = "none";
+            voteButton.style.visibility = "hidden";
         }
         return;
     }
     playerWinDiv.innerHTML = getWinnerLogo();
-    voteButton.style.display = "block";
+    voteButton.style.visibility = "visible";
     winnerIds.push(playerId);
  };
 
@@ -399,7 +401,7 @@ const generateChipPileSVG = (theChips) => {
         }
     });
 
-    console.log(`The chips - ${JSON.stringify(chips)}`);
+    // console.log(`The chips - ${JSON.stringify(chips)}`);
     let svg = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">';
     chips.forEach((chip) => {
         const x = 50 + (Math.random() * 40 - 20); // Random x position within a range
@@ -435,7 +437,7 @@ const generateChipPileSVG = (theChips) => {
     return svg;
 };
 
-const generateChipColumnsSVG = (theChips) => {
+const generateChipColumnsSVG = (theChips, addEventListener) => {
 
     const blacks = theChips.filter(c => c.color === BLACK).length;
     const greens = theChips.filter(c => c.color === GREEN).length;
@@ -449,7 +451,7 @@ const generateChipColumnsSVG = (theChips) => {
         { color: GRAY, count: grays, label: '1', strokecolor:GRAY_CHIP_COLOR },
     ];
 
-    let svg = '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">';
+    let svg = `<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"  ${addEventListener?"onClick='buildChangeChipsHtml()' style='cursor:pointer;'":""} >`;
    
      
     // Add a temporary border around the SVG
@@ -459,52 +461,14 @@ const generateChipColumnsSVG = (theChips) => {
     const chipHeight = 3; 
     const maxChips = 26; // Maximum number of chips to display
 
-    // Define gradients for shading
-    svg += `
-        <defs>
-            <linearGradient id="blackGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:${BLACK_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:${BLACK_CHIP_COLOR};stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="greenGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:${GREEN_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:${GREEN_CHIP_COLOR};stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="redGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:${RED_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:${RED_CHIP_COLOR};stop-opacity:1" />
-            </linearGradient>
-            <linearGradient id="grayGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" style="stop-color:${GRAY_CHIP_COLOR_HIGHLIGHT};stop-opacity:1" />
-                <stop offset="100%" style="stop-color:${GRAY_CHIP_COLOR};stop-opacity:1" />
-            </linearGradient>
-        </defs>
-    `;
+    svg += getSVGchipGradients();
 
     chipValues.forEach((chip, columnIndex) => {
         const x = columnWidth * columnIndex;
         const height = Math.min(chip.count, maxChips) * chipHeight;
         const y = 90 - height;
-
-        // Determine the gradient to use
-        let gradientId;
-        switch (chip.color) {
-            case BLACK:
-                gradientId = 'blackGradient';
-                break;
-            case GREEN:
-                gradientId = 'greenGradient';
-                break;
-            case RED:
-                gradientId = 'redGradient';
-                break;
-            case GRAY:
-                gradientId = 'grayGradient';
-                break;
-        }
-
-        // Draw the column with gradient fill
-          svg += `<rect x="${x}" y="${y}" width="${columnWidth -1}" height="${height}" fill="url(#${gradientId})" rx="1" ry="1"/>`;;
+        const gradientId = `${chip.color}Gradient`;;
+        svg += `<rect x="${x}" y="${y}" width="${columnWidth -1}" height="${height}" fill="url(#${gradientId})" rx="1" ry="1"/>`;
 
         // Draw divider lines for each chip
         for (let i = 1; i < Math.min(chip.count, maxChips); i++) {
@@ -520,8 +484,6 @@ const generateChipColumnsSVG = (theChips) => {
         if (chip.count > maxChips) {
             svg += `<text x="${x + columnWidth / 2}" y="${y - 5}" font-size="10" text-anchor="middle" fill="white">&#9650;</text>`; // Unicode for up arrow
         }
-
-
         // Add the label at the bottom of the column with the actual number of chips
         svg += `<text x="${x + (columnWidth - 1) / 2}" y="95" font-size="15" fill="white" text-anchor="middle">${chip.count}</text>`;
     });
