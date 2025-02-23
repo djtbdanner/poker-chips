@@ -113,7 +113,7 @@ async function modalMessage(message) {
     html += `<p>${message}</p>`;
     html += `</td></tr>`;
     html += `<tr><td style = "text-align:center;">`;
-    html += `<input type="button" value="-&nbsp;OK&nbsp;-" class = "stInputDefaultcolor" onClick="destroyById('modal-message')" />`;
+    html += `<input type="button" value="-&nbsp;OK&nbsp;-" class = "mainButton" onClick="destroyById('modal-message')" />`;
     html += `</td></tr>`;
     html += `</table>`;
     html += `</div>`;
