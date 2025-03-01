@@ -23,7 +23,7 @@ async function broadcastToTable(table, message, apigwManagementApi) {
 
 async function broadCastOpenTables(apigwManagementApi, connections) {
     try {
-         const arr = Array.from(tables.values());
+        const arr = Array.from(tables.values());
         const availableTables = arr.filter((table) => !table.playersFull());
         const response = { action: 'poker-open-tables', payload: JSON.stringify(availableTables) };
         for (let connectionId of connections.keys()) {
@@ -52,6 +52,7 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
         PlayProcessor.initializePlayerChips(table, player);
         table.addPlayer(player);
 
+        connetedButNotPlaying.delete(connectionId);
         if (table.players.length < table.playerCount) {
             const count = table.playerCount - table.players.length;
             const morePlayers = `waiting for ${count} more player${count === 1 ? "" : "s"}.`
@@ -62,8 +63,9 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
             table.players[1].turn = true;
             table.players[1].firstBettor = true;
             table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
+            await broadCastOpenTables(apigwManagementApi, connetedButNotPlaying);
         }
-        connetedButNotPlaying.delete(connectionId);
+
         let response = { action: 'set-player-id', payload: { playerId: player.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'set-table-id', payload: { tableId: table.id } };
@@ -72,6 +74,7 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'poker-table-change', payload: table };
         await broadcastToTable(table, response, apigwManagementApi);
+
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
