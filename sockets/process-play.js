@@ -3,7 +3,7 @@ const Chip = require('./classes/Chip');
 exports.getNextActivePlayer = (currentPlayer, table) => {
 
     const activePlayers = table.players.filter((p) => {
-        return !p.folded && p.getChipTotal() > 0 && p.isConnected;
+        return !p.folded && !p.allIn &&!p.isBroke && p.isConnected;
     });
     if (activePlayers.length < 1) {
         console.log("Less than 1 active players - returning the current player in getNextActive player");
@@ -58,7 +58,7 @@ exports.calculateCurrentCallAmount = (table) => {
 
 exports.isBetRoundOver = (currentPlayer, table) => {
 
-    const playersNotFolded = table.players.filter(player => !player.folded);
+    const playersNotFolded = table.players.filter(player => !player.folded && !player.isBroke && player.isConnected);
     if (playersNotFolded.length < 2) {
         const winningPlayer = playersNotFolded[0];
         table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
@@ -95,15 +95,25 @@ exports.isBetRoundOver = (currentPlayer, table) => {
 }
 
 exports.updatePlayersAfterBetting = (table) => {
+
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
-    currentDealer.dealer = false;
+    
+    // if after betting you have no money. you are done you are broke being
+    // broke is different that having no money becasue if you have no money but are all in you could win
+    table.players.forEach((p) => { 
+        p.reset(); 
+        if (p.getChipTotal() < 1){
+            p.isBroke = true;
+        }
+    });
     const nextDealer = this.getNextActivePlayer(currentDealer, table);
     nextDealer.dealer = true;
-    table.players.forEach((p) => { p.reset(); });
+
     const nextPlayer = this.getNextActivePlayer(nextDealer, table);
     nextPlayer.turn = true;
     nextPlayer.firstBettor = true;
+    
 
     // if only one player has any money we be done.
     const playersWithMoney = table.players.filter((p) => {
@@ -114,9 +124,9 @@ exports.updatePlayersAfterBetting = (table) => {
         const theWinner = playersWithMoney[0];
         theWinner.isChampion = true;
         table.playStatus.gameOver = true;
-        table.addMessage(`THE WINNER: ${theWinner.name}`);
+        table.addMessage(`THE OVERALL WINNER: ${theWinner.name}`);
         table.addMessage(`========== GAME OVER =============`);
-
+        //TODO - remove table here...
     } else {
         table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
     }
@@ -175,6 +185,7 @@ exports.processWinner = (winningPlayers, table) => {
         resetPotChips(table, winningPlayerChips)
         table.addMessage(`${winningPlayer.name} WINS split pot of ${winningPlayer.sidePotTotal}, leaving ${newPotTotal} chips!!`);
         winningPlayer.chips.push(...table.playStatus.chips);
+        winningPlayer.showWin=true;
 
         // reset any other split pot players with a value for them
         resetAnyOtherSidePotPlayerAmounts(table, winningPlayer);
@@ -193,6 +204,7 @@ exports.processWinner = (winningPlayers, table) => {
             const thisWinner = playersThatCanWin[0];
             table.addMessage(`${thisWinner.name} gets the leftover pot with no challengers.`);
             winningPlayer.chips.push(...table.playStatus.chips);
+            winningPlayer.showWin=true;
             resetTable(table);
         } else {
             table.playStatus.selectWinner = true;
@@ -203,16 +215,12 @@ exports.processWinner = (winningPlayers, table) => {
         // one winner... easy path
         table.addMessage(`${winningPlayer.name} wins ${table.playStatus.pot} chips!`);
         winningPlayer.chips.push(...table.playStatus.chips);
+        winningPlayer.showWin=true;
         resetTable(table);
     }
-    // give the process a second to update the pages, then flash (no harm if not done)
-    // setTimeout(() => {
-    //     socket.broadcast.to(table.id).emit(`poker-div-blink`, { elementId: winningPlayer.id });
-    //     socket.emit(`poker-div-blink`, { elementId: winningPlayer.id });
-    // }, 500);
 }
+
 const resetTable = (table) => {
-    table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; p.folded = false; p.allIn = false });
     table.playStatus.reset();
     table.setChipTotalsForPlayers();
     this.updatePlayersAfterBetting(table);
@@ -580,6 +588,7 @@ function splitPotBetweenPlayers(table, winningPlayers) {
         const potChips = localParseChips(amount);
         resetPotChips(table, potChips);
         player.chips.push(...table.playStatus.chips);
+        player.showWin = true;
     });
 }
 

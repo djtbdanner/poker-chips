@@ -19,15 +19,24 @@ class Player {
     this.sidePotTotal = 0;
     this.isConnected = true;
     this.isChampion = false;
+    this.isBroke = false;
+    this.showWin=false;
   }
 
   reset() {
     this.sidePotTotal = 0;
     this.totalRoundBet = 0;
     this.allIn = false;
-    this.turn = false; 
+    this.turn = false;
     this.firstBettor = false;
     this.isChampion = false;
+    this.winVoteCount = 0;
+    this.hasVoted = false;
+    this.potRaisedBy = 0;
+    this.folded = false;
+    this.allIn = false;
+    this.isBroke = false;
+    this.dealer = false;
   }
   
   getChipTotal() {

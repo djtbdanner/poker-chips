@@ -45,7 +45,7 @@ function getBetScreenHTML(id) {
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${BLACK}-up" onClick="sumColor('${BLACK}', 1)"  >`; 
     html += `               <polygon points="20,300 580,300 300,75" fill="${BLACK_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
-    html += `           ${createSVGChip(BLACK_CHIP_COLOR,"6vh", 100 )}`;
+    html += `           ${createSVGChip(BLACK_CHIP_COLOR,"6vh", 100, 'style="cursor:pointer;"', `onclick="allOrNone('${BLACK}')"`)}`;
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${BLACK}-down" onClick="sumColor('${BLACK}', -1)">`; 
     html += `               <polygon points="20,0 580,0 300,225" fill="${BLACK_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;    
@@ -55,7 +55,7 @@ function getBetScreenHTML(id) {
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GREEN}-up" onClick="sumColor('${GREEN}', 1)"  >`; 
     html += `               <polygon points="20,300 580,300 300,75" fill="${GREEN_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
-    html += `           ${createSVGChip(GREEN_CHIP_COLOR,"6vh", 25 )}`;
+    html += `           ${createSVGChip(GREEN_CHIP_COLOR,"6vh", 25, 'style="cursor:pointer;"', `onclick="allOrNone('${GREEN}')"`)}`;
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GREEN}-down" onClick="sumColor('${GREEN}', -1)">`; 
     html += `               <polygon points="20,0 580,0 300,225" fill="${GREEN_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
@@ -65,7 +65,7 @@ function getBetScreenHTML(id) {
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${RED}-up" onClick="sumColor('${RED}', 1)"  >`; 
     html += `               <polygon points="20,300 580,300 300,75" fill="${RED_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
-    html += `           ${createSVGChip(RED_CHIP_COLOR,"6vh", 5 )}`;
+    html += `           ${createSVGChip(RED_CHIP_COLOR,"6vh", 5, 'style="cursor:pointer;"', `onclick="allOrNone('${RED}')"`)}`;
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${RED}-down" onClick="sumColor('${RED}', -1)">`; 
     html += `               <polygon points="20,0 580,0 300,225" fill="${RED_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
@@ -75,7 +75,7 @@ function getBetScreenHTML(id) {
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GRAY}-up" onClick="sumColor('${GRAY}', 1)"  >`; 
     html += `               <polygon points="20,300 580,300 300,75" fill="${GRAY_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
-    html += `           ${createSVGChip(GRAY_CHIP_COLOR,"6vh", 1 )}`;
+    html += `           ${createSVGChip(GRAY_CHIP_COLOR,"6vh", 1, 'style="cursor:pointer;"', `onclick="allOrNone('${GRAY}')"`)}`;
     html += `           <svg width="6vh" height="3vh" viewBox="0 0 600 300" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" id="${GRAY}-down" onClick="sumColor('${GRAY}', -1)">`; 
     html += `               <polygon points="20,0 580,0 300,225" fill="${GRAY_CHIP_COLOR}" filter="url(#blurFilter_x)"/>`;
     html += `           </svg>`;
@@ -158,6 +158,15 @@ const processSliderInput = (chipColor, count) => {
     chipsChange(chipColor, count);
 };
 
+
+const allOrNone = (chipColor) => {
+    let betAmount = document.getElementById(`${chipColor}-bet`).value;
+    betAmount = isNaN(betAmount)?0:parseInt(betAmount,10);
+    const playerChipCount = chipColor===BLACK?playerBlackChipCount:chipColor===GREEN?playerGreenChipCount:chipColor===RED?playerRedChipCount:playerGrayChipCount;
+    betAmount = betAmount===playerChipCount?0:playerChipCount;
+    chipsChange(chipColor, betAmount);
+};
+
 const chipsChange = (chipColor, chipBet) => {
     let chipMultiplier = 100;// black
     let originalChipCount = playerBlackChipCount;
@@ -191,6 +200,7 @@ const chipsChange = (chipColor, chipBet) => {
     } else {
         document.getElementById(`bet-bet`).disabled = true;
     }
+    setChipSlider(chipBet, chipColor);
 };
 
 const calcTotalBet = () => {
@@ -272,7 +282,6 @@ const sumColor = (color, val) => {
         return;
     }
 
-    setChipSlider(currentChipsBet, color);
     chipsChange(color, currentChipsBet);
 };
 
@@ -314,7 +323,6 @@ const onChangeBet = (element) => {
         element.value = "";
         val = 0;
     }
-    setChipSlider(val, chipColor);
     chipsChange(chipColor, val);
 };
 

@@ -205,13 +205,15 @@ const getSVGArrowGradsAndShads = () =>  {
 
 };
 
-const createSVGChip = (color, size, amount) => {
+const createSVGChip = (color, size, amount, style, action) => {
     const radius = 25; // Base radius for the chip
     const innerRadius = radius * 0.45; // Inner circle radius
     const pieMarkLength = radius * .85; // Length of the pie marks
+    if (!style) { style = '' };
+    if (!action) { action = '' }
 
     return `
-        <svg width="${size}" height="${size}" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;">
+        <svg width="${size}" height="${size}" viewBox="0 0 50 50" xmlns="http://www.w3.org/2000/svg" ${style} ${action}>
             <defs>
                 <filter id="shadow" x="-45%" y="-25%" width="200%" height="200%">
                     <feDropShadow dx="2" dy="2" stdDeviation="2" flood-color="rgba(0, 0, 0, 1)" />

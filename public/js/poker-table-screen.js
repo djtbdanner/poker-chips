@@ -56,34 +56,38 @@ const drawScreen = (table) => {
             if (player.dealer && !playStatus.selectWinner) {
                 additionalClass = `playerDealer`;
             }
-            if (player.turn) {
+            if (player.turn &&  !playStatus.selectWinner) {
                 additionalClass = `playerTurn${additionalClass?" "+additionalClass:""}`;
             }
-            if (player.folded || player.chipTotal < 1) {
+            if (player.folded) {
                 additionalClass = `playerFold${additionalClass?" "+additionalClass:""}`;
             }
             if (player.allIn) {
-                additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
+                additionalClass = `playerAllIn${additionalClass?" "+additionalClass:""}`;
             }
             if (!player.isConnected){
                 additionalClass = `playerOut${additionalClass?" "+additionalClass:""}`;
             }
+            if (player.isBroke){
+                additionalClass = `playerBroke`;
+            }
+
             // === Player div ==== //
             const addListener = player.id === thisPlayerId && (!playStatus.selectWinner || thisPlayer.hasVoted);
             html += `<div id="${player.id}" class="playerDiv ${getPlayerLocationStyle(table, i)} ${additionalClass?additionalClass:''}" addListener>`;
             html+=generateChipColumnsSVG(player.chips, addListener);
             html += `${player.name}:${player.chipTotal}`
-            const showVoteButton = playStatus.selectWinner && !thisPlayer.hasVoted && !player.folded && !(!player.folded && player.chipTotal < 1);
+            const showVoteButton = playStatus.selectWinner && !player.folded && !player.isBroke && !thisPlayer.hasVoted;
             html += `<span id="${player.id}_win" onClick = "voteForWinner('${player.id}')" ${showVoteButton?"":"style='visibility:hidden;'"}>${getSelectWinnerLogo()}</span>`
             html += `</div>`;
         }
     }
     //  === Pot Div === /
-    if (playStatus.pot > 0){
-        html += `    <div class="playerDiv playerPot">POT:${playStatus.pot}`;  
+    // if (playStatus.pot > 0){
+        html += `    <div id="pot-div" class="playerDiv playerPot">POT:${playStatus.pot}`;  
         html +=        getPotChipPile(playStatus);
         html += `    </div>`;
-    }
+    // }
     // === VoteButton ==== 
     html += `    <div class="playerDiv playerVote">`;  
     html += `      <input type = "button" class="mainButton" style="visibility:hidden;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
@@ -147,15 +151,23 @@ const drawScreen = (table) => {
     html += `    </div>`; /// end div for "bottom section"
     createAndAppendDiv(html, id, true);
     scrollText();
+
     if (thisPlayer.showChipExchangeDiv){
         buildChangeChipsHtml();
     }
+
+    table.players.forEach((p)=>{
+        if (p.showWin){
+            animateChips(document.getElementById('pot-div'), document.getElementById(p.id)); 
+        }
+    });
 };
 
 const scrollText = () => {
     var textarea = document.getElementById('history-text');
     textarea.scrollTop = textarea.scrollHeight;
 };
+
 
 const getPlayerLocationStyle = (table, i) => {
     const count = table.players.length;
@@ -372,7 +384,11 @@ const getPotChipPile = (playStatus) => {
         }
     }
     const theNewPile = generateChipPileSVG(playStatus.chips);
-    playPokerChipSound();
+    const potSize = parseInt(playStatus.pot, 10);
+    if (potSize > 1){
+        localStorage.setItem(`old-chip-pile`, theNewPile);
+        playPokerChipSound();
+    }
     localStorage.setItem(`pot`, playStatus.pot);
     localStorage.setItem(`chip-pile`, theNewPile);
     return theNewPile;
@@ -496,30 +512,39 @@ const playPokerChipSound = () => {
     // Create an audio context
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
 
-    // Create a buffer for the sound
-    const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
-    const data = buffer.getChannelData(0);
+    // Function to create a single chip sound
+    const createChipSound = (time) => {
+        // Create a buffer for the sound
+        const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+        const data = buffer.getChannelData(0);
 
-    // Fill the buffer with white noise
-    for (let i = 0; i < data.length; i++) {
-        data[i] = Math.random() * 2 - 1;
+        // Fill the buffer with white noise
+        for (let i = 0; i < data.length; i++) {
+            data[i] = Math.random() * 2 - 1;
+        }
+
+        // Create a buffer source
+        const bufferSource = audioContext.createBufferSource();
+        bufferSource.buffer = buffer;
+
+        // Create a gain node to control the volume
+        const gainNode = audioContext.createGain();
+        gainNode.gain.setValueAtTime(0.1, time);
+        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
+
+        // Connect the buffer source to the gain node and the gain node to the audio context
+        bufferSource.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+
+        // Start the buffer source
+        bufferSource.start(time);
+    };
+
+    // Schedule multiple chip sounds to simulate dropping several chips
+    const now = audioContext.currentTime;
+    for (let i = 0; i < 3; i++) {
+        createChipSound(now + i * 0.05);
     }
-
-    // Create a buffer source
-    const bufferSource = audioContext.createBufferSource();
-    bufferSource.buffer = buffer;
-
-    // Create a gain node to control the volume
-    const gainNode = audioContext.createGain();
-    gainNode.gain.setValueAtTime(1, audioContext.currentTime);
-    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-
-    // Connect the buffer source to the gain node and the gain node to the audio context
-    bufferSource.connect(gainNode);
-    gainNode.connect(audioContext.destination);
-
-    // Start the buffer source
-    bufferSource.start();
 };
 
 const getGridLines = () => {
@@ -591,3 +616,79 @@ const getGridLines = () => {
     html += `    </div>`;
     return html;
 };
+
+const animateChips = (startElement, endElement) => {
+
+    const startRect = startElement.getBoundingClientRect();
+    const endRect = endElement.getBoundingClientRect();
+    
+    // this guy needs to mimic the playerDiv so that things will line up
+    const chip = document.createElement('div');
+    chip.style.position = 'absolute';
+    chip.style.width = `${startRect.width}px`;
+    chip.style.height = `${startRect.height}px`;
+    chip.style.transition = 'transform 1.5s ease-in-out, opacity .5s ease-in-out';
+    chip.style.backgroundColor = 'transparent';
+    chip.style.zIndex = 4;
+    chip.style.alignItems = 'center';
+    chip.style.justifyContent = 'center';
+    chip.style.margin = 0;
+    chip.style.padding = 0;
+    chip.style.display="flex";
+    chip.style.border="1px solid transparent";
+    chip.style.flexDirection= "column";
+    chip.style.borderRadius="50%";
+    chip.innerHTML = `&nbsp;${localStorage.getItem('old-chip-pile')}`;
+// ///
+// display: flex;
+// flex-direction: column;
+// justify-content: center;
+// align-items: center;
+// background-color: transparent;
+// border: 1px solid transparent;  /* special effect may have border */
+// color: white;
+// border-radius: 50%;
+// width: 100%;
+// height:100%;
+// /* box-sizing: border-box;  */
+// margin: 0; /* Remove any margin */
+// padding: 0; /* Remove any padding */
+// /* overflow: hidden; */
+// /* max-width: 100%;
+// max-height: 100%; */
+// z-index:3; 
+///
+    document.body.appendChild(chip);
+    chip.addEventListener('transitionend', () => {
+        if (event.propertyName === 'transform') {
+            chip.style.opacity = '0';
+        } else if (event.propertyName === 'opacity') {
+            chip.remove();
+        }
+    });
+
+    const startX = startRect.left;
+    const startY = startRect.top;
+    const endX = endRect.left;
+    const endY = endRect.top;
+
+    console.log(startX, startY, endX, endY)
+  
+    chip.style.left = `${startX}px`;
+    chip.style.top = `${startY}px`;
+  
+
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            chip.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+        });
+    }, 100);
+    setTimeout(() => {
+        chip.remove();
+    }, 4000);
+    setTimeout(() => {
+        playPokerChipSound();
+    }, 2000);
+  };
+  
+

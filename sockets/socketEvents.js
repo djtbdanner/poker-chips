@@ -135,6 +135,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         }
 
         const table = tables.get(tableId);
+        table.players.forEach((p)=>p.showWin=false);// if there was a winner that is no longer true
         const player = table.players.find(player => player.id === playerId);
         let totalChips = 0;
         // const initialCallAmount = table.playStatus.callAmount;
