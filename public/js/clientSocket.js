@@ -1,4 +1,5 @@
 async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
+    localStorage.clear();/// just be sure nothing is left over
     const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
     // console.log(`Data Back from call to startPokerGame ${JSON.stringify(table)}`);
     if (table) {
@@ -7,6 +8,7 @@ async function startPokerGame(tableName, playerName, playerCount, startChipCount
 }
 
 async function joinPokerGame(tableId, playerName) {
+    localStorage.clear();/// just be sure nothing is left over
     const table = await asyncEmit(`join-poker-game`, { tableId, playerName });
     if (table) {
         drawScreen(JSON.parse(table));
@@ -71,6 +73,16 @@ socketEventHandlers[`poker-div-blink`] = async (data) => {
     if (element) {
         element.classList.add("blink");
     }
+};
+
+socketEventHandlers[`poker-amimate-chips-bet`] = async (data) => {
+    const playerId = data.playerId;
+    let chips = data.chips;
+    let potChips = data.potChips;
+    chips = JSON.parse(chips);
+    potChips = JSON.parse(potChips);
+    potTotal = data.potTotal;
+    animatePlayerToPot(playerId, chips, potChips, potTotal);
 };
 
 socketEventHandlers[`poker-table-modal-message`] = async (data) => {

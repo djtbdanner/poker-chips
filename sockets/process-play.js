@@ -17,7 +17,7 @@ exports.getNextActivePlayer = (currentPlayer, table) => {
         nextPlayer = 0;
     }
     const player = table.players[nextPlayer];
-    if (player.folded || !player.isConnected || player.chipTotal <= 0) {
+    if (player.folded || ((!player.isConnected || player.isBroke) && (!player.firstBettor || player.id !== table.playStatus.playerLastRaised))) {
         return this.getNextActivePlayer(player, table)
     } else {
         return player;
@@ -61,9 +61,13 @@ exports.isBetRoundOver = (currentPlayer, table) => {
     const playersNotFolded = table.players.filter(player => !player.folded && !player.isBroke && player.isConnected);
     if (playersNotFolded.length < 2) {
         const winningPlayer = playersNotFolded[0];
-        winningPlayer.showWin=true;
-        table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
-        winningPlayer.chips.push(...table.playStatus.chips);
+        if (table.playStatus.chips.length > 0){
+            winningPlayer.showWin=true;
+            table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
+            winningPlayer.chips.push(...table.playStatus.chips);
+        } else {
+            table.addMessage(`All folds, next round...`); 
+        }
         resetTable(table);
         return true;
     }
@@ -99,38 +103,37 @@ exports.updatePlayersAfterBetting = (table) => {
 
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
-    
+
     // if after betting you have no money. you are done you are broke being
     // broke is different that having no money becasue if you have no money but are all in you could win
-    table.players.forEach((p) => { 
-        p.reset(); 
-        if (p.getChipTotal() < 1){
+    table.players.forEach((p) => {
+        p.reset();
+        if (p.getChipTotal() < 1) {
             p.isBroke = true;
         }
     });
-    const nextDealer = this.getNextActivePlayer(currentDealer, table);
-    nextDealer.dealer = true;
-
-    const nextPlayer = this.getNextActivePlayer(nextDealer, table);
-    nextPlayer.turn = true;
-    nextPlayer.firstBettor = true;
-    
-
     // if only one player has any money we be done.
     const playersWithMoney = table.players.filter((p) => {
-        return p.getChipTotal() > 0;
+        return !p.isBroke;
     });
 
     if (playersWithMoney.length === 1){
         const theWinner = playersWithMoney[0];
-        theWinner.isChampion = true;
-        table.playStatus.gameOver = true;
-        table.addMessage(`THE OVERALL WINNER: ${theWinner.name}`);
-        table.addMessage(`========== GAME OVER =============`);
+         theWinner.isChampion = true;
+         table.playStatus.gameOver = true;
+         table.addMessage(`THE OVERALL WINNER: ${theWinner.name}`);
+         table.addMessage(`========== GAME OVER =============`);
         //TODO - remove table here...
-    } else {
-        table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
-    }
+        return;
+    }    
+
+    const nextDealer = this.getNextActivePlayer(currentDealer, table);
+    nextDealer.dealer = true;
+    const nextPlayer = this.getNextActivePlayer(nextDealer, table);
+    nextPlayer.turn = true;
+    nextPlayer.firstBettor = true;
+    table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
+    
 }
 
 const resetPotChips = (table, theChips) => {
@@ -249,23 +252,7 @@ exports.calculateChips = (chips, player, table) => {
 }
 
 exports.setPlayerChips = (table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount) => {
-    player.chips = [];
-    while (playerBlackChipCount > 0) {
-        player.chips.push(Chip.Black);
-        playerBlackChipCount -= 1;
-    }
-    while (playerGreenChipCount > 0) {
-        player.chips.push(Chip.Green);
-        playerGreenChipCount -= 1;
-    }
-    while (playerRedChipCount > 0) {
-        player.chips.push(Chip.Red);
-        playerRedChipCount -= 1;
-    }
-    while (playerGrayChipCount > 0) {
-        player.chips.push(Chip.Gray);
-        playerGrayChipCount -= 1;
-    }
+    player.chips = this.chipsFromCounts(playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     player.getChipTotal();
     table.setChipTotalsForPlayers();
 }
@@ -575,6 +562,27 @@ exports.initializePlayerChips = (table, player) => {
     }
     const chips = this.parseChips(totalChips);
     this.setPlayerChips(table, player, chips['black'], chips['green'], chips['red'], chips['gray']);
+};
+
+exports.chipsFromCounts = (blacks, greens, reds, grays) => {
+    const chips = [];
+    while (blacks > 0) {
+        chips.push(Chip.Black);
+        blacks -= 1;
+    }
+    while (greens > 0) {
+        chips.push(Chip.Green);
+        greens -= 1;
+    }
+    while (reds > 0) {
+        chips.push(Chip.Red);
+        reds -= 1;
+    }
+    while (grays > 0) {
+        chips.push(Chip.Gray);
+        grays -= 1;
+    }
+    return chips;
 };
 
 function splitPotBetweenPlayers(table, winningPlayers) {

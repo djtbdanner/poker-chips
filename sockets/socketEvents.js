@@ -173,6 +173,27 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
             PlayProcessor.calculateCurrentCallAmount(table);
         }
         await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        // animate the player betting the chips
+        if (totalChips > 0){
+            const data = {};
+            data.playerId = playerId;
+            let theChips;
+            if (Array.isArray(chips)){
+                const chipCounts = chips.reduce((acc, chip) => {
+                    acc[chip.color] = chip.count;
+                    return acc;
+                  }, {});
+                  theChips = PlayProcessor.chipsFromCounts(chipCounts.black, chipCounts.green, chipCounts.red, chipCounts.gray);
+            } else {
+                let chipsArray = PlayProcessor.parseChips(totalChips);
+                theChips = PlayProcessor.chipsFromCounts(chipsArray['black'], chipsArray['green'], chipsArray['red'], chipsArray['gray']);
+            }     
+            data.chips = JSON.stringify(theChips);
+            // const tableChips = PlayProcessor.chipsFromCounts(table.playStatus.chips['black'], table.playStatus.chips['green'], table.playStatus.chips['red'], table.playStatus.chips['gray']);
+            data.potChips = JSON.stringify(table.playStatus.chips);
+            data.potTotal = table.playStatus.pot;
+            await broadcastToTable(table, { action: 'poker-amimate-chips-bet', payload: data }, apigwManagementApi);
+        }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -187,7 +208,9 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
             winningPlayerIds = data.winningPlayerIds.split(',');
         }
         const tableId = data.tableId;
+
         const table = tables.get(tableId);
+        table.players.forEach((p)=>p.showWin=false);
         const votingPlayer = table.players.find(player => player.id === votingPlayerId);
         votingPlayer.hasVoted = true;
         const winningPlayers = table.players.filter(player => winningPlayerIds.includes(player.id));
@@ -197,6 +220,7 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
         const winningPlayerNames = winningPlayers.map(player => player.name).join(', ');
         table.addMessage(`${votingPlayer.name} voted ${winningPlayerNames} winner${winningPlayers.length > 1 ? "s" : ""}.`);
         if (winningPlayers.every(player => player.winVoteCount >= 2)) {
+            table.players.forEach((p)=>p.showWin= false);
             PlayProcessor.processWinner(winningPlayers, table);
             // PlayProcessor.updatePlayersAfterBetting(table);
             // const brokePlayers = table.players.filter((p) => {

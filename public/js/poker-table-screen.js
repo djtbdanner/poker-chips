@@ -71,6 +71,9 @@ const drawScreen = (table) => {
             if (player.isBroke){
                 additionalClass = `playerBroke`;
             }
+            if (player.isChampion){
+                html += `<div class = "confetti-container ${getPlayerLocationStyle(table, i)}"></div>`
+            }
 
             // === Player div ==== //
             const addListener = player.id === thisPlayerId && (!playStatus.selectWinner || thisPlayer.hasVoted);
@@ -158,7 +161,13 @@ const drawScreen = (table) => {
 
     table.players.forEach((p)=>{
         if (p.showWin){
-            animateChips(document.getElementById('pot-div'), document.getElementById(p.id)); 
+            animatePotToPlayer(p.id); 
+        }
+        if (p.isChampion){
+            createConfetti();
+            setTimeout(() => {
+                localStorage.clear();
+            }, 1500);
         }
     });
 };
@@ -376,26 +385,16 @@ const getSelectWinnerLogo = () => {
 };
 
 const getPotChipPile = (playStatus) => {
-    const lastPotAmount = localStorage.getItem(`pot`);
-    if (parseInt(lastPotAmount, 10) === parseInt(playStatus.pot, 10)){
-        const theExistingPile = localStorage.getItem(`chip-pile`);
-        if (theExistingPile){
-            return theExistingPile;
-        }
+
+    const theExistingPile = localStorage.getItem(`chip-pile`);
+    if (theExistingPile){
+       return theExistingPile;
     }
-    const theNewPile = generateChipPileSVG(playStatus.chips);
-    const potSize = parseInt(playStatus.pot, 10);
-    if (potSize > 1){
-        localStorage.setItem(`old-chip-pile`, theNewPile);
-        playPokerChipSound();
-    }
-    localStorage.setItem(`pot`, playStatus.pot);
-    localStorage.setItem(`chip-pile`, theNewPile);
-    return theNewPile;
+    return '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"/>';
+
 };
 
 const generateChipPileSVG = (theChips) => {
-
     const blacks = theChips.filter(c => c.color === BLACK).length;
     const greens = theChips.filter(c => c.color === GREEN).length;
     const reds = theChips.filter(c => c.color === RED).length;
@@ -509,45 +508,142 @@ const generateChipColumnsSVG = (theChips, addEventListener) => {
 };
 
 const playPokerChipSound = () => {
-    // Create an audio context
-    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-
-    // Function to create a single chip sound
-    const createChipSound = (time) => {
-        // Create a buffer for the sound
-        const buffer = audioContext.createBuffer(1, audioContext.sampleRate * 0.1, audioContext.sampleRate);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    function playTap(delay) {
+        const tap = audioCtx.createBufferSource();
+        const bufferSize = audioCtx.sampleRate * 0.8; // Longer duration
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
         const data = buffer.getChannelData(0);
-
-        // Fill the buffer with white noise
-        for (let i = 0; i < data.length; i++) {
-            data[i] = Math.random() * 2 - 1;
+        
+        for (let i = 0; i < bufferSize; i++) {
+            data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.05)); // Longer decay for a deeper tap
         }
-
-        // Create a buffer source
-        const bufferSource = audioContext.createBufferSource();
-        bufferSource.buffer = buffer;
-
-        // Create a gain node to control the volume
-        const gainNode = audioContext.createGain();
-        gainNode.gain.setValueAtTime(0.1, time);
-        gainNode.gain.exponentialRampToValueAtTime(0.001, time + 0.1);
-
-        // Connect the buffer source to the gain node and the gain node to the audio context
-        bufferSource.connect(gainNode);
-        gainNode.connect(audioContext.destination);
-
-        // Start the buffer source
-        bufferSource.start(time);
-    };
-
-    // Schedule multiple chip sounds to simulate dropping several chips
-    const now = audioContext.currentTime;
-    for (let i = 0; i < 3; i++) {
-        createChipSound(now + i * 0.05);
+        
+        tap.buffer = buffer;
+        
+        const gainNode = audioCtx.createGain();
+        gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime + delay); // Lower volume
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + delay + 0.8);
+        
+        tap.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        
+        tap.start(audioCtx.currentTime + delay);
+        tap.stop(audioCtx.currentTime + delay + 0.8);
     }
+    
+    // Play around 5 taps slightly offset to simulate multiple chips landing
+    for (let i = 0; i < 5; i++) {
+        playTap(i * (Math.random() * 0.05 + 0.02)); // Randomized small delay between taps
+    }
+
 };
 
-const getGridLines = () => {
+function playSingleTap() {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    
+    // Simple percussive tap sound
+    const tap = audioCtx.createBufferSource();
+    const bufferSize = audioCtx.sampleRate * 0.8; // Longer duration
+    const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    
+    for (let i = 0; i < bufferSize; i++) {
+        data[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.05)); // Longer decay for a deeper tap
+    }
+    
+    tap.buffer = buffer;
+    
+    const gainNode = audioCtx.createGain();
+    gainNode.gain.setValueAtTime(0.4, audioCtx.currentTime); // Lower volume
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.8);
+    
+    tap.connect(gainNode);
+    gainNode.connect(audioCtx.destination);
+    
+    tap.start();
+    tap.stop(audioCtx.currentTime + 0.8);
+}
+
+const animatePlayerToPot = (playerDivId, chips, potChips, potTotal) => { 
+    const pot = document.getElementById('pot-div');
+    const player = document.getElementById(playerDivId);
+    const chipPile = generateChipPileSVG(chips);
+    animateChips(player, pot, chipPile);
+    const theNewPile = generateChipPileSVG(potChips);
+    setTimeout(() => {
+        pot.innerHTML = `POT:${potTotal}${theNewPile}`;
+        localStorage.setItem(`chip-pile`, theNewPile);
+    }, 1500);
+}
+
+
+const animatePotToPlayer = (playerDivId) => { 
+    const pot = document.getElementById('pot-div');
+    const player = document.getElementById(playerDivId);
+    const chipPile = localStorage.getItem(`chip-pile`);
+    animateChips(pot, player, chipPile);
+    pot.innerHTML = '';
+    // localStorage.setItem('chip-pile', '');
+}
+
+const animateChips = (startElement, endElement, chipPile) => {
+    const startRect = startElement.getBoundingClientRect();
+    const endRect = endElement.getBoundingClientRect();
+    
+    // this guy needs to mimic the playerDiv so that things will line up
+    const chip = document.createElement('div');
+    chip.style.position = 'absolute';
+    chip.style.width = `${startRect.width}px`;
+    chip.style.height = `${startRect.height}px`;
+    chip.style.transition = 'transform 1s ease-in-out, opacity .5s ease-in-out';
+    chip.style.backgroundColor = 'transparent';
+    chip.style.zIndex = 4;
+    chip.style.alignItems = 'center';
+    chip.style.justifyContent = 'center';
+    chip.style.margin = 0;
+    chip.style.padding = 0;
+    chip.style.display="flex";
+    chip.style.border="1px solid transparent";
+    chip.style.flexDirection= "column";
+    chip.style.borderRadius="50%";
+    chip.innerHTML = `&nbsp;${chipPile}`;
+    document.body.appendChild(chip);
+
+    chip.addEventListener('transitionend', () => {
+        if (event.propertyName === 'transform') {
+            chip.style.opacity = '0';
+        } else if (event.propertyName === 'opacity') {
+            chip.remove();
+        }
+    });
+
+    const startX = startRect.left;
+    const startY = startRect.top;
+    const endX = endRect.left;
+    const endY = endRect.top;
+
+    console.log(startX, startY, endX, endY)
+  
+    chip.style.left = `${startX}px`;
+    chip.style.top = `${startY}px`;
+    setTimeout(() => {
+        requestAnimationFrame(() => {
+            chip.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
+        });
+    }, 50);
+    setTimeout(() => {
+        chip.remove();
+    }, 4000);
+    setTimeout(() => {
+        playPokerChipSound();
+    }, 1500);
+  };
+  
+
+  //__ this is here so can add grid lines to the table get rid of when done
+  const getGridLines = () => {
     let html = ``;
     html += `    <div class="playerGrid">`;
     html += `        <div class="grid-cell">1</div>`;
@@ -616,79 +712,20 @@ const getGridLines = () => {
     html += `    </div>`;
     return html;
 };
-
-const animateChips = (startElement, endElement) => {
-
-    const startRect = startElement.getBoundingClientRect();
-    const endRect = endElement.getBoundingClientRect();
-    
-    // this guy needs to mimic the playerDiv so that things will line up
-    const chip = document.createElement('div');
-    chip.style.position = 'absolute';
-    chip.style.width = `${startRect.width}px`;
-    chip.style.height = `${startRect.height}px`;
-    chip.style.transition = 'transform 1.5s ease-in-out, opacity .5s ease-in-out';
-    chip.style.backgroundColor = 'transparent';
-    chip.style.zIndex = 4;
-    chip.style.alignItems = 'center';
-    chip.style.justifyContent = 'center';
-    chip.style.margin = 0;
-    chip.style.padding = 0;
-    chip.style.display="flex";
-    chip.style.border="1px solid transparent";
-    chip.style.flexDirection= "column";
-    chip.style.borderRadius="50%";
-    chip.innerHTML = `&nbsp;${localStorage.getItem('old-chip-pile')}`;
-// ///
-// display: flex;
-// flex-direction: column;
-// justify-content: center;
-// align-items: center;
-// background-color: transparent;
-// border: 1px solid transparent;  /* special effect may have border */
-// color: white;
-// border-radius: 50%;
-// width: 100%;
-// height:100%;
-// /* box-sizing: border-box;  */
-// margin: 0; /* Remove any margin */
-// padding: 0; /* Remove any padding */
-// /* overflow: hidden; */
-// /* max-width: 100%;
-// max-height: 100%; */
-// z-index:3; 
-///
-    document.body.appendChild(chip);
-    chip.addEventListener('transitionend', () => {
-        if (event.propertyName === 'transform') {
-            chip.style.opacity = '0';
-        } else if (event.propertyName === 'opacity') {
-            chip.remove();
-        }
-    });
-
-    const startX = startRect.left;
-    const startY = startRect.top;
-    const endX = endRect.left;
-    const endY = endRect.top;
-
-    console.log(startX, startY, endX, endY)
+const createConfetti = () => {
+    const container = document.querySelector('.confetti-container');
+    const suits = ['♠', '♥', '♦', '♣'];
+    const colors = ['black', 'red', 'blue', 'green', 'yellow'];
   
-    chip.style.left = `${startX}px`;
-    chip.style.top = `${startY}px`;
-  
-
-    setTimeout(() => {
-        requestAnimationFrame(() => {
-            chip.style.transform = `translate(${endX - startX}px, ${endY - startY}px)`;
-        });
-    }, 100);
-    setTimeout(() => {
-        chip.remove();
-    }, 4000);
-    setTimeout(() => {
-        playPokerChipSound();
-    }, 2000);
+    for (let i = 0; i < 1000; i++) {
+      const confetti = document.createElement('div');
+      confetti.classList.add('confetti');
+      confetti.innerText = suits[Math.floor(Math.random() * suits.length)];
+      confetti.style.color = colors[Math.floor(Math.random() * colors.length)];
+      confetti.style.left = `${Math.random() * 100}vw`;
+      confetti.style.animationDelay = `${Math.random() * 10}s`;
+      confetti.style.fontSize = `${Math.random() * 20 + 10}px`;
+      container.appendChild(confetti);
+    }
   };
   
-

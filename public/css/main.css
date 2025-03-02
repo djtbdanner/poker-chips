@@ -529,3 +529,34 @@ input[disabled] {
   background-image: none;
   background-color: #575454b3;
 }
+
+
+.confetti-container {
+  position: absolute;
+  top: -100;
+  left: -100;
+  width: 100%;
+  height: 100%;
+  background-color: transparent;
+  pointer-events: none;
+  overflow:hidden;
+  z-index: 8;
+}
+
+.confetti {
+  position: absolute;
+  font-size: 34px;
+  opacity: 0;
+  animation: confetti-fall 10s linear infinite;
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh) rotate(360deg);
+    opacity: 0;
+  }
+}
