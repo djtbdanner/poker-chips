@@ -61,6 +61,7 @@ exports.isBetRoundOver = (currentPlayer, table) => {
     const playersNotFolded = table.players.filter(player => !player.folded && !player.isBroke && player.isConnected);
     if (playersNotFolded.length < 2) {
         const winningPlayer = playersNotFolded[0];
+        winningPlayer.showWin=true;
         table.addMessage(`${winningPlayer.name} buys the pot and wins with ${table.playStatus.pot} chips!`);
         winningPlayer.chips.push(...table.playStatus.chips);
         resetTable(table);

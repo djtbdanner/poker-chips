@@ -264,6 +264,7 @@ socketEventHandlers['poker-player-chip-denomination-change'] = async (apigwManag
         const playerId = data.playerId;
         const tableId = data.tableId;
         const table = tables.get(tableId);
+        table.players.forEach((p)=>p.showWin=false);// if there was a winner that is no longer true
         const fromChipColor = data.fromChipColor;
         const toChipColor = data.toChipColor;
         const playerDone = data.playerDone;
