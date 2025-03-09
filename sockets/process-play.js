@@ -3,7 +3,7 @@ const Chip = require('./classes/Chip');
 exports.getNextActivePlayer = (currentPlayer, table) => {
 
     const activePlayers = table.players.filter((p) => {
-        return !p.folded && !p.allIn &&!p.isBroke && p.isConnected;
+        return !p.folded && !p.allIn && !p.isBroke && p.isConnected;
     });
     if (activePlayers.length < 1) {
         console.log("Less than 1 active players - returning the current player in getNextActive player");
@@ -17,7 +17,7 @@ exports.getNextActivePlayer = (currentPlayer, table) => {
         nextPlayer = 0;
     }
     const player = table.players[nextPlayer];
-    if (player.folded || ((!player.isConnected || player.isBroke) && (!player.firstBettor || player.id !== table.playStatus.playerLastRaised))) {
+    if (player.folded || ((!player.isConnected || player.isBroke || player.allIn) && (!player.firstBettor || player.id !== table.playStatus.playerLastRaised))) {
         return this.getNextActivePlayer(player, table)
     } else {
         return player;
@@ -164,13 +164,18 @@ exports.processWinner = (winningPlayers, table) => {
             splitPotBetweenPlayers(table, winningPlayers);
             // pot is now any leftover pot - so all we gotta do is reprocess the whole thing
             resetPotChips(table, leftOverPotChips);
-            // reset any other split pot players with a value for them
-            resetAnyOtherSidePotPlayerAmounts(table, playerWithLeastSidePot);
-            // Remove the player with the least split pot total from winningPlayers
-            let remainingWinningPlayers = winningPlayers.filter(player => player.id !== playerWithLeastSidePot.id);
-            // any remaining players with a split pot total that has zeroed out need to be removed as well as they cannot win any more
-            remainingWinningPlayers = remainingWinningPlayers.filter((p) => !p.folded);
-            this.processWinner(remainingWinningPlayers, table);
+
+            if (table.playStatus.pot>0){
+                // reset any other split pot players with a value for them
+                resetAnyOtherSidePotPlayerAmounts(table, playerWithLeastSidePot);
+                // Remove the player with the least split pot total from winningPlayers
+                let remainingWinningPlayers = winningPlayers.filter(player => player.id !== playerWithLeastSidePot.id);
+                // any remaining players with a split pot total that has zeroed out need to be removed as well as they cannot win any more
+                remainingWinningPlayers = remainingWinningPlayers.filter((p) => !p.folded);
+                this.processWinner(remainingWinningPlayers, table);
+            } else {
+                resetTable(table);
+            }
         } else {
             // no all ins pot, just split the pot giving any remainders to whoever is the first one in the list
             splitPotBetweenPlayers(table, winningPlayers);

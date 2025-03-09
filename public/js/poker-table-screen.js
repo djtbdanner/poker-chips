@@ -162,9 +162,14 @@ const drawScreen = (table) => {
     table.players.forEach((p)=>{
         if (p.showWin){
             animatePotToPlayer(p.id); 
+
+            if (table.playStatus.pot > 0){
+                 setNewChipPile(table.playStatus.pot, table.playStatus.chips);
+            }
         }
         if (p.isChampion){
             createConfetti();
+            // clear out the ids because this game is OVER
             setTimeout(() => {
                 localStorage.clear();
             }, 1500);
@@ -571,6 +576,12 @@ const animatePlayerToPot = (playerDivId, chips, potChips, potTotal) => {
     const player = document.getElementById(playerDivId);
     const chipPile = generateChipPileSVG(chips);
     animateChips(player, pot, chipPile);
+    setNewChipPile(potTotal, potChips);
+
+}
+
+const setNewChipPile = (potTotal,potChips) => {
+    const pot = document.getElementById('pot-div');
     const theNewPile = generateChipPileSVG(potChips);
     setTimeout(() => {
         pot.innerHTML = `POT:${potTotal}${theNewPile}`;
