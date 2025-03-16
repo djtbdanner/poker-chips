@@ -75,7 +75,7 @@ const drawScreen = (table) => {
                 html += `<div class = "confetti-container ${getPlayerLocationStyle(table, i)}"></div>`
             }
 
-            // === Player div ==== //
+            // === Player div ===
             const addListener = player.id === thisPlayerId && (!playStatus.selectWinner || thisPlayer.hasVoted);
             html += `<div id="${player.id}" class="playerDiv ${getPlayerLocationStyle(table, i)} ${additionalClass?additionalClass:''}" addListener>`;
             html+=generateChipColumnsSVG(player.chips, addListener);
@@ -85,13 +85,13 @@ const drawScreen = (table) => {
             html += `</div>`;
         }
     }
-    //  === Pot Div === /
+    //  === Pot Div === 
     // if (playStatus.pot > 0){
         html += `    <div id="pot-div" class="playerDiv playerPot">POT:${playStatus.pot}`;  
-        html +=        getPotChipPile(playStatus);
+        html +=        getPotChipPile();
         html += `    </div>`;
     // }
-    // === VoteButton ==== 
+    // === VoteButton === 
     html += `    <div class="playerDiv playerVote">`;  
     html += `      <input type = "button" class="mainButton" style="visibility:hidden;"value="Submit Winner(s)" id="submit-vote-button" onClick = "submitVote()" >`;
     html += `    </div>`;
@@ -162,9 +162,12 @@ const drawScreen = (table) => {
     table.players.forEach((p)=>{
         if (p.showWin){
             animatePotToPlayer(p.id); 
-
             if (table.playStatus.pot > 0){
                  setNewChipPile(table.playStatus.pot, table.playStatus.chips);
+            } else {
+                setTimeout(() => {
+                    localStorage.setItem('chip-pile', '');;
+                }, 4000);
             }
         }
         if (p.isChampion){
@@ -389,14 +392,12 @@ const getSelectWinnerLogo = () => {
     return html;
 };
 
-const getPotChipPile = (playStatus) => {
-
+const getPotChipPile = () => {
     const theExistingPile = localStorage.getItem(`chip-pile`);
     if (theExistingPile){
        return theExistingPile;
     }
     return '<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"/>';
-
 };
 
 const generateChipPileSVG = (theChips) => {
@@ -596,7 +597,9 @@ const animatePotToPlayer = (playerDivId) => {
     const chipPile = localStorage.getItem(`chip-pile`);
     animateChips(pot, player, chipPile);
     pot.innerHTML = '';
-    // localStorage.setItem('chip-pile', '');
+    // setTimeout(() => {
+    //     localStorage.setItem('chip-pile', '');;
+    // }, 4000);
 }
 
 const animateChips = (startElement, endElement, chipPile) => {
@@ -630,13 +633,18 @@ const animateChips = (startElement, endElement, chipPile) => {
         }
     });
 
-    const startX = startRect.left;
-    const startY = startRect.top;
-    const endX = endRect.left;
-    const endY = endRect.top;
-
-    console.log(startX, startY, endX, endY)
-  
+    let startX = startRect.left;
+    let startY = startRect.top;
+    let endX = endRect.left;
+    let endY = endRect.top;
+    // console.log(`startX ${startX}, startY  ${startY}, endX  ${endX}, endY  ${endY}`);
+    // console.log(JSON.stringify(startRect.width))
+    if (startY === endY){
+        if (startX < endX){
+            endX=endX-.4*startRect.width;
+        }
+    }
+    // console.log(`startX ${startX}, startY  ${startY}, endX  ${endX}, endY  ${endY}`);
     chip.style.left = `${startX}px`;
     chip.style.top = `${startY}px`;
     setTimeout(() => {

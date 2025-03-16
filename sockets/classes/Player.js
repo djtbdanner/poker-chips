@@ -46,5 +46,9 @@ class Player {
     });
     return this.chipTotal;
   }
+
+  isActive(){
+    return !this.folded && !this.isBroke && this.isConnected;
+  }
 }
 module.exports = Player

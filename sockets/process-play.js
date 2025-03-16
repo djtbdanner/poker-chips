@@ -1,29 +1,5 @@
 const Chip = require('./classes/Chip');
 
-exports.getNextActivePlayer = (currentPlayer, table) => {
-
-    const activePlayers = table.players.filter((p) => {
-        return !p.folded && !p.allIn && !p.isBroke && p.isConnected;
-    });
-    if (activePlayers.length < 1) {
-        console.log("Less than 1 active players - returning the current player in getNextActive player");
-        return currentPlayer;
-    }
-
-    const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
-    currentPlayer.turn = false;
-    let nextPlayer = playerIndex + 1;
-    if (nextPlayer >= table.players.length) {
-        nextPlayer = 0;
-    }
-    const player = table.players[nextPlayer];
-    if (player.folded || ((!player.isConnected || player.isBroke || player.allIn) && (!player.firstBettor || player.id !== table.playStatus.playerLastRaised))) {
-        return this.getNextActivePlayer(player, table)
-    } else {
-        return player;
-    }
-}
-
 exports.processSidePots = (table, player) => {
     const playersAllIn = table.players.filter(player => player.allIn);
     if (playersAllIn.length < 1) {
@@ -57,7 +33,7 @@ exports.calculateCurrentCallAmount = (table) => {
 }
 
 exports.isBetRoundOver = (currentPlayer, table) => {
-
+    // everyone folded except one player
     const playersNotFolded = table.players.filter(player => !player.folded && !player.isBroke && player.isConnected);
     if (playersNotFolded.length < 2) {
         const winningPlayer = playersNotFolded[0];
@@ -72,12 +48,14 @@ exports.isBetRoundOver = (currentPlayer, table) => {
         return true;
     }
 
-    player = this.getNextActivePlayer(currentPlayer, table);
+    const nextPlayerOnTable = getNextPlayer(currentPlayer, table);
+    const nextActivePlayerOnTable = this.getNextActivePlayer(currentPlayer, table);
+    // const activePlayers = table.players.filter(player => player.isActive());
 
     const isPot = table.playStatus.pot > 0;
     if (!table.playStatus.playerLastRaised) {
-        // if no one has raised
-        if (player.firstBettor) {
+        // if no one has raised and we have gone around the table
+        if (nextPlayerOnTable.firstBettor || nextActivePlayerOnTable.firstBettor ) {
             if (isPot) {
                 table.addMessage(`Bet round complete. A couple of you vote the winner(s).`);
                 table.playStatus.selectWinner = true; // no need to select winner if no pot
@@ -88,8 +66,8 @@ exports.isBetRoundOver = (currentPlayer, table) => {
             return true;
         }
     } else {
-        // either we have the player id of the last raise or we do not have a next active player becasue they are out of money 
-        if (player.id === table.playStatus.playerLastRaised.id  || currentPlayer.id === player.id) {
+        // if someone has raised and we have gone around the table
+        if (nextPlayerOnTable.id === table.playStatus.playerLastRaised.id || nextActivePlayerOnTable.id === table.playStatus.playerLastRaised.id) {
             table.playStatus.selectWinner = true;
             table.playStatus.playerLastRaised = undefined;
             table.addMessage(`Bet round complete. A couple of you vote the winner(s).`);
@@ -98,6 +76,27 @@ exports.isBetRoundOver = (currentPlayer, table) => {
     }
     return false;
 }
+
+exports.getNextActivePlayer = (currentPlayer, table) => {
+    currentPlayer.turn = false;
+    const nextPlayer = getNextPlayer(currentPlayer, table);
+    if (!nextPlayer.isActive()){ 
+        return this.getNextActivePlayer(nextPlayer, table)
+    } else {
+        return nextPlayer;
+    }
+}
+
+const getNextPlayer = (currentPlayer, table) =>{
+    const playerIndex = table.players.findIndex(player => player.id === currentPlayer.id);
+    currentPlayer.turn = false;
+    let nextPlayer = playerIndex + 1;
+    if (nextPlayer >= table.players.length) {
+        nextPlayer = 0;
+    }
+    const player = table.players[nextPlayer];
+    return player;
+};
 
 exports.updatePlayersAfterBetting = (table) => {
 
