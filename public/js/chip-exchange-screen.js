@@ -40,7 +40,7 @@ function buildChangeChipsHtml() {
     html += `           </div>`;
     html += `           <div class="grid-item">`;
     html += `               <div class="horizontal-container">`;
-    if(playerGreenChipCount > 4) {
+    if(playerGreenChipCount > 3) {
     html += `                    <svg width="4vw" height="7vw" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" onClick="pokerChipDenominationChange(GREEN,BLACK)">`; 
     html += `                       <polygon points="50,50 100,0 100,100"  fill="url(#blackToGreen)" filter="url(#blurFilter)" style="stroke:black;stroke-width:1;stroke-linejoin:round;"/>`;
     html += `                   </svg>`;
@@ -60,7 +60,7 @@ function buildChangeChipsHtml() {
     html += `           </div>`;
     html += `           <div class="grid-item">`;
     html += `               <div class="horizontal-container">`;
-    if (playerRedChipCount > 5) {
+    if (playerRedChipCount > 4) {
     html += `                    <svg width="4vw" height="7vw" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="cursor:pointer;" onClick="pokerChipDenominationChange(RED,GREEN)">`; 
     html += `                       <polygon points="50,50 100,0 100,100"  fill="url(#greenToRed)" filter="url(#blurFilter)" style="stroke:black;stroke-width:1;stroke-linejoin:round;"/>`;
     html += `                   </svg>`;
@@ -80,7 +80,7 @@ function buildChangeChipsHtml() {
     html += `           </div>`;
     html += `           <div class="grid-item">`
     html += `               <div class="horizontal-container">`;
-    if (playerGrayChipCount > 5) {
+    if (playerGrayChipCount > 4) {
     html += `                   <svg width="4vw" height="7vw" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"  style="cursor:pointer;" onClick="pokerChipDenominationChange(GRAY,RED)">`; 
     html += `                       <polygon points="50,50 100,0 100,100" fill="url(#redToGray)" filter="url(#blurFilter)" style="stroke:black;stroke-width:1;stroke-linejoin:round;"/>`;
     html += `                   </svg>`;

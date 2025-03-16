@@ -18,48 +18,53 @@ async function buildInitialScreen() {
         tableList = buildRoomList(tables);
     }
     destroyById(`initial-screen`);
-    let html = ``;
-    // html += `<form><div id="initial-screen" class="modal">`;
-    html += `<div style="background-color:tan;width:100%;height:100%;color:black;">`;
-    html += `<form id ="initial-screen">`;
-    html += `<table>`;
-    html += `<tr><td colspan = "2" style = "text-align:center;">`;
-    html += `<p>Set a name for your table, set number of players (2-9) and how many chips each player starts with.</p>`;
-    html += `</td></tr>`;
-    html += `<tr><td style="text-align:right;">`;
-    html += `Table: `;
-    html += `</td><td>`;
-    //--TODO-- remove the values
-    html += `<input type="text" maxlength="20" class="stInput" id="table-name" value = "${getBrowserName()}" placeholder="Table Name" onKeyUp="checkTableName()" autofocus />`;
-    html += `</td></tr>`;
-    html += `<tr><td style="text-align:right;">`;
-    html += `Your Name: `;
-    html += `</td><td>`;
-    html += `<input type="text" maxlength="20" class="stInput" id="player-name" value = "${getBrowserName()}" placeholder="Your Name" />`;
-    html += `</td></tr>`;
-    html += `<tr><td style="text-align:right;">`;
-    html += `# Players: `;
-    html += `</td><td>`;
-    html += `<input type="number" maxlength="3" class="stInput" id="player-count" value = "4" min="2" max="9" />`;
-    html += `</td></tr>`;
-    html += `<tr><td style="text-align:right;">`;
-    html += `Initial # chips: `;
-    html += `</td><td>`;
-    html += `<input type="number" maxlength="4" class="stInput" id="chip-count" value = "10" min="2" max="9999" />`;
-    html += `</td></tr>`;
-    // html += `<tr><td colspan="2" style = "text-align:center;">`;
-    // html += `<span id = "game-msg-span">&nbsp</span>`;
-    // html += `</td></tr>`;
-    html += `<tr><td colspan="2" style = "text-align:center;">`;
-    // --TODO-- disabled to true
-    // html += `<br><input type="submit" id="start-table-button" class="stInput" disabled value="Start Game" formaction="javascript:startGame();" />`;
-    html += `<br><input type="submit" id="start-table-button" class="stInput" value="Start Game" formaction="javascript:startGame();" />`;
-    html += `</td></tr>`;
-    html += tableList;
-    html += `</table>`;
-    html += `</form>`;
-    html += `</div>`;
-    createAndAppendDiv(html, 'initial-screen', true);
+    let html = `
+
+        <div class="grid-container-input">
+            <div class="grid-item-input label">Your Name:</div>
+            <div class="grid-item-input input"><input type="text" maxlength="20" id="player-name" value = "${getBrowserName()}" placeholder="Your Name"  autofocus  /></div>
+            <div class="grid-item-input label">Table Name:</div>
+            <div class="grid-item-input input"><input type="text" maxlength="20" id="table-name" value = "${getBrowserName()}" placeholder="Table Name" onKeyUp="checkTableName()" /></div>
+            <div class="grid-item-input label">Number of players (max 9):</div>
+            <div class="grid-item-input input"><input type="number" maxlength="3" id="player-count" value = "3" min="2" max="9" /></div>
+            <div class="grid-item-input label">Number of chips (max 999):</div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="chip-count" value = "100" min="2" max="9999" /></div>
+            <div class="grid-item-input label">Rounds per deal (optional):</div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="round-count" value = "1" min="1" max="5" /></div>
+            <div class="grid-item-input label">Big Blind (optional):</div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="big-blind" value = "0" min="0" max="100"  step="2" /></div>
+            <div class="grid-item-input label">Blinds double every x minutes(optional):</div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="blinds-double" value = "0" min="0" max="100" /></div>
+            <div class="grid-item-input label">Start New Game:</div>
+            <div class="grid-item-input input"><input type="submit" id="start-table-button" class="mainButton" value="Start Game" onclick="javascript:startGame();" /></div>
+            <!-- Add more rows as needed -->
+
+            ${tableList}
+
+        </div>
+        <div>
+            <h3>
+                Play poker at a table without chips. Each player's chips will be taken care of by your computer or phone. You can 
+                bet, raise, check and fold with the buttons on the screen. You can change chip denomination whenever you want by clicking 
+                on your chip pile.
+                <ul>
+                    <li><i>Your Name:</i> Is Your Name</li>
+                    <li><i>Table Name:</i> Will be the name of table for others to join if you start a game.</li>
+                    <li><i>Number of players:</i> The number of players that need to join the table to start a game.</li>
+                    <li><i>Number of chips:</i> The number of chips that each player will start with.</li>
+                    <li><i>Rounds per deal:</i> The number of rounds of betting per deal (e.g. Texas Holdem' would be 3).</li>
+                    <li><i>Big Blind:</i> Big blind, must be an even number as small blind will be 1/2. Optional, leave at 0 for no blinds.</li>     
+                    <li><i>Blinds double every x minutes:</i> Time between blinds doubling, leave at 0 for no doubling.</li>                                   
+                    <li><i>Start New Game:</i> Once you have all the set up data in, click the button to start a game.</li>   
+                    <li><i>... or play at an existing table:</i> When someone has started a game, this will be on screen to choose to play that game until that particular table is filled.</li>  
+                </ul>
+                
+            </h3>
+        </div>
+    
+    
+    `;
+     createAndAppendDiv(html, 'initial-screen', true);
 }
 
 function startGame() {
@@ -67,48 +72,49 @@ function startGame() {
     const playerCount = document.getElementById(`player-count`).value;
     const chipCount = document.getElementById(`chip-count`).value;
     const tableName = document.getElementById(`table-name`).value;
+    const roundsPerDeal = document.getElementById(`round-count`).value;
+    const bigBlind = document.getElementById(`big-blind`).value;
+    const blindsDouble = document.getElementById(`blinds-double`).value;
     if (!playerName) {
-        alert(`need player name`); // TODO - elegantly handle this
+        alert(`need player name`);
         return;
     }
-    startPokerGame(tableName, playerName, playerCount, chipCount)
+    if (!tableName) {
+        alert(`need table name`); 
+        return;
+    }
+    if (bigBlind && bigBlind > 0 && bigBlind % 2 !== 0) {
+        alert(`Big Blind must be an even number`);
+        return;
+    }
+    const fields = {playerName, playerCount, chipCount, tableName, roundsPerDeal, bigBlind, blindsDouble}
+
+    startPokerGame(fields);
 }
 
 function buildRoomList(tables) {
-
     if (tables && tables.length > 0) {
         let html = ``;
-        html += `<tr><td colspan = "2" style = "text-align:center;">`;
-        html += `<p>Or, join a game. Enter name and select game.</p>`;
-        html += `</td></tr>`;
-        html += `<tr><td style="text-align:right;">`;
-        html += `Name:`;
-        html += `</td>`;
-        html += `<td>`;
-        //--TODO-- remove the values
-        html += `<input type="text" maxlength="20" class="stInput" id="joining-player-name" value="${getBrowserName()}" placeholder="Player Name"/>`;
-        html += `</td></tr>`;
-        html += `<tr><td style="text-align:right;">`;
-        html += `Table:`;
-        html += `</td>`;
-        html += `<td>`;
-        html += `<select class="stInput" id="select-table" onChange="joinTable(this.value)">`;
-        html += `<option>-select game-</option>`;
+        html += `<div class="grid-item-input label"></div>`;
+        html += `<div class="grid-item-input input"></div>`;
+        html += `<div class="grid-item-input label">... or play at an existing table:</div>`;
+        html += `<div class="grid-item-input input">`;
+        html += `   <select id="select-table" class='mainButton' onChange="joinTable(this.value)">`;
+        html += `       <option>-select game-</option>`;
         tables.forEach(table => {
-            html += `<option value = "${table.id}">${table.name}</option>`;
+            html += `       <option value = "${table.id}">${table.name}</option>`;
         });
-        html += `</select>`;
-        html += `</td></tr>`;
+        html += `   </select>`;
+        html += `</div>`;
         return html;
     }
     return ``;
 }
 
 function joinTable(tableId) {
-    const playerName = document.getElementById(`joining-player-name`).value;
+    const playerName = document.getElementById(`player-name`).value;
     if (!playerName || !tableId) {
-        alert(`need player name/must select table`); // TODO - elegantly handle this
-        const playerName = document.getElementById(`select-table`).selectedIndex = 0;
+        alert(`need player name/must select table`);
         return;
     }
     joinPokerGame(tableId, playerName);

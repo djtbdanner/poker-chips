@@ -85,9 +85,14 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         const tableName = data.tableName;
         const playerName = data.playerName;
         const playerCount = data.playerCount;
-        const startChipCount = data.startChipCount;
+        const startChipCount = data.chipCount;
+        const roundsPerDeal = data.roundsPerDeal;
+        const bigBlind = data.bigBlind;
+        const blindsDouble = data.blindsDouble;
+
+
         const player = new Player(playerName, connectionId);
-        const table = new Table(tableName, parseInt(playerCount, 10), parseInt(startChipCount, 10));
+        const table = new Table(tableName, parseInt(playerCount, 10), parseInt(startChipCount, 10), parseInt(roundsPerDeal, 10), parseInt(bigBlind, 10), parseInt(blindsDouble, 10));
         let response = { action: 'set-table-id', payload: { tableId: table.id } };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         response = { action: 'set-player-id', payload: { playerId: player.id } };
@@ -127,7 +132,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         const tableId = data.tableId;
         const playerId = data.playerId;
         const action = data.action;
-        const chips = JSON.parse(data.chips);
+        let chips = JSON.parse(data.chips);
 
         console.log(`poker-action: ${JSON.stringify(data)}`);
         if (!pokerActions.includes(action)) {
@@ -141,7 +146,8 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         // const initialCallAmount = table.playStatus.callAmount;
         let raisedBy = '';
         if (action === "RAISE") {
-            totalChips = PlayProcessor.calculateChips(chips, player, table);
+            totalChips = PlayProcessor.playerChipsBetToPot(table, player, chips);
+            player.potRaisedBy = player.potRaisedBy + totalChips;
             const raisedByAmount = totalChips - table.playStatus.callAmount;
             if (raisedByAmount > 0 && table.playStatus.callAmount >0){
                 raisedBy = ` (bet raised by ${raisedByAmount})`;
@@ -154,7 +160,9 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
             }
             PlayProcessor.processSidePots(table, player);
         } else if (action === "CALL") {
-            totalChips = PlayProcessor.calculateChips(chips, player, table);
+            chips = PlayProcessor.pullPlayerChipsToAmount(table, player, chips);
+            totalChips = PlayProcessor.playerChipsBetToPot(table, player, chips);
+            player.potRaisedBy = player.potRaisedBy + totalChips;
             player.totalRoundBet = player.totalRoundBet + totalChips;
             if (player.getChipTotal() === 0) {
                 player.allIn = true;
@@ -177,19 +185,12 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         if (totalChips > 0){
             const data = {};
             data.playerId = playerId;
-            let theChips;
-            if (Array.isArray(chips)){
-                const chipCounts = chips.reduce((acc, chip) => {
-                    acc[chip.color] = chip.count;
-                    return acc;
-                  }, {});
-                  theChips = PlayProcessor.chipsFromCounts(chipCounts.black, chipCounts.green, chipCounts.red, chipCounts.gray);
-            } else {
-                let chipsArray = PlayProcessor.parseChips(totalChips);
-                theChips = PlayProcessor.chipsFromCounts(chipsArray['black'], chipsArray['green'], chipsArray['red'], chipsArray['gray']);
-            }     
+            const chipCounts = chips.reduce((acc, chip) => {
+                acc[chip.color] = chip.count;
+                return acc;
+            }, {});
+            const theChips = PlayProcessor.chipsFromCounts(chipCounts.black, chipCounts.green, chipCounts.red, chipCounts.gray);
             data.chips = JSON.stringify(theChips);
-            // const tableChips = PlayProcessor.chipsFromCounts(table.playStatus.chips['black'], table.playStatus.chips['green'], table.playStatus.chips['red'], table.playStatus.chips['gray']);
             data.potChips = JSON.stringify(table.playStatus.chips);
             data.potTotal = table.playStatus.pot;
             await broadcastToTable(table, { action: 'poker-amimate-chips-bet', payload: data }, apigwManagementApi);

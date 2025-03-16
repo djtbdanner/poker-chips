@@ -1,6 +1,6 @@
-async function startPokerGame(tableName, playerName, playerCount, startChipCount) {
+async function startPokerGame(fields) {
     localStorage.clear();/// just be sure nothing is left over
-    const table = await asyncEmit(`start-poker-game`, { tableName, playerName, playerCount, startChipCount });
+    const table = await asyncEmit(`start-poker-game`, fields);
     // console.log(`Data Back from call to startPokerGame ${JSON.stringify(table)}`);
     if (table) {
         drawScreen(table);

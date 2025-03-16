@@ -3,30 +3,6 @@
   --button-gradient: linear-gradient(to top right, rgb(235, 200, 155,0.9) 50%, rgba(231, 182, 118, 0.9)),
   linear-gradient(to top left, rgb(235, 200, 155,0.9) 50%, rgb(231, 182, 118,0.9))
 }
-/* 
-input {
-  padding: 10%;
-  margin: 5px;
-  background: var(--default-input-bgcolor);
-  border-radius: 5px;
-  font-weight: bold;
-} */
-/* .screenInput {
-  padding: 2px;
-  margin: 0px;
-  background: white;
-  border-radius: 5px;
-  font-weight: bold;
-} */
-/** input box on main screen **/
-.stInput {
-  padding: 1%;
-  margin: 5px;
-  background: white;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
 .modalOuterDiv {
   width: 100%;
   height: 100%;
@@ -216,16 +192,6 @@ body, html {
   .grid-cell {
     border: 1px solid yellow;
   }
-
-  /* .addedInputScreen {
-    color: red;
-    background-color: orange;
-    width: 90%;
-    height: 90%;
-    left: 5%;
-    top: 5%;
-  } */
-
 }
 
 /*** Bet input screen styles **/
@@ -264,11 +230,8 @@ textarea {
   font-style: oblique;
   resize: none;
   border-radius: 5px;
-  /* border-style: line; */
-  /* margin:5px 3px 0px 3px; */
-  /* border-color: rgb(0, 0, 0); */
-  /* border-width: 2%; */
 }
+
 .textADiv{
   width: 99%;
   height: 99%;
@@ -486,7 +449,6 @@ textarea {
   gap: 1px; 
   width: 100%;
   height: 100%;
-
 }
 
 .grid-item {
@@ -530,7 +492,6 @@ input[disabled] {
   background-color: #575454b3;
 }
 
-
 .confetti-container {
   position: absolute;
   top: -100;
@@ -560,3 +521,71 @@ input[disabled] {
     opacity: 0;
   }
 }
+
+h3{
+  padding: 4px;
+  font-size: medium;
+}
+
+/* Grid for the input screen */
+.grid-container-input {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  width: 100%;
+  max-width: 600px; 
+  margin: 0 auto; /* Center the grid container */
+  padding-top :10px;
+}
+
+.grid-item-input {
+  display: flex;
+  align-items: center;
+  padding: 5px;
+  background-color: rgba(254, 254, 254, 0.5);
+  border: 1px solid black;
+  border-radius: 5px;
+}
+
+.grid-item-input.label {
+  justify-content: flex-end;
+  text-align: right;
+  padding-right: 20px;
+  background-color: rgba(254, 254, 254, 0.5);
+  color: black;
+  text-shadow: none;
+  font-weight: bold;
+}
+
+.grid-item-input.input {
+  justify-content: flex-start;
+  text-align: left;
+  padding-left: 10px;
+  color: black;
+}
+
+.grid-item-input input {
+  width: 100%;
+  padding: 10px!important;
+  border: 1px solid black!important;
+  border-radius: 5px!important;
+  color: black;
+}
+
+.grid-item-input select {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid black!important;
+  border-radius: 5px;
+  color: black;
+}
+
+.grid-item-input button {
+  width: 100%;
+  padding: 5px;
+  border: 1px solid black!important;
+  border-radius: 5px;
+  color: black;
+  background-image: var( --button-gradient);
+}
+/* Grid for the input screen */

@@ -2,14 +2,18 @@ const crypto = require("crypto");
 const PlayStatus = require('./PlayStatus');
 
 class Table {
-    constructor(name, playerCount, startChipCount) {
+    constructor(name, playerCount, startChipCount, roundsPerDeal, bigBlind, blindsDouble) {
         this.name = name;
         this.id = crypto.randomBytes(16).toString("hex");
         this.playerCount = playerCount;
         this.startChipCount = startChipCount;
+        this.roundsPerDeal = roundsPerDeal;
+        this.bigBlind = bigBlind;
+        this.blindsDouble = blindsDouble;
         this.players = [];
         this.messages = [];
         this.playStatus = new PlayStatus();
+        this.startTime = new Date();
     }
 
     addPlayer(player) {

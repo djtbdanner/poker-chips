@@ -235,31 +235,9 @@ const resetTable = (table) => {
     this.updatePlayersAfterBetting(table);
 };
 
-exports.calculateChips = (chips, player, table) => {
-    // like this [{color:"black", count:0},{color:"green", count:0},{color:"red", count:0},{color:"gray", count:10},]
-    let totalChips;
-    if (Array.isArray(chips)) {
-        totalChips = this.pullChipsByChipCount(table, player, chips);
-    } else {
-        totalChips = parseInt(chips, 10);
-        let success = this.pullChipsToAmount(table, player, totalChips);
-        let tries = 0;
-        while (!success && tries < 4) {
-            this.exchangeChipsPlayer(table, player, `black`, `green`);
-            this.exchangeChipsPlayer(table, player, `green`, `red`);
-            this.exchangeChipsPlayer(table, player, `red`, `gray`);
-            tries += 1;
-            success = this.pullChipsToAmount(table, player, totalChips);
-        }
-    }
-    player.potRaisedBy = player.potRaisedBy + totalChips;
-    return totalChips;
-}
-
-exports.setPlayerChips = (table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount) => {
+exports.setPlayerChips = (player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount) => {
     player.chips = this.chipsFromCounts(playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     player.getChipTotal();
-    table.setChipTotalsForPlayers();
 }
 
 exports.setPotChips = (table, betBlackCount, betGreenCount, betRedCount, betGrayCount) => {
@@ -288,7 +266,7 @@ exports.setPotChips = (table, betBlackCount, betGreenCount, betRedCount, betGray
     return { betBlackCount, betGreenCount, betRedCount, betGrayCount };
 }
 
-exports.pullChipsByChipCount = (table, player, chips) => {
+exports.playerChipsBetToPot = (table, player, chips) => {
 
     let playerBlackChipCount = player.chips.filter(c => c.color === `black`).length;
     let playerGreenChipCount = player.chips.filter(c => c.color === `green`).length;
@@ -309,15 +287,31 @@ exports.pullChipsByChipCount = (table, player, chips) => {
     playerRedChipCount = playerRedChipCount - betRedCount;
     playerGrayChipCount = playerGrayChipCount - betGrayCount;
     this.setPotChips(table, betBlackCount, betGreenCount, betRedCount, betGrayCount);
-    this.setPlayerChips(table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
+    this.setPlayerChips(player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     return totalChips;
 }
 
-exports.pullChipsToAmount = (table, player, totalBet) => {
-
+/**
+ * For a player with chips, get a default set of chips that equals the total bet.
+ * If player doesn't have the set up to do so a chip exchange will be attempted a few times so that
+ * the player has the correct chips to do the bet.
+ * The values returned are not pulled from the players chips, but if an exchange is made the players chips
+ * will be different.
+ * This function used to allow frontend to submit a chips count or value, if value will 
+ * convert the player chips to the format the frontend would have sent if sending chips.
+ *@param {*} table 
+ * @param {*} player 
+ * @param {*} totalBet 
+ * @param {*} tries 
+ * @returns array of colors and counts for chips
+ * */
+exports.pullPlayerChipsToAmount = (table, player, totalBet, tries = 1) => {
     console.log(`Player ${player.name} betting ${totalBet}, pulling chips`);
     if (player.chipTotal < totalBet) {
         throw new Error(`Player ${player.name} does not have enough chips for a ${totalChips} call or bet.`);
+    }
+    if (tries > 5){
+        throw new Error ('tried to get the player chips too many times, seems to be a logic error in the code ?');
     }
     let playerBlackChipCount = player.chips.filter(c => c.color === `black`).length;
     let playerGreenChipCount = player.chips.filter(c => c.color === `green`).length;
@@ -415,14 +409,16 @@ exports.pullChipsToAmount = (table, player, totalBet) => {
         }
     }
     if (amount !== 0) {
-        console.log(`Unable to pull chips for player ${player.name}, chips:${JSON.stringify(player.chips)}, bet ${totalBet}`);
-        return false;
+        console.log(`Unable to pull chips for player ${player.name}, chips:${JSON.stringify(player.chips)}, bet ${totalBet} this is the ${tries} attempt.`);
+        // couldn't do it, exchange some chips (TODO, maybe this can be easire idk)
+        this.exchangeChipsPlayer(table, player, `black`, `green`);
+        this.exchangeChipsPlayer(table, player, `green`, `red`);
+        this.exchangeChipsPlayer(table, player, `red`, `gray`);
+        tries= tries+1;
+        return this.pullPlayerChipsToAmount(table, player, totalBet, tries);
     }
-    // console.log(`Successfully pulled chips for bet.`);
-    this.setPotChips(table, betBlackCount, betGreenCount, betRedCount, betGrayCount);
-    this.setPlayerChips(table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
-    return true;
-}
+    return [{color:"black", count:betBlackCount},{color:"green", count:betGreenCount},{color:"red", count:betRedCount},{color:"gray", count:betGrayCount}];
+};
 
 exports.exchangeChipsPlayer = (table, player, fromChipColor, toChipColor) => {
     console.log(`Player ${player.name} exchanging ${fromChipColor} chips for ${toChipColor} chips.`);
@@ -479,7 +475,7 @@ exports.exchangeChipsPlayer = (table, player, fromChipColor, toChipColor) => {
         return errMessage;
     }
     table.addMessage(`${player.name} exchanged chips ${fromChipColor} to ${toChipColor}`);
-    this.setPlayerChips(table, player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
+    this.setPlayerChips(player, playerBlackChipCount, playerGreenChipCount, playerRedChipCount, playerGrayChipCount);
     return undefined;/// no error no message caller assumes success
 }
 
@@ -566,7 +562,7 @@ exports.initializePlayerChips = (table, player) => {
         throw new Error('need to have some chips to initialize for the player');
     }
     const chips = this.parseChips(totalChips);
-    this.setPlayerChips(table, player, chips['black'], chips['green'], chips['red'], chips['gray']);
+    this.setPlayerChips(player, chips['black'], chips['green'], chips['red'], chips['gray']);
 };
 
 exports.chipsFromCounts = (blacks, greens, reds, grays) => {
