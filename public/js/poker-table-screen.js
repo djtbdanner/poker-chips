@@ -166,8 +166,8 @@ const drawScreen = (table) => {
                  setNewChipPile(table.playStatus.pot, table.playStatus.chips);
             } else {
                 setTimeout(() => {
-                    localStorage.setItem('chip-pile', '');;
-                }, 4000);
+                    localStorage.setItem('chip-pile', '');
+                }, 2000);
             }
         }
         if (p.isChampion){

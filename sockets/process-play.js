@@ -50,7 +50,6 @@ exports.isBetRoundOver = (currentPlayer, table) => {
 
     const nextPlayerOnTable = getNextPlayer(currentPlayer, table);
     const nextActivePlayerOnTable = this.getNextActivePlayer(currentPlayer, table);
-    // const activePlayers = table.players.filter(player => player.isActive());
 
     const isPot = table.playStatus.pot > 0;
     if (!table.playStatus.playerLastRaised) {
