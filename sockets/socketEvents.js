@@ -138,51 +138,37 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
         if (!pokerActions.includes(action)) {
             throw Error(`Invalid Action:${action}, from player - valid actions${pokerActions}.`)
         }
-
         const table = tables.get(tableId);
         table.players.forEach((p)=>p.showWin=false);// if there was a winner that is no longer true
+
         const player = table.players.find(player => player.id === playerId);
         let totalChips = 0;
-        // const initialCallAmount = table.playStatus.callAmount;
-        let raisedBy = '';
         if (action === "RAISE") {
-            totalChips = PlayProcessor.playerChipsBetToPot(table, player, chips);
-            player.potRaisedBy = player.potRaisedBy + totalChips;
-            const raisedByAmount = totalChips - table.playStatus.callAmount;
-            if (raisedByAmount > 0 && table.playStatus.callAmount >0){
-                raisedBy = ` (bet raised by ${raisedByAmount})`;
-            }
-            table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
-            table.playStatus.playerLastRaised = player;
-            player.totalRoundBet = player.totalRoundBet + totalChips;
-            if (player.getChipTotal() === 0) {
-                player.allIn = true;
-            }
-            PlayProcessor.processSidePots(table, player);
+            totalChips = PlayProcessor.newFunction(table, player, chips);
         } else if (action === "CALL") {
             chips = PlayProcessor.pullPlayerChipsToAmount(table, player, chips);
-            totalChips = PlayProcessor.playerChipsBetToPot(table, player, chips);
-            player.potRaisedBy = player.potRaisedBy + totalChips;
-            player.totalRoundBet = player.totalRoundBet + totalChips;
-            if (player.getChipTotal() === 0) {
-                player.allIn = true;
-            }
-            PlayProcessor.processSidePots(table, player);
+            totalChips = PlayProcessor.newFunction(table, player, chips);
         } else if (action === "FOLD") {
             player.folded = true;
         } else if (action === "CHECK") {
         }
-        table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ?" !ALL IN! ":""}with ${totalChips} chips${raisedBy}.`);
+
+        // message to players of how much player bet and the raise amount
+        let raisedBy = '';
+        const raisedByAmount = totalChips - table.playStatus.callAmount;
+        if (raisedByAmount > 0 && table.playStatus.callAmount >0){
+            raisedBy = ` (bet raised by ${raisedByAmount})`;
+        }
+        table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ?" !ALL IN! ":""}with ${totalChips} chips ${raisedBy}.`);
+
         if (PlayProcessor.isBetRoundOver(player, table)) {
-            // table.addMessage('Betting complete, select and submit winner (anyone with 2 votes will be considered a winner).')
-            // PlayProcessor.processRoundOver(table);
         } else {
             PlayProcessor.getNextActivePlayer(player, table).turn = true;
             PlayProcessor.calculateCurrentCallAmount(table);
         }
         await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
         // animate the player betting the chips
-        if (totalChips > 0){
+        if (chips && chips.length > 0) {
             const data = {};
             data.playerId = playerId;
             const chipCounts = chips.reduce((acc, chip) => {
@@ -193,7 +179,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
             data.chips = JSON.stringify(theChips);
             data.potChips = JSON.stringify(table.playStatus.chips);
             data.potTotal = table.playStatus.pot;
-            await broadcastToTable(table, { action: 'poker-amimate-chips-bet', payload: data }, apigwManagementApi);
+            await broadcastToTable(table, { action: 'poker-animate-chips-bet', payload: data }, apigwManagementApi);
         }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -202,6 +188,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
 
 socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
+
         console.log(`poker-win-round: ${JSON.stringify(data)}`);
         const votingPlayerId = data.playerId;
         let winningPlayerIds;

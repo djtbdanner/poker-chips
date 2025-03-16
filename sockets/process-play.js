@@ -101,7 +101,6 @@ exports.updatePlayersAfterBetting = (table) => {
 
     const dealerIndex = table.players.findIndex(player => player.dealer);
     const currentDealer = table.players[dealerIndex];
-
     // if after betting you have no money. you are done you are broke being
     // broke is different that having no money becasue if you have no money but are all in you could win
     table.players.forEach((p) => {
@@ -127,11 +126,30 @@ exports.updatePlayersAfterBetting = (table) => {
 
     const nextDealer = this.getNextActivePlayer(currentDealer, table);
     nextDealer.dealer = true;
-    const nextPlayer = this.getNextActivePlayer(nextDealer, table);
-    nextPlayer.turn = true;
-    nextPlayer.firstBettor = true;
-    table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
-    
+    if (table.bigBlind && table.bigBlind > 0) {
+        const littleBlindPlayer = this.getNextActivePlayer(nextDealer, table);
+        const bigBlindPlayer = this.getNextActivePlayer(littleBlindPlayer, table);
+        const nextPlayer = this.getNextActivePlayer(bigBlindPlayer, table);
+        nextPlayer.turn = true;
+        nextPlayer.firstBettor = true;
+        const bigBlind = table.bigBlind;
+        const littleBlind = bigBlind / 2;
+
+        let chips = this.pullPlayerChipsToAmount(table, littleBlindPlayer, littleBlind);
+        this.newFunction(table, littleBlindPlayer, chips);
+
+        chips = this.pullPlayerChipsToAmount(table, bigBlindPlayer, bigBlind);
+        this.newFunction(table, bigBlindPlayer, chips);
+        table.playStatus.playerLastRaised = bigBlindPlayer;
+        table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet after little blind player ${littleBlindPlayer.name} bet of ${littleBlind} and big blind player ${bigBlindPlayer.name} blind of ${bigBlind}.`);
+        table.playStatus.totalRaiseThisRound = bigBlind;
+        this.calculateCurrentCallAmount(table);
+    } else {        
+        const nextPlayer = this.getNextActivePlayer(nextDealer, table);
+        nextPlayer.turn = true;
+        nextPlayer.firstBettor = true;
+        table.addMessage(`Betting round complete. ${nextDealer.name} is now dealer with ${nextPlayer.name} first bet.`);
+    }
 }
 
 const resetPotChips = (table, theChips) => {
@@ -143,6 +161,17 @@ const resetPotChips = (table, theChips) => {
     let grayCount = theChips['gray'];
     this.setPotChips(table, blackCount, greenCount, redCount, grayCount);
 }
+
+exports.newFunction = (table, player, chips) =>{
+    let totalChips = this.playerChipsBetToPot(table, player, chips);
+    player.potRaisedBy = player.potRaisedBy + totalChips;
+    player.totalRoundBet = player.totalRoundBet + totalChips;
+    if (player.getChipTotal() === 0) {
+        player.allIn = true;
+    }
+    this.processSidePots(table, player);
+    return totalChips;
+};
 
 exports.processWinner = (winningPlayers, table) => {
     if (winningPlayers.length > 1) {

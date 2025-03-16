@@ -75,7 +75,7 @@ socketEventHandlers[`poker-div-blink`] = async (data) => {
     }
 };
 
-socketEventHandlers[`poker-amimate-chips-bet`] = async (data) => {
+socketEventHandlers[`poker-animate-chips-bet`] = async (data) => {
     const playerId = data.playerId;
     let chips = data.chips;
     let potChips = data.potChips;
