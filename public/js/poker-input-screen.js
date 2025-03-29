@@ -30,9 +30,9 @@ async function buildInitialScreen() {
             <div class="grid-item-input label">Number of chips (max 999):</div>
             <div class="grid-item-input input"><input type="number" maxlength="4" id="chip-count" value = "100" min="2" max="9999" /></div>
             <div class="grid-item-input label">Rounds per deal (optional):</div>
-            <div class="grid-item-input input"><input type="number" maxlength="4" id="round-count" value = "3" min="1" max="5" /></div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="round-count" value = "1" min="1" max="5" /></div>
             <div class="grid-item-input label">Big Blind (optional):</div>
-            <div class="grid-item-input input"><input type="number" maxlength="4" id="big-blind" value = "2" min="0" max="100"  step="2" /></div>
+            <div class="grid-item-input input"><input type="number" maxlength="4" id="big-blind" value = "0" min="0" max="100"  step="2" /></div>
             <div class="grid-item-input label">Blinds double every x minutes(optional):</div>
             <div class="grid-item-input input"><input type="number" maxlength="4" id="blinds-double" value = "0" min="0" max="100" /></div>
             <div class="grid-item-input label">Start New Game:</div>

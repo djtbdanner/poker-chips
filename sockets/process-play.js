@@ -17,8 +17,7 @@ exports.processSidePots = (table, player) => {
             }
         });
         allInPlayer.sidePotTotal = sidePotTotal;
-        // table.addMessage(`${allInPlayer.name} is all in for ${allInBet} and can win ${sidePotTotal}!`);
-        console.log(`${allInPlayer.name} is all in and the side pot amount is ${allInPlayer.sidePotTotal}`);
+        table.addMessage(`${allInPlayer.name} is all in for ${allInBet} and can win up to ${sidePotTotal} of the ${table.playStatus.pot} chip pot!`);
     });
 }
 
@@ -201,9 +200,7 @@ exports.processRaiseOrCall = (table, player, chips, action) => {
         raisedByAmount = totalChips - table.playStatus.callAmount;
         table.playStatus.totalRaiseThisRound = table.playStatus.totalRaiseThisRound + raisedByAmount;
         table.playStatus.playerLastRaised = player;
-        player.totalRoundBet = player.totalRoundBet + totalChips;
     } else if (action === "CALL") {
-        player.totalRoundBet = player.totalRoundBet + totalChips;
     }
     player.potRaisedBy = player.potRaisedBy + totalChips;
     player.totalRoundBet = player.totalRoundBet + totalChips;
@@ -238,6 +235,8 @@ exports.processWinner = (winningPlayers, table) => {
             const winningPlayerChips = this.parseChips(playerWithLeastSidePot.sidePotTotal);
             resetPotChips(table, winningPlayerChips)
             splitPotBetweenPlayers(table, winningPlayers);
+            playerWithLeastSidePot.folded = true; // todo something other that folded?
+
             // pot is now any leftover pot - so all we gotta do is reprocess the whole thing
             resetPotChips(table, leftOverPotChips);
 
@@ -248,7 +247,22 @@ exports.processWinner = (winningPlayers, table) => {
                 let remainingWinningPlayers = winningPlayers.filter(player => player.id !== playerWithLeastSidePot.id);
                 // any remaining players with a split pot total that has zeroed out need to be removed as well as they cannot win any more
                 remainingWinningPlayers = remainingWinningPlayers.filter((p) => !p.folded);
-                this.processWinner(remainingWinningPlayers, table);
+                if (remainingWinningPlayers && remainingWinningPlayers.length > 0) {
+                    this.processWinner(remainingWinningPlayers, table);
+                } else {
+                    const playersThatCanWin = table.players.filter((p) => !p.folded);
+                    if (playersThatCanWin.length === 1) {
+                        const thisWinner = playersThatCanWin[0];
+                        table.addMessage(`${thisWinner.name} gets the leftover pot of ${table.playStatus.pot} chips.`);
+                        thisWinner.chips.push(...table.playStatus.chips);
+                        thisWinner.showWin = true;
+                        resetTable(table);
+                    } else {
+                        table.playStatus.selectWinner = true;
+                        // todo if there is only one player left they win any of the rest and we done.
+                        table.addMessage(`${winningPlayer.name} won their side pot, we need to choose a winner for the rest; ${table.playStatus.pot}!`);
+                    }
+                }
             } else {
                 resetTable(table);
             }
@@ -287,9 +301,9 @@ exports.processWinner = (winningPlayers, table) => {
         const playersThatCanWin = table.players.filter((p) => !p.folded);
         if (playersThatCanWin.length === 1) {
             const thisWinner = playersThatCanWin[0];
-            table.addMessage(`${thisWinner.name} gets the leftover pot with no challengers.`);
-            winningPlayer.chips.push(...table.playStatus.chips);
-            winningPlayer.showWin = true;
+            table.addMessage(`${thisWinner.name} gets the leftover pot of ${newPotTotal} chips.`);
+            thisWinner.chips.push(...table.playStatus.chips);
+            thisWinner.showWin = true;
             resetTable(table);
         } else {
             table.playStatus.selectWinner = true;

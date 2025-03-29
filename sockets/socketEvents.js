@@ -13,7 +13,7 @@ const socketEventHandlers = {};
 async function broadcastToTable(table, message, apigwManagementApi) {
     try {
         for (const p of table.players) {
-            console.log(`Broadcast table, player connection id ${p.connectionId}, ${p.name} =================`);
+            // console.log(`Broadcast table, player connection id ${p.connectionId}, ${p.name} =================`);
             await apigwManagementApi.postToConnection({ ConnectionId: p.connectionId, Data: JSON.stringify(message) });
         }
     } catch (error) {
