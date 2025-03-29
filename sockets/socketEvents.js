@@ -1,8 +1,8 @@
 const Table = require('./classes/Table');
 const Player = require('./classes/Player');
 const PlayProcessor = require('./process-play');
-const PlayStatus = require('./classes/PlayStatus');
-const Chip = require('./classes/Chip');
+// const PlayStatus = require('./classes/PlayStatus');
+// const Chip = require('./classes/Chip');
 // --TODO-- will be replaced with a database
 let tables = new Map();
 let connetedButNotPlaying = new Map();
@@ -59,10 +59,7 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
             table.addMessage(`${player.name} joined table ${table.name} ${morePlayers}`);
         } else {
             table.addMessage(`${player.name} joined table ${table.name}, filling table.`);
-            table.players[0].dealer = true;
-            table.players[1].turn = true;
-            table.players[1].firstBettor = true;
-            table.addMessage(`${table.players[0].name} is Dealer. ${table.players[1].name} is first bet.`);
+            PlayProcessor.setTable(table);
             await broadCastOpenTables(apigwManagementApi, connetedButNotPlaying);
         }
 
@@ -129,57 +126,38 @@ socketEventHandlers['get-tables'] = async (apigwManagementApi, connectionId, dat
 const pokerActions = ["CALL", "CHECK", "FOLD", "RAISE"];
 socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, data, messageId) => {
     try {
-        const tableId = data.tableId;
-        const playerId = data.playerId;
         const action = data.action;
-        let chips = JSON.parse(data.chips);
-
-        console.log(`poker-action: ${JSON.stringify(data)}`);
         if (!pokerActions.includes(action)) {
             throw Error(`Invalid Action:${action}, from player - valid actions${pokerActions}.`)
         }
+
+        const tableId = data.tableId;
+        const playerId = data.playerId;
+        let chips = JSON.parse(data.chips);
         const table = tables.get(tableId);
         table.players.forEach((p)=>p.showWin=false);// if there was a winner that is no longer true
 
         const player = table.players.find(player => player.id === playerId);
-        let totalChips = 0;
         if (action === "RAISE") {
-            totalChips = PlayProcessor.newFunction(table, player, chips);
+            totalChips = PlayProcessor.processRaiseOrCall(table, player, chips, action);
         } else if (action === "CALL") {
             chips = PlayProcessor.pullPlayerChipsToAmount(table, player, chips);
-            totalChips = PlayProcessor.newFunction(table, player, chips);
+            totalChips = PlayProcessor.processRaiseOrCall(table, player, chips, action);
         } else if (action === "FOLD") {
             player.folded = true;
+            table.addMessage(`${player.name} folds.`);
         } else if (action === "CHECK") {
+            table.addMessage(`${player.name} checks.`);
         }
 
-        // message to players of how much player bet and the raise amount
-        let raisedBy = '';
-        const raisedByAmount = totalChips - table.playStatus.callAmount;
-        if (raisedByAmount > 0 && table.playStatus.callAmount >0){
-            raisedBy = ` (bet raised by ${raisedByAmount})`;
-        }
-        table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ?" !ALL IN! ":""}with ${totalChips} chips ${raisedBy}.`);
+       PlayProcessor.processPlayDetermineNextStep(player, table);
 
-        if (PlayProcessor.isBetRoundOver(player, table)) {
-        } else {
-            PlayProcessor.getNextActivePlayer(player, table).turn = true;
-            PlayProcessor.calculateCurrentCallAmount(table);
-        }
+        // update the table
         await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
-        // animate the player betting the chips
+
+        // animate bets if there were any
         if (chips && chips.length > 0) {
-            const data = {};
-            data.playerId = playerId;
-            const chipCounts = chips.reduce((acc, chip) => {
-                acc[chip.color] = chip.count;
-                return acc;
-            }, {});
-            const theChips = PlayProcessor.chipsFromCounts(chipCounts.black, chipCounts.green, chipCounts.red, chipCounts.gray);
-            data.chips = JSON.stringify(theChips);
-            data.potChips = JSON.stringify(table.playStatus.chips);
-            data.potTotal = table.playStatus.pot;
-            await broadcastToTable(table, { action: 'poker-animate-chips-bet', payload: data }, apigwManagementApi);
+            await this.animatePlayerBetOnScreen(playerId, chips, table, apigwManagementApi);
         }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -210,15 +188,6 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
         if (winningPlayers.every(player => player.winVoteCount >= 2)) {
             table.players.forEach((p)=>p.showWin= false);
             PlayProcessor.processWinner(winningPlayers, table);
-            // PlayProcessor.updatePlayersAfterBetting(table);
-            // const brokePlayers = table.players.filter((p) => {
-            //     console.log(p.getChipTotal());
-            //     return p.getChipTotal() <= 0;
-            // });
-            // brokePlayers.forEach((bp) => {
-            //     table.addMessage(`${bp.name} is out of chips 😢.`);
-            //     removePlayer(bp, table, apigwManagementApi, true);
-            // });
         } else {
             const playersNotVoted = table.players.find(player => !player.hasVoted);
             if (!playersNotVoted || playersNotVoted.length === 0) {
@@ -226,13 +195,6 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
                 table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; });
             }
         }
-        // const brokePlayers = table.players.filter((p) => {
-        //     return p.getChipTotal() <= 0;
-        // });
-        // brokePlayers.forEach((bp) => {
-        //     table.addMessage(`${bp.name} is out of chips 😢.`);
-        //     removePlayer(bp, table, apigwManagementApi, true);
-        // });
         await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -389,6 +351,24 @@ socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connecti
         }
         const response = { action: messageId, payload: JSON.stringify({ canReconnect }) };
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
+    } catch (error) {
+        handleError(apigwManagementApi, connectionId, error, data);
+    }
+};
+
+exports.animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi) => {
+    try{
+        const data = {};
+        data.playerId = playerId;
+        const chipCounts = chips.reduce((acc, chip) => {
+            acc[chip.color] = chip.count;
+            return acc;
+        }, {});
+        const theChips = PlayProcessor.chipsFromCounts(chipCounts.black, chipCounts.green, chipCounts.red, chipCounts.gray);
+        data.chips = JSON.stringify(theChips);
+        data.potChips = JSON.stringify(table.playStatus.chips);
+        data.potTotal = table.playStatus.pot;
+        await broadcastToTable(table, { action: 'poker-animate-chips-bet', payload: data }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }

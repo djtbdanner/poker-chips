@@ -32,6 +32,21 @@ class Table {
         return true;
     }
 
+    setPlayerTurn(player) {
+        this.players.forEach(p => {
+            p.turn = false;
+        });
+        player.turn = true;
+    }
+
+    
+    setFirstBettor(player) {
+        this.players.forEach(p => {
+            p.firstBettor = false;
+        });
+        player.firstBettor = true;
+    }
+
     setChipTotalsForPlayers(){
         this.players.forEach((p)=>{
             p.getChipTotal();

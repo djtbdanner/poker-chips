@@ -597,9 +597,6 @@ const animatePotToPlayer = (playerDivId) => {
     const chipPile = localStorage.getItem(`chip-pile`);
     animateChips(pot, player, chipPile);
     pot.innerHTML = '';
-    // setTimeout(() => {
-    //     localStorage.setItem('chip-pile', '');;
-    // }, 4000);
 }
 
 const animateChips = (startElement, endElement, chipPile) => {
