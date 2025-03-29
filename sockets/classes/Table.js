@@ -14,6 +14,7 @@ class Table {
         this.messages = [];
         this.playStatus = new PlayStatus();
         this.startTime = new Date();
+        this.socketPlays = [];
     }
 
     addPlayer(player) {
@@ -24,6 +25,11 @@ class Table {
     addMessage(text) {
         this.messages.push(`[${this.getCurrentTime()}] ${text}`);
     }
+
+    addSocketPlay(socketPlay) {
+        this.socketPlays.push(socketPlay);
+    }   
+
 
     playersFull(){
         if (this.players.length < this.playerCount){

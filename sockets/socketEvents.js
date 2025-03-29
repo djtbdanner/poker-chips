@@ -72,6 +72,9 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
         response = { action: 'poker-table-change', payload: table };
         await broadcastToTable(table, response, apigwManagementApi);
 
+        processAnySocketPlays(table, apigwManagementApi);
+
+
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -157,7 +160,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
 
         // animate bets if there were any
         if (chips && chips.length > 0) {
-            await this.animatePlayerBetOnScreen(playerId, chips, table, apigwManagementApi);
+            await animatePlayerBetOnScreen(playerId, chips, table, apigwManagementApi);
         }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -196,6 +199,7 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
             }
         }
         await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+        processAnySocketPlays(table, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -356,7 +360,7 @@ socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connecti
     }
 };
 
-exports.animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi) => {
+animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi) => {
     try{
         const data = {};
         data.playerId = playerId;
@@ -373,6 +377,17 @@ exports.animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagemen
         handleError(apigwManagementApi, connectionId, error, data);
     }
 };
+
+function processAnySocketPlays(table, apigwManagementApi) {
+    if (table && table.socketPlays.length > 0) {
+        setTimeout(() => {
+            table.socketPlays.forEach((socketPlay) => {
+                animatePlayerBetOnScreen(socketPlay.player.id, socketPlay.data, table, apigwManagementApi);
+            });
+            table.socketPlays = [];
+        }, 500); 
+    }
+}
 
 async function removePlayer(player, table, apigwManagementApi, thisPlayerIsConnected) {
     try {

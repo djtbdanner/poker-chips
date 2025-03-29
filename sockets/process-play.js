@@ -1,4 +1,5 @@
 const Chip = require('./classes/Chip');
+const SocketPlay = require('./classes/SocketPlay');
 
 exports.processSidePots = (table, player) => {
     const playersAllIn = table.players.filter(player => player.allIn);
@@ -165,13 +166,14 @@ exports.updatePlayersAfterCompleteRoundOfBetting = (table) => {
         let chips = this.pullPlayerChipsToAmount(table, littleBlindPlayer, littleBlind);
         this.processRaiseOrCall(table, littleBlindPlayer, chips, 'RAISE');
         // animatePlayerBetOnScreen(table, littleBlindPlayer, chips);
-
+        table.addSocketPlay(new SocketPlay(littleBlindPlayer, 'animatePlayerBetOnScreen', chips));
         chips = this.pullPlayerChipsToAmount(table, bigBlindPlayer, bigBlind);
         this.processRaiseOrCall(table, bigBlindPlayer, chips, 'RAISE');
         table.playStatus.playerLastRaised = bigBlindPlayer;
         table.addMessage(`${nextDealer.name} is dealer with ${nextPlayer.name} first bet ${littleBlindPlayer.name} little blind of ${littleBlind} and ${bigBlindPlayer.name} big blind of ${bigBlind}.`);
         table.playStatus.totalRaiseThisRound = bigBlind;
         // animatePlayerBetOnScreen(table, littlebigBlindPlayerlindPlayer, chips);
+        table.addSocketPlay(new SocketPlay(bigBlindPlayer, 'animatePlayerBetOnScreen', chips));
 
         this.calculateCurrentCallAmount(table);
     } else {

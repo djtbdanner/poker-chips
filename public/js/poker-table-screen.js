@@ -167,7 +167,7 @@ const drawScreen = (table) => {
             } else {
                 setTimeout(() => {
                     localStorage.setItem('chip-pile', '');
-                }, 2000);
+                }, 2);
             }
         }
         if (p.isChampion){
@@ -578,7 +578,6 @@ const animatePlayerToPot = (playerDivId, chips, potChips, potTotal) => {
     const chipPile = generateChipPileSVG(chips);
     animateChips(player, pot, chipPile);
     setNewChipPile(potTotal, potChips);
-
 }
 
 const setNewChipPile = (potTotal,potChips) => {
