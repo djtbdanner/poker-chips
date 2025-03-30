@@ -72,7 +72,7 @@ socketEventHandlers['join-poker-game'] = async (apigwManagementApi, connectionId
         response = { action: 'poker-table-change', payload: table };
         await broadcastToTable(table, response, apigwManagementApi);
 
-        processAnySocketPlays(table, apigwManagementApi);
+        processAnySocketPlays(table, apigwManagementApi, 0);
 
 
     } catch (error) {
@@ -99,7 +99,7 @@ socketEventHandlers['start-poker-game'] = async (apigwManagementApi, connectionI
         await apigwManagementApi.postToConnection({ ConnectionId: connectionId, Data: JSON.stringify(response) });
         table.addPlayer(player);
         PlayProcessor.initializePlayerChips(table, player);
-        table.addMessage(`${player.name} started ${table.name}, ${table.playerCount} players, each with ${table.startChipCount} chips.`);
+        table.addMessage(`${player.name} started ${table.name}, ${table.playerCount} players, each with ${table.startChipCount} chips. Rounds per deal: ${table.roundsPerDeal}, blinds: ${table.bigBlind} - ${table.bigBlind * 2}`);
         tables.set(table.id, table);
         connetedButNotPlaying.delete(connectionId);
         broadCastOpenTables(apigwManagementApi, connetedButNotPlaying);
@@ -160,7 +160,7 @@ socketEventHandlers['poker-action'] = async (apigwManagementApi, connectionId, d
 
         // animate bets if there were any
         if (chips && chips.length > 0) {
-            await animatePlayerBetOnScreen(playerId, chips, table, apigwManagementApi);
+            await animatePlayerBetOnScreen(playerId, chips, table, apigwManagementApi, 0);
         }
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
@@ -191,15 +191,16 @@ socketEventHandlers['poker-win-round'] = async (apigwManagementApi, connectionId
         if (winningPlayers.every(player => player.winVoteCount >= 2)) {
             table.players.forEach((p)=>p.showWin= false);
             PlayProcessor.processWinner(winningPlayers, table);
+            await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
+            processAnySocketPlays(table, apigwManagementApi, 1);
         } else {
             const playersNotVoted = table.players.find(player => !player.hasVoted);
             if (!playersNotVoted || playersNotVoted.length === 0) {
                 table.addMessage(`All votes for winner cast, but no 2 votes for anyone, resetting to try again.`);
                 table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; });
             }
+            await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
         }
-        await broadcastToTable(table, { action: 'poker-table-change', payload: table }, apigwManagementApi);
-        processAnySocketPlays(table, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
@@ -360,7 +361,7 @@ socketEventHandlers['poker-can-reconnect'] = async (apigwManagementApi, connecti
     }
 };
 
-animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi) => {
+animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi, index) => {
     try{
         const data = {};
         data.playerId = playerId;
@@ -372,17 +373,18 @@ animatePlayerBetOnScreen = async (playerId, chips, table, apigwManagementApi) =>
         data.chips = JSON.stringify(theChips);
         data.potChips = JSON.stringify(table.playStatus.chips);
         data.potTotal = table.playStatus.pot;
+        data.skipPotAnimation=index&&index>0?true:false;
         await broadcastToTable(table, { action: 'poker-animate-chips-bet', payload: data }, apigwManagementApi);
     } catch (error) {
         handleError(apigwManagementApi, connectionId, error, data);
     }
 };
 
-function processAnySocketPlays(table, apigwManagementApi) {
+function processAnySocketPlays(table, apigwManagementApi, base) {
     if (table && table.socketPlays.length > 0) {
         setTimeout(() => {
-            table.socketPlays.forEach((socketPlay) => {
-                animatePlayerBetOnScreen(socketPlay.player.id, socketPlay.data, table, apigwManagementApi);
+            table.socketPlays.forEach((socketPlay, index) => {
+                animatePlayerBetOnScreen(socketPlay.player.id, socketPlay.data, table, apigwManagementApi, index+base);
             });
             table.socketPlays = [];
         }, 500); 

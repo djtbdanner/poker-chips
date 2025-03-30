@@ -21,6 +21,7 @@ class Player {
     this.isChampion = false;
     this.isBroke = false;
     this.showWin=false;
+    this.isBigBlind = false;
   }
 
   reset() {
@@ -37,6 +38,8 @@ class Player {
     this.allIn = false;
     this.isBroke = false;
     this.dealer = false;
+    this.isBigBlind = false;
+   
   }
   
   getChipTotal() {
@@ -48,7 +51,7 @@ class Player {
   }
 
   isActive(){
-    return !this.folded && !this.isBroke && this.isConnected;
+    return !this.folded && !this.isBroke && this.isConnected && !this.allIn;
   }
 }
 module.exports = Player

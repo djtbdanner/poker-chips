@@ -55,6 +55,23 @@ exports.processPlayDetermineNextStep = (currentPlayer, table) => {
         return true;
     }
 
+    // if there is more rounds and only one player is not all in then we are done as well
+    if (isThereAnotherRound) {
+        const playersNotAllIn = table.players.filter(player => !player.allIn && !player.folded && !player.isBroke && player.isConnected);
+        if (playersNotAllIn.length === 1) {
+            const dealer = table.players.find(player => player.dealer);
+            table.addMessage(`Everyone is out or all in except ${playersNotAllIn[0].name} so dealer, ${dealer.name}, finish out the deal to see who wins.`);
+            table.playStatus.selectWinner = true;
+            table.playStatus.playerLastRaised = undefined;
+            // no ones turn
+            table.players.forEach(player => {
+                player.turn = false;
+            });
+            table.playStatus.roundsBet = table.roundsPerDeal;/// will reset after winner
+            return true;
+        }
+    }
+
     if (!table.playStatus.playerLastRaised) {
         // if no one has raised and we have gone around the table
         if (nextPlayerOnTable.firstBettor || nextActivePlayerOnTable.firstBettor) {
@@ -68,9 +85,7 @@ exports.processPlayDetermineNextStep = (currentPlayer, table) => {
                 }
                 return true;
             } else {
-                // resetTable(table);
-                checkRoundsBet(table);
-                table.setPlayerTurn(nextActivePlayerOnTable);
+                checkRoundsBet(table, nextActivePlayerOnTable);
                 this.calculateCurrentCallAmount(table);
                 return false;
             }
@@ -78,15 +93,27 @@ exports.processPlayDetermineNextStep = (currentPlayer, table) => {
     } else {
         // if someone has raised and we have gone around the table
         if (nextPlayerOnTable.id === table.playStatus.playerLastRaised.id || nextActivePlayerOnTable.id === table.playStatus.playerLastRaised.id) {
+            // if next player is big blind and there is no call amount, give them the option to check or raise
+            if (nextActivePlayerOnTable.isBigBlind && table.playStatus.callAmount === table.bigBlind/2) {
+                table.addMessage(`${nextActivePlayerOnTable.name} is big blind and can raise, check or fold.`);
+                table.setPlayerTurn(nextActivePlayerOnTable);
+                nextActivePlayerOnTable.isBigBlind = false;
+                table.playStatus.callAmount = 0;
+                // make the next active player the first bettor and no last raise so that if this guy checks it is over but
+                // if this guy raises it goes another round
+                const nextPlayer = this.getNextActivePlayer(nextActivePlayerOnTable, table);
+                nextPlayer.firstBettor = true;
+                table.playStatus.playerLastRaised = undefined;
+                return false;
+            }
+                 
             if (!isThereAnotherRound) {
                 table.playStatus.selectWinner = true;
                 table.playStatus.playerLastRaised = undefined;
                 table.addMessage(`Bet round complete. A couple of you vote the winner(s).`);
                 return true;
             } else {
-                // resetTable(table);
-                checkRoundsBet(table);
-                table.setPlayerTurn(nextActivePlayerOnTable);
+                checkRoundsBet(table, nextActivePlayerOnTable);
                 this.calculateCurrentCallAmount(table);
                 return false;
             }
@@ -97,15 +124,26 @@ exports.processPlayDetermineNextStep = (currentPlayer, table) => {
     return false;
 }
 
-checkRoundsBet = (table) => {
+checkRoundsBet = (table, nextActivePlayerOnTable) => {
+    let playerTurn = nextActivePlayerOnTable;
     if (table.roundsPerDeal > 1) {
         table.playStatus.roundsBet = table.playStatus.roundsBet + 1;
         table.addMessage(`Round ${table.playStatus.roundsBet} of ${table.roundsPerDeal} for dealer ${table.players.find(player => player.dealer).name}`);
+        const dealer = table.players.find(player => player.dealer);
+        playerTurn = this.getNextActivePlayer(dealer, table);
     }
+    table.setPlayerTurn(playerTurn);
+    table.setFirstBettor(playerTurn);
+    table.playStatus.playerLastRaised = undefined;
 }
 
-
 exports.getNextActivePlayer = (currentPlayer, table) => {
+
+    // if there are no active players, return the current player
+    if (table.players.filter(player => player.isActive()).length < 1) {
+        return currentPlayer;
+    }
+
     const nextPlayer = getNextPlayer(currentPlayer, table);
     if (!nextPlayer.isActive()) {
         return this.getNextActivePlayer(nextPlayer, table)
@@ -157,6 +195,7 @@ exports.updatePlayersAfterCompleteRoundOfBetting = (table) => {
     if (table.bigBlind && table.bigBlind > 0) {
         const littleBlindPlayer = this.getNextActivePlayer(nextDealer, table);
         const bigBlindPlayer = this.getNextActivePlayer(littleBlindPlayer, table);
+        bigBlindPlayer.isBigBlind = true;
         const nextPlayer = this.getNextActivePlayer(bigBlindPlayer, table);
         table.setPlayerTurn(nextPlayer);
         table.setFirstBettor(nextPlayer);
@@ -165,14 +204,12 @@ exports.updatePlayersAfterCompleteRoundOfBetting = (table) => {
 
         let chips = this.pullPlayerChipsToAmount(table, littleBlindPlayer, littleBlind);
         this.processRaiseOrCall(table, littleBlindPlayer, chips, 'RAISE');
-        // animatePlayerBetOnScreen(table, littleBlindPlayer, chips);
         table.addSocketPlay(new SocketPlay(littleBlindPlayer, 'animatePlayerBetOnScreen', chips));
         chips = this.pullPlayerChipsToAmount(table, bigBlindPlayer, bigBlind);
         this.processRaiseOrCall(table, bigBlindPlayer, chips, 'RAISE');
         table.playStatus.playerLastRaised = bigBlindPlayer;
-        table.addMessage(`${nextDealer.name} is dealer with ${nextPlayer.name} first bet ${littleBlindPlayer.name} little blind of ${littleBlind} and ${bigBlindPlayer.name} big blind of ${bigBlind}.`);
+        table.addMessage(`Round begins with ${bigBlindPlayer.name} big blind of ${bigBlind}, ${littleBlindPlayer.name} little blind of ${littleBlind} and ${nextDealer.name} is dealer. ${nextPlayer.name} first bet after blinds.`);
         table.playStatus.totalRaiseThisRound = bigBlind;
-        // animatePlayerBetOnScreen(table, littlebigBlindPlayerlindPlayer, chips);
         table.addSocketPlay(new SocketPlay(bigBlindPlayer, 'animatePlayerBetOnScreen', chips));
 
         this.calculateCurrentCallAmount(table);
@@ -216,7 +253,7 @@ exports.processRaiseOrCall = (table, player, chips, action) => {
     if (raisedByAmount > 0 && table.playStatus.callAmount > 0) {
         raisedBy = ` (bet raised by ${raisedByAmount})`;
     }
-    table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? " !ALL IN! " : ""}with ${totalChips} chips${raisedBy}.`);
+    table.addMessage(`${player.name} ${action.toLowerCase()}s ${player.allIn ? "(ALL IN) " : ""}with ${totalChips} chips${raisedBy}.`);
 
     return totalChips;
 };
@@ -300,7 +337,7 @@ exports.processWinner = (winningPlayers, table) => {
 
         // check if there are other players that could win the rest of the pot, if only one player not folded or out, that playet gets the rest of the pot.
         table.players.forEach((p) => { p.winVoteCount = 0; p.hasVoted = false; p.potRaisedBy = 0; });
-        const playersThatCanWin = table.players.filter((p) => !p.folded);
+        const playersThatCanWin = table.players.filter((p) => !p.folded && !p.isBroke);
         if (playersThatCanWin.length === 1) {
             const thisWinner = playersThatCanWin[0];
             table.addMessage(`${thisWinner.name} gets the leftover pot of ${newPotTotal} chips.`);

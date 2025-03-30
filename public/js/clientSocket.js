@@ -82,7 +82,8 @@ socketEventHandlers[`poker-animate-chips-bet`] = async (data) => {
     chips = JSON.parse(chips);
     potChips = JSON.parse(potChips);
     potTotal = data.potTotal;
-    animatePlayerToPot(playerId, chips, potChips, potTotal);
+    skipPotAnimation = data.skipPotAnimation;
+    animatePlayerToPot(playerId, chips, potChips, potTotal, skipPotAnimation);
 };
 
 socketEventHandlers[`poker-table-modal-message`] = async (data) => {

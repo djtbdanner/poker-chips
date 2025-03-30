@@ -408,10 +408,10 @@ const generateChipPileSVG = (theChips) => {
 
 
     const chipValues = [
-        { color: BLACK, count: blacks, label: '100', strokecolor: BLACK_CHIP_COLOR },
-        { color: GREEN, count: greens, label: '25', strokecolor: GREEN_CHIP_COLOR },
-        { color: RED, count: reds, label: '5', strokecolor: RED_CHIP_COLOR},
         { color: GRAY, count: grays, label: '1', strokecolor: GRAY_CHIP_COLOR },
+        { color: RED, count: reds, label: '5', strokecolor: RED_CHIP_COLOR},
+        { color: GREEN, count: greens, label: '25', strokecolor: GREEN_CHIP_COLOR },
+        { color: BLACK, count: blacks, label: '100', strokecolor: BLACK_CHIP_COLOR },
     ];
 
     let chips = [];
@@ -572,12 +572,14 @@ function playSingleTap() {
     tap.stop(audioCtx.currentTime + 0.8);
 }
 
-const animatePlayerToPot = (playerDivId, chips, potChips, potTotal) => { 
+const animatePlayerToPot = (playerDivId, chips, potChips, potTotal, skipPotAnimation) => { 
     const pot = document.getElementById('pot-div');
     const player = document.getElementById(playerDivId);
     const chipPile = generateChipPileSVG(chips);
     animateChips(player, pot, chipPile);
-    setNewChipPile(potTotal, potChips);
+    if (!skipPotAnimation){
+        setNewChipPile(potTotal, potChips);
+    }
 }
 
 const setNewChipPile = (potTotal,potChips) => {
