@@ -1,8 +1,6 @@
 const Table = require('./classes/Table');
 const Player = require('./classes/Player');
 const PlayProcessor = require('./process-play');
-// const PlayStatus = require('./classes/PlayStatus');
-// const Chip = require('./classes/Chip');
 // --TODO-- will be replaced with a database
 let tables = new Map();
 let connetedButNotPlaying = new Map();
