@@ -4,10 +4,8 @@
     "description": "play poker with friends without chips or cash",
     "main": "local/api-gateway-emulator/socket-api-emulator.js",
     "scripts": {
-        "test": "node sockets/test/test-chips.js",
-        "start": "node index.js",
-        "go": "nodemon index.js",
-        "socket": "node local/api-gateway-emulator/socket-api-emulator.js"
+        "test": "node sockets/test/run-tests.js",
+        "local": "node local/api-gateway-emulator/socket-api-emulator.js"
     },
     "repository": {
         "type": "git",

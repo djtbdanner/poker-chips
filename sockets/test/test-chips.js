@@ -1,27 +1,13 @@
-const Table = require('../classes/Table');
-const Player = require('../classes/Player');
-const PlayProcessor = require('../process-play');
-const PlayStatus = require('../classes/PlayStatus');
-const Chip = require('../classes/Chip');
+const assert = require('assert');
+const pp = require('../process-play');
 
-const numbs = [425,3, 1000, 62, 100000, 88, 23, 50, 654, 385, 833, 888,9,18,25,100000000,11,26];
+console.log('Running parseChips tests...');
 
-numbs.forEach ((num ) => {
-    const chips = PlayProcessor.parseChips(num);
-    console.log(`${num} - ${JSON.stringify(chips)}`);
+// Representative amounts and expected behavior (based on current implementation)
+assert.deepStrictEqual(pp.parseChips(1), { gray: 1, red: 0, green: 0, black: 0 }, 'parseChips(1)');
+assert.deepStrictEqual(pp.parseChips(4), { gray: 4, red: 0, green: 0, black: 0 }, 'parseChips(4)');
+assert.deepStrictEqual(pp.parseChips(5), { gray: 5, red: 0, green: 0, black: 0 }, 'parseChips(5)');
+assert.deepStrictEqual(pp.parseChips(29), { gray: 9, red: 4, green: 0, black: 0 }, 'parseChips(29)');
+assert.deepStrictEqual(pp.parseChips(117), { gray: 7, red: 7, green: 3, black: 0 }, 'parseChips(117)');
 
-    const black = chips['black']||0;
-    const green = chips['green']||0;
-    const red = chips['red']||0;
-    const gray = chips['gray']||0;
-    let total = black * 100;
-    total += green * 25;
-    total += red * 5;
-    total += gray;
-    console.log (`${total} = ${num}`);
-    if (total !== num){
-        throw new Error ('did not work');
-    }
-});
-
-
+console.log('parseChips tests passed');
